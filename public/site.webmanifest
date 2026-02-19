@@ -1,0 +1,16 @@
+{
+  "name": "WSG Check",
+  "short_name": "WSG Check",
+  "description": "Checks a website against the W3C Web Sustainability Guidelines",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#16a34a",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

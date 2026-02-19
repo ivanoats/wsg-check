@@ -1,0 +1,9 @@
+/* TEAM */
+Developer: van Storck
+GitHub: https://github.com/vanstorck
+
+/* SITE */
+Last update: 2025/01/01
+Language: English
+Doctype: HTML5
+IDE: VS Code
