@@ -14,49 +14,49 @@ The application is a **mobile-first Next.js web app** using the **Park UI** desi
 
 ### 0.1 Initialize Next.js + TypeScript Project
 
-- [ ] Initialize Next.js (App Router) with TypeScript
-- [ ] Configure `tsconfig.json` with strict mode
-- [ ] Set `"type": "module"` in `package.json` (fix current typo `"modulemodu"`)
-- [ ] Configure path aliases (`@/core`, `@/checks`, `@/report`, `@/utils`, `@/config`)
+- [x] Initialize Next.js (App Router) with TypeScript
+- [x] Configure `tsconfig.json` with strict mode
+- [x] Set `"type": "module"` in `package.json`
+- [x] Configure path aliases (`@/core`, `@/checks`, `@/report`, `@/utils`, `@/config`)
 
 ### 0.2 Linting, Formatting & Code Quality
 
-- [ ] Install and configure ESLint (flat config) with TypeScript support
-- [ ] Install and configure Prettier + `eslint-config-prettier`
-- [ ] Add npm scripts: `lint`, `lint:fix`, `format`, `format:check`
-- [ ] Configure Husky pre-commit hook (ESLint + Prettier via lint-staged)
-- [ ] Configure Husky pre-push hook (run tests)
+- [x] Install and configure ESLint (flat config) with TypeScript support
+- [x] Install and configure Prettier + `eslint-config-prettier`
+- [x] Add npm scripts: `lint`, `lint:fix`, `format`, `format:check`
+- [x] Configure Husky pre-commit hook (ESLint + Prettier via lint-staged)
+- [x] Configure Husky pre-push hook (run tests)
 
 ### 0.3 Testing Framework
 
-- [ ] Install and configure Vitest (or Jest) with TypeScript support
-- [ ] Add npm scripts: `test`, `test:run`, `test:coverage`
-- [ ] Set up coverage thresholds (target: 80%+)
+- [x] Install and configure Vitest with TypeScript support
+- [x] Add npm scripts: `test`, `test:run`, `test:coverage`
+- [x] Set up coverage thresholds (target: 80%+)
 - [ ] Configure Codecov integration
 
 ### 0.4 Styling & Design System
 
-- [ ] Install and configure PandaCSS (utility-first CSS)
-- [ ] Install and configure Park UI component library (built on Ark UI + PandaCSS)
-- [ ] Set up design tokens for the sustainability theme
-- [ ] Add `npm run prepare` script for PandaCSS codegen
+- [x] Install and configure PandaCSS (utility-first CSS)
+- [x] Install and configure Park UI component library (built on Ark UI + PandaCSS)
+- [x] Set up design tokens for the sustainability theme
+- [x] Add `npm run prepare` script for PandaCSS codegen
 
 ### 0.5 CI/CD & DevOps
 
-- [ ] Validate existing `ci.yml` workflow (lint, type-check, test, build)
-- [ ] SonarQube analysis workflow will already be provided by Github website integration
-- [ ] Confirm Dependabot configuration (npm + GitHub Actions weekly)
-- [ ] Configure Netlify deployment (preview deploys on PRs, production on `main`)
+- [x] Validate existing `ci.yml` workflow (lint, type-check, test, build)
+- [x] SonarQube analysis workflow will already be provided by Github website integration
+- [x] Confirm Dependabot configuration (npm + GitHub Actions weekly)
+- [x] Configure Netlify deployment (`netlify.toml` added)
 
 ### 0.6 Environment & Configuration Files
 
-- [ ] Create `.env.example` with documented environment variables
+- [x] Create `.env.example` with documented environment variables
 - [ ] Install and configure `dotenv` for local development
-- [ ] Add `.gitignore` for Next.js, node_modules, coverage, .env, PandaCSS output
-- [ ] Add `robots.txt`, `sitemap.xml`, `site.webmanifest`, `favicon.ico` (WSG 3.17)
-- [ ] Add `humans.txt`, `security.txt` (WSG 3.17)
+- [x] Add `.gitignore` for Next.js, node_modules, coverage, .env, PandaCSS output
+- [x] Add `robots.txt`, `sitemap.xml`, `site.webmanifest`, `favicon.ico` (WSG 3.17)
+- [x] Add `humans.txt`, `security.txt` (WSG 3.17)
 
-**Deliverable:** A running Next.js app with all tooling, linting, testing, and CI passing.
+**Deliverable:** A running Next.js app with all tooling, linting, testing, and CI passing. ✅
 
 ---
 
