@@ -32,7 +32,7 @@ The application is a **mobile-first Next.js web app** using the **Park UI** desi
 - [x] Install and configure Vitest with TypeScript support
 - [x] Add npm scripts: `test`, `test:run`, `test:coverage`
 - [x] Set up coverage thresholds (target: 80%+)
-- [ ] Configure Codecov integration
+- [x] Configure Codecov integration (`codecov.yml`, CI uploads coverage)
 
 ### 0.4 Styling & Design System
 
@@ -51,7 +51,7 @@ The application is a **mobile-first Next.js web app** using the **Park UI** desi
 ### 0.6 Environment & Configuration Files
 
 - [x] Create `.env.example` with documented environment variables
-- [ ] Install and configure `dotenv` for local development
+- [x] Install and configure `dotenv` for local development (`src/config/env.ts`)
 - [x] Add `.gitignore` for Next.js, node_modules, coverage, .env, PandaCSS output
 - [x] Add `robots.txt`, `sitemap.xml`, `site.webmanifest`, `favicon.ico` (WSG 3.17)
 - [x] Add `humans.txt`, `security.txt` (WSG 3.17)
