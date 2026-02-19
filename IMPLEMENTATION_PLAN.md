@@ -14,49 +14,49 @@ The application is a **mobile-first Next.js web app** using the **Park UI** desi
 
 ### 0.1 Initialize Next.js + TypeScript Project
 
-- [ ] Initialize Next.js (App Router) with TypeScript
-- [ ] Configure `tsconfig.json` with strict mode
-- [ ] Set `"type": "module"` in `package.json` (fix current typo `"modulemodu"`)
-- [ ] Configure path aliases (`@/core`, `@/checks`, `@/report`, `@/utils`, `@/config`)
+- [x] Initialize Next.js (App Router) with TypeScript
+- [x] Configure `tsconfig.json` with strict mode
+- [x] Set `"type": "module"` in `package.json`
+- [x] Configure path aliases (`@/core`, `@/checks`, `@/report`, `@/utils`, `@/config`)
 
 ### 0.2 Linting, Formatting & Code Quality
 
-- [ ] Install and configure ESLint (flat config) with TypeScript support
-- [ ] Install and configure Prettier + `eslint-config-prettier`
-- [ ] Add npm scripts: `lint`, `lint:fix`, `format`, `format:check`
-- [ ] Configure Husky pre-commit hook (ESLint + Prettier via lint-staged)
-- [ ] Configure Husky pre-push hook (run tests)
+- [x] Install and configure ESLint (flat config) with TypeScript support
+- [x] Install and configure Prettier + `eslint-config-prettier`
+- [x] Add npm scripts: `lint`, `lint:fix`, `format`, `format:check`
+- [x] Configure Husky pre-commit hook (ESLint + Prettier via lint-staged)
+- [x] Configure Husky pre-push hook (run tests)
 
 ### 0.3 Testing Framework
 
-- [ ] Install and configure Vitest (or Jest) with TypeScript support
-- [ ] Add npm scripts: `test`, `test:run`, `test:coverage`
-- [ ] Set up coverage thresholds (target: 80%+)
-- [ ] Configure Codecov integration
+- [x] Install and configure Vitest with TypeScript support
+- [x] Add npm scripts: `test`, `test:run`, `test:coverage`
+- [x] Set up coverage thresholds (target: 80%+)
+- [x] Configure Codecov integration (`codecov.yml`, CI uploads coverage)
 
 ### 0.4 Styling & Design System
 
-- [ ] Install and configure PandaCSS (utility-first CSS)
-- [ ] Install and configure Park UI component library (built on Ark UI + PandaCSS)
-- [ ] Set up design tokens for the sustainability theme
-- [ ] Add `npm run prepare` script for PandaCSS codegen
+- [x] Install and configure PandaCSS (utility-first CSS)
+- [x] Install and configure Park UI component library (built on Ark UI + PandaCSS)
+- [x] Set up design tokens for the sustainability theme
+- [x] Add `npm run prepare` script for PandaCSS codegen
 
 ### 0.5 CI/CD & DevOps
 
-- [ ] Validate existing `ci.yml` workflow (lint, type-check, test, build)
-- [ ] SonarQube analysis workflow will already be provided by Github website integration
-- [ ] Confirm Dependabot configuration (npm + GitHub Actions weekly)
-- [ ] Configure Netlify deployment (preview deploys on PRs, production on `main`)
+- [x] Validate existing `ci.yml` workflow (lint, type-check, test, build)
+- [x] SonarQube analysis workflow will already be provided by Github website integration
+- [x] Confirm Dependabot configuration (npm + GitHub Actions weekly)
+- [x] Configure Netlify deployment (`netlify.toml` added)
 
 ### 0.6 Environment & Configuration Files
 
-- [ ] Create `.env.example` with documented environment variables
-- [ ] Install and configure `dotenv` for local development
-- [ ] Add `.gitignore` for Next.js, node_modules, coverage, .env, PandaCSS output
-- [ ] Add `robots.txt`, `sitemap.xml`, `site.webmanifest`, `favicon.ico` (WSG 3.17)
-- [ ] Add `humans.txt`, `security.txt` (WSG 3.17)
+- [x] Create `.env.example` with documented environment variables
+- [x] Install and configure `dotenv` for local development (`src/config/env.ts`)
+- [x] Add `.gitignore` for Next.js, node_modules, coverage, .env, PandaCSS output
+- [x] Add `robots.txt`, `sitemap.xml`, `site.webmanifest`, `favicon.ico` (WSG 3.17)
+- [x] Add `humans.txt`, `security.txt` (WSG 3.17)
 
-**Deliverable:** A running Next.js app with all tooling, linting, testing, and CI passing.
+**Deliverable:** A running Next.js app with all tooling, linting, testing, and CI passing. ✅
 
 ---
 
@@ -78,26 +78,26 @@ The application is a **mobile-first Next.js web app** using the **Park UI** desi
 ```typescript
 interface WSGCheckConfig {
   // Target
-  url: string;
-  
+  url: string
+
   // Check selection
-  categories: ('ux' | 'web-dev' | 'hosting' | 'business')[];
-  guidelines: string[];       // e.g., ["3.1", "3.2", "3.7"]
-  excludeGuidelines: string[];
-  
+  categories: ('ux' | 'web-dev' | 'hosting' | 'business')[]
+  guidelines: string[] // e.g., ["3.1", "3.2", "3.7"]
+  excludeGuidelines: string[]
+
   // Behavior
-  timeout: number;            // HTTP request timeout (ms)
-  maxDepth: number;           // Crawl depth (1 = single page)
-  userAgent: string;
-  followRedirects: boolean;
-  
+  timeout: number // HTTP request timeout (ms)
+  maxDepth: number // Crawl depth (1 = single page)
+  userAgent: string
+  followRedirects: boolean
+
   // Output
-  format: 'json' | 'html' | 'markdown' | 'terminal';
-  outputPath?: string;
-  verbose: boolean;
-  
+  format: 'json' | 'html' | 'markdown' | 'terminal'
+  outputPath?: string
+  verbose: boolean
+
   // Thresholds
-  failThreshold: number;      // Fail if score below this (0-100)
+  failThreshold: number // Fail if score below this (0-100)
 }
 ```
 
@@ -180,18 +180,18 @@ interface WSGCheckConfig {
 
 ```typescript
 interface CheckResult {
-  guidelineId: string;        // e.g., "3.2"
-  guidelineName: string;
-  successCriterion: string;
-  status: 'pass' | 'fail' | 'warn' | 'info' | 'not-applicable';
-  score: number;              // 0-100
-  message: string;
-  details?: string;
-  recommendation?: string;
-  resources?: string[];       // Links to WSG resources
-  impact: 'high' | 'medium' | 'low';
-  category: 'ux' | 'web-dev' | 'hosting' | 'business';
-  machineTestable: boolean;
+  guidelineId: string // e.g., "3.2"
+  guidelineName: string
+  successCriterion: string
+  status: 'pass' | 'fail' | 'warn' | 'info' | 'not-applicable'
+  score: number // 0-100
+  message: string
+  details?: string
+  recommendation?: string
+  resources?: string[] // Links to WSG resources
+  impact: 'high' | 'medium' | 'low'
+  category: 'ux' | 'web-dev' | 'hosting' | 'business'
+  machineTestable: boolean
 }
 ```
 
@@ -294,27 +294,27 @@ interface CheckResult {
 
 ```typescript
 interface SustainabilityReport {
-  url: string;
-  timestamp: string;
-  duration: number;           // Analysis time in ms
-  overallScore: number;       // 0-100
-  grade: 'A' | 'B' | 'C' | 'D' | 'F';
-  categories: CategoryScore[];
-  checks: CheckResult[];
+  url: string
+  timestamp: string
+  duration: number // Analysis time in ms
+  overallScore: number // 0-100
+  grade: 'A' | 'B' | 'C' | 'D' | 'F'
+  categories: CategoryScore[]
+  checks: CheckResult[]
   summary: {
-    totalChecks: number;
-    passed: number;
-    failed: number;
-    warnings: number;
-    notApplicable: number;
-  };
-  recommendations: Recommendation[];
+    totalChecks: number
+    passed: number
+    failed: number
+    warnings: number
+    notApplicable: number
+  }
+  recommendations: Recommendation[]
   metadata: {
-    pageWeight: number;
-    requestCount: number;
-    thirdPartyCount: number;
-    loadTime?: number;
-  };
+    pageWeight: number
+    requestCount: number
+    thirdPartyCount: number
+    loadTime?: number
+  }
 }
 ```
 
@@ -402,7 +402,7 @@ wsg-check --version
 ```typescript
 // POST /api/check
 // Request
-{ 
+{
   url: string;
   categories?: string[];
   guidelines?: string[];
@@ -553,20 +553,20 @@ wsg-check --version
 
 ## Implementation Priority & Timeline
 
-| Phase | Name | Priority | Est. Effort | Dependencies |
-|-------|------|----------|-------------|--------------|
-| 0 | Project Scaffolding | Critical | 1–2 days | None |
-| 1 | Config Module | Critical | 1 day | Phase 0 |
-| 2 | Utils Module | Critical | 2–3 days | Phase 0 |
-| 3 | Core Module | Critical | 2–3 days | Phases 1, 2 |
-| 4 | Checks — Web Dev | High | 4–5 days | Phase 3 |
-| 5 | Checks — UX & Hosting | High | 3–4 days | Phase 3 |
-| 6 | Report Module | High | 2–3 days | Phase 3 |
-| 7 | CLI Module | Medium | 1–2 days | Phases 3, 6 |
-| 8 | API Module | Medium | 2–3 days | Phases 3, 6 |
-| 9 | Frontend Module | Medium | 5–7 days | Phases 6, 8 |
-| 10 | Testing & QA | High | 3–4 days | All |
-| 11 | Deployment | Medium | 1 day | Phase 10 |
+| Phase | Name                  | Priority | Est. Effort | Dependencies |
+| ----- | --------------------- | -------- | ----------- | ------------ |
+| 0     | Project Scaffolding   | Critical | 1–2 days    | None         |
+| 1     | Config Module         | Critical | 1 day       | Phase 0      |
+| 2     | Utils Module          | Critical | 2–3 days    | Phase 0      |
+| 3     | Core Module           | Critical | 2–3 days    | Phases 1, 2  |
+| 4     | Checks — Web Dev      | High     | 4–5 days    | Phase 3      |
+| 5     | Checks — UX & Hosting | High     | 3–4 days    | Phase 3      |
+| 6     | Report Module         | High     | 2–3 days    | Phase 3      |
+| 7     | CLI Module            | Medium   | 1–2 days    | Phases 3, 6  |
+| 8     | API Module            | Medium   | 2–3 days    | Phases 3, 6  |
+| 9     | Frontend Module       | Medium   | 5–7 days    | Phases 6, 8  |
+| 10    | Testing & QA          | High     | 3–4 days    | All          |
+| 11    | Deployment            | Medium   | 1 day       | Phase 10     |
 
 **Estimated total: 4–6 weeks** (single developer, full-time)
 
@@ -576,76 +576,76 @@ wsg-check --version
 
 ### Machine-Testable (Automated Checks — Phases 4 & 5)
 
-| Guideline | ID | Automated | Phase |
-|-----------|-----|-----------|-------|
-| Set goals based on performance and energy impact | 3.1 | Yes | 4 |
-| Remove unnecessary or redundant information | 3.2 | Yes | 4 |
-| Modularize bandwidth-heavy components | 3.3 | Yes | 4 |
-| Remove unnecessary code | 3.4 | Yes | 4 |
-| Avoid redundancy and duplication in code | 3.5 | Yes | 4 |
-| Third-party assessment | 3.6 | Yes | 4 |
-| Semantic code practices | 3.7 | Yes | 4 |
-| Defer non-critical resources | 3.8 | Yes | 4 |
-| Accessibility aids | 3.9 | Yes | 4 |
-| Form validation and tooling | 3.10 | Yes | 4 |
-| Structured metadata | 3.11 | Yes | 4 |
-| Preference media queries | 3.12 | Yes | 4 |
-| Responsive layouts | 3.13 | Yes | 4 |
-| Standards-based JavaScript | 3.14 | Yes | 4 |
-| Secure code | 3.15 | Yes | 4 |
-| Dependency management | 3.16 | Yes | 4 |
-| Expected and beneficial files | 3.17 | Yes | 4 |
-| Latest language version | 3.19 | Yes | 4 |
-| Non-essential content | 2.4 | Partial | 5 |
-| Navigation structure | 2.5 | Partial | 5 |
-| Optimized media | 2.11 | Yes | 5 |
-| Animation control | 2.12 | Partial | 5 |
-| Web typography | 2.13 | Yes | 5 |
-| Alternative text | 2.14 | Yes | 5 |
-| Minimal forms | 2.15 | Partial | 5 |
-| Caching and offline access | 4.2 | Yes | 5 |
-| Compression | 4.3 | Yes | 5 |
-| Error pages and redirects | 4.4 | Yes | 5 |
-| CDN usage | 4.10 | Partial | 5 |
+| Guideline                                        | ID   | Automated | Phase |
+| ------------------------------------------------ | ---- | --------- | ----- |
+| Set goals based on performance and energy impact | 3.1  | Yes       | 4     |
+| Remove unnecessary or redundant information      | 3.2  | Yes       | 4     |
+| Modularize bandwidth-heavy components            | 3.3  | Yes       | 4     |
+| Remove unnecessary code                          | 3.4  | Yes       | 4     |
+| Avoid redundancy and duplication in code         | 3.5  | Yes       | 4     |
+| Third-party assessment                           | 3.6  | Yes       | 4     |
+| Semantic code practices                          | 3.7  | Yes       | 4     |
+| Defer non-critical resources                     | 3.8  | Yes       | 4     |
+| Accessibility aids                               | 3.9  | Yes       | 4     |
+| Form validation and tooling                      | 3.10 | Yes       | 4     |
+| Structured metadata                              | 3.11 | Yes       | 4     |
+| Preference media queries                         | 3.12 | Yes       | 4     |
+| Responsive layouts                               | 3.13 | Yes       | 4     |
+| Standards-based JavaScript                       | 3.14 | Yes       | 4     |
+| Secure code                                      | 3.15 | Yes       | 4     |
+| Dependency management                            | 3.16 | Yes       | 4     |
+| Expected and beneficial files                    | 3.17 | Yes       | 4     |
+| Latest language version                          | 3.19 | Yes       | 4     |
+| Non-essential content                            | 2.4  | Partial   | 5     |
+| Navigation structure                             | 2.5  | Partial   | 5     |
+| Optimized media                                  | 2.11 | Yes       | 5     |
+| Animation control                                | 2.12 | Partial   | 5     |
+| Web typography                                   | 2.13 | Yes       | 5     |
+| Alternative text                                 | 2.14 | Yes       | 5     |
+| Minimal forms                                    | 2.15 | Partial   | 5     |
+| Caching and offline access                       | 4.2  | Yes       | 5     |
+| Compression                                      | 4.3  | Yes       | 5     |
+| Error pages and redirects                        | 4.4  | Yes       | 5     |
+| CDN usage                                        | 4.10 | Partial   | 5     |
 
 ### Manual/Advisory (Reported as guidelines, not checked — future phases)
 
-| Guideline | ID | Notes |
-|-----------|-----|-------|
-| External factors | 2.1 | Manual review required |
-| User requirements | 2.2 | Manual review required |
-| Sustainability in ideation | 2.3 | Process-oriented |
-| Design to assist | 2.6 | Manual UX review |
-| Deceptive patterns | 2.7 | Partially automatable |
-| Deliverables reuse | 2.8 | Process-oriented |
-| Design systems | 2.9 | Manual review |
-| Clear content | 2.10 | NLP analysis potential (future) |
-| Sustainable hosting | 4.1 | Requires hosting provider info |
-| Database queries | 3.20 | Requires server access |
-| All Section 5 (Business) | 5.x | Organizational, not machine-testable |
+| Guideline                  | ID   | Notes                                |
+| -------------------------- | ---- | ------------------------------------ |
+| External factors           | 2.1  | Manual review required               |
+| User requirements          | 2.2  | Manual review required               |
+| Sustainability in ideation | 2.3  | Process-oriented                     |
+| Design to assist           | 2.6  | Manual UX review                     |
+| Deceptive patterns         | 2.7  | Partially automatable                |
+| Deliverables reuse         | 2.8  | Process-oriented                     |
+| Design systems             | 2.9  | Manual review                        |
+| Clear content              | 2.10 | NLP analysis potential (future)      |
+| Sustainable hosting        | 4.1  | Requires hosting provider info       |
+| Database queries           | 3.20 | Requires server access               |
+| All Section 5 (Business)   | 5.x  | Organizational, not machine-testable |
 
 ---
 
 ## Tech Stack Summary
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| Runtime | Node.js 22 | Server-side JavaScript |
-| Framework | Next.js (App Router) | SSR, API routes, frontend |
-| Language | TypeScript (strict) | Type safety |
-| UI Library | React 19 | Component architecture |
-| Design System | Park UI + Ark UI | Accessible components |
-| CSS | PandaCSS | Utility-first, mobile-first styling |
-| HTTP Client | Axios | Fetching target websites |
-| HTML Parser | Cheerio | Server-side DOM parsing |
-| Testing | Vitest + Playwright | Unit, integration, E2E tests |
-| Linting | ESLint + Prettier | Code quality |
-| Git Hooks | Husky + lint-staged | Pre-commit/push quality gates |
-| CI/CD | GitHub Actions | Automated testing & deployment |
-| Hosting | Netlify | Production deployment |
-| Security | Snyk + CodeQL | SAST and dependency scanning |
-| Code Quality | SonarQube | Code smells, tech debt tracking |
-| Accessibility | pa11y + Lighthouse | a11y auditing |
+| Layer         | Technology           | Purpose                             |
+| ------------- | -------------------- | ----------------------------------- |
+| Runtime       | Node.js 22           | Server-side JavaScript              |
+| Framework     | Next.js (App Router) | SSR, API routes, frontend           |
+| Language      | TypeScript (strict)  | Type safety                         |
+| UI Library    | React 19             | Component architecture              |
+| Design System | Park UI + Ark UI     | Accessible components               |
+| CSS           | PandaCSS             | Utility-first, mobile-first styling |
+| HTTP Client   | Axios                | Fetching target websites            |
+| HTML Parser   | Cheerio              | Server-side DOM parsing             |
+| Testing       | Vitest + Playwright  | Unit, integration, E2E tests        |
+| Linting       | ESLint + Prettier    | Code quality                        |
+| Git Hooks     | Husky + lint-staged  | Pre-commit/push quality gates       |
+| CI/CD         | GitHub Actions       | Automated testing & deployment      |
+| Hosting       | Netlify              | Production deployment               |
+| Security      | Snyk + CodeQL        | SAST and dependency scanning        |
+| Code Quality  | SonarQube            | Code smells, tech debt tracking     |
+| Accessibility | pa11y + Lighthouse   | a11y auditing                       |
 
 ---
 

@@ -1,0 +1,9 @@
+/* TEAM */
+Developer: Ivan Storck
+GitHub: https://github.com/ivanoats
+
+/* SITE */
+Last update: 2025/01/01
+Language: English
+Doctype: HTML5
+IDE: VS Code
