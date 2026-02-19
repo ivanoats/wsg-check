@@ -1,0 +1,12 @@
+{
+  "name": "wsg-check",
+  "version": "0.0.1",
+  "description": "Checks a website with the Web Sustainabilty Guidelines",
+  "license": "private",
+  "author": "van Storck",
+  "type": "modulemodu",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
