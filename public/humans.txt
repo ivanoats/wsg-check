@@ -1,6 +1,6 @@
 /* TEAM */
-Developer: van Storck
-GitHub: https://github.com/vanstorck
+Developer: Ivan Storck
+GitHub: https://github.com/ivanoats
 
 /* SITE */
 Last update: 2025/01/01

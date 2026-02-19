@@ -35,6 +35,7 @@ The architecture of WSG-Check is based on a modular design. It consists of the f
 - **Netlify**: A platform for deploying and hosting the application, providing continuous deployment and a global content delivery network for fast performance.
 - **GitHub Actions**: A CI/CD platform used for automating the testing and deployment of the application, ensuring that code changes are properly tested and deployed to production.
 - **ArkUI**: A component library used for building the user interface of the application, providing a set of pre-built components that can be easily customized and integrated into the frontend.
+- **Park UI**: A component library built on top of Ark UI and PandaCSS, providing beautifully styled, accessible components for the frontend of the application.
 
 ## Feaures
 
