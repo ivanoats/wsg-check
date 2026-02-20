@@ -22,6 +22,8 @@
   },
   "dependencies": {
     "@ark-ui/react": "^5.31.0",
+    "axios": "^1.13.5",
+    "cheerio": "^1.2.0",
     "dotenv": "^17.3.1",
     "next": "^16.1.6",
     "react": "^19.2.4",
