@@ -29,4 +29,4 @@ The market for "Green IT" tools is currently fragmented, placing wsg-check in a 
 | Accessibility Tools | axe-core, WAVE | wsg-check is the green equivalent of axe-core. It targets the same "shift-left" philosophy where quality is checked during development. |
 
 ### The Competitive Edge
-By being W3C-native, this tool avoids the "black box" problem of many commercial sustainability calculators. It provides a transparent, standardized way for organizations to prove they are following official industry guidelines, making it a "source of truth" rather than just a guestimate tool.
+By being W3C-native, this tool avoids the "black box" problem of many commercial sustainability calculators. It provides a transparent, standardized way for organizations to prove they are following official industry guidelines, making it a "source of truth" rather than just a guesstimate tool.
