@@ -66,9 +66,9 @@ The application is a **mobile-first Next.js web app** using the **Park UI** desi
 
 ### 1.1 Configuration Schema
 
-- [ ] Define TypeScript interfaces for all configuration options
-- [ ] Create `src/config/defaults.ts` with sensible defaults
-- [ ] Support configuration via:
+- [x] Define TypeScript interfaces for all configuration options
+- [x] Create `src/config/defaults.ts` with sensible defaults
+- [x] Support configuration via:
   - Environment variables (`.env`)
   - Config file (`wsg-check.config.ts` or `.wsgcheckrc.json`)
   - CLI flags (override precedence)
@@ -103,11 +103,11 @@ interface WSGCheckConfig {
 
 ### 1.3 WSG Guidelines Registry
 
-- [ ] Create `src/config/guidelines-registry.ts` — a structured map of all WSG guidelines
-- [ ] Include for each guideline: ID, title, section, category, machine-testability flag, description
-- [ ] Tag guidelines as `automated`, `semi-automated`, or `manual-only`
+- [x] Create `src/config/guidelines-registry.ts` — a structured map of all WSG guidelines
+- [x] Include for each guideline: ID, title, section, category, machine-testability flag, description
+- [x] Tag guidelines as `automated`, `semi-automated`, or `manual-only`
 
-**Deliverable:** Config module that loads, validates, and merges configuration from all sources.
+**Deliverable:** Config module that loads, validates, and merges configuration from all sources. ✅
 
 ---
 
