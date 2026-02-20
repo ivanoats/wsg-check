@@ -1,0 +1,19 @@
+{
+  "name": "wsg-check",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true
+    },
+    "ghcr.io/devcontainers-contrib/features/ripgrep:1": {},
+    "ghcr.io/devcontainers-contrib/features/eza:1": {},
+    "ghcr.io/devcontainers-contrib/features/fzf:1": {}
+  },
+  "postCreateCommand": "npm install",
+  "customizations": {
+    "vscode": {
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
+    }
+  }
+}
