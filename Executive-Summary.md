@@ -1,5 +1,5 @@
 The wsg-check tool is a specialized utility designed to bridge the gap between high-level sustainability principles and technical implementation. By focusing specifically on the W3C Web Sustainability Guidelines (WSG), it occupies a unique "compliance-as-code" niche.
-1. Tool Purpose: The "Sustainability Linter"
+## 1. Tool Purpose: The "Sustainability Linter"
 The primary function of wsg-check is to automate the auditing of digital products against the Sustainability Progress, Principles, and Prosperity (PPP) model.
  * Automated Auditing: It scans web resources to identify "non-essential" assets (decorative design, heavy scripts, or inefficient paths) that contribute to excessive energy consumption.
  * Success Criteria Mapping: It maps technical findings directly to WSG Success Criteria (e.g., SC 2.1: Environmental Factors, SC 3.1: Efficient Paths).
