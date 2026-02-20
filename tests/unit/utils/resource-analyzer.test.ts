@@ -55,6 +55,12 @@ describe('classifyResources', () => {
     expect(classified[0].isThirdParty).toBe(true)
   })
 
+  it('correctly identifies different ccTLD sites as third-party', () => {
+    const resources = [{ type: 'script' as const, url: 'https://bar.co.uk/lib.js', attributes: {} }]
+    const classified = classifyResources(resources, 'https://foo.co.uk/')
+    expect(classified[0].isThirdParty).toBe(true)
+  })
+
   it('treats www.example.com and example.com as the same site', () => {
     const resources = [
       { type: 'image' as const, url: 'https://www.example.com/img.png', attributes: {} },

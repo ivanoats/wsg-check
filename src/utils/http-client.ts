@@ -9,6 +9,7 @@
  */
 
 import axios, { AxiosError, type AxiosInstance, type AxiosResponse } from 'axios'
+import robotsParser from 'robots-parser'
 import { FetchError, type Result, ok, err } from './errors.js'
 
 // ─── Public types ─────────────────────────────────────────────────────────────
@@ -47,12 +48,6 @@ export interface FetchResult {
   contentType?: string
 }
 
-/** Parsed allow/disallow rules extracted from a robots.txt block. */
-export interface RobotsTxtRule {
-  allows: string[]
-  disallows: string[]
-}
-
 export interface HttpClientOptions {
   /** Request timeout in milliseconds. Defaults to 30 000. */
   timeout?: number
@@ -77,110 +72,13 @@ const DEFAULT_OPTIONS: Required<HttpClientOptions> = {
 
 const MAX_REDIRECTS = 10
 
-// ─── robots.txt helpers ───────────────────────────────────────────────────────
-
-/**
- * Parse a robots.txt file and return the allow/disallow rules that apply to
- * the given user-agent string.
- *
- * Matching priority (highest first):
- *   1. Exact user-agent match (case-insensitive)
- *   2. Partial prefix match (e.g. "wsg-check" inside "wsg-check/0.0.1")
- *   3. Wildcard `*` group
- *
- * Conforms to the basic subset of the robots.txt specification.
- */
-export function parseRobotsTxt(content: string, userAgent: string): RobotsTxtRule {
-  // Normalise: lowercase, strip version suffix ("bot/2.1" → "bot")
-  const normUA = userAgent.toLowerCase().split('/')[0].trim()
-
-  const rulesByAgent = new Map<string, RobotsTxtRule>()
-  let currentAgents: string[] = []
-
-  for (const rawLine of content.split('\n')) {
-    const line = rawLine.split('#')[0].trim() // strip inline comments
-
-    if (line === '') {
-      // Blank line ends a User-agent block
-      currentAgents = []
-      continue
-    }
-
-    const colonIdx = line.indexOf(':')
-    if (colonIdx === -1) continue
-
-    const field = line.slice(0, colonIdx).trim().toLowerCase()
-    const value = line.slice(colonIdx + 1).trim()
-
-    if (field === 'user-agent') {
-      const agent = value.toLowerCase()
-      currentAgents.push(agent)
-      if (!rulesByAgent.has(agent)) {
-        rulesByAgent.set(agent, { allows: [], disallows: [] })
-      }
-    } else if (field === 'allow') {
-      for (const agent of currentAgents) {
-        rulesByAgent.get(agent)?.allows.push(value)
-      }
-    } else if (field === 'disallow') {
-      for (const agent of currentAgents) {
-        rulesByAgent.get(agent)?.disallows.push(value)
-      }
-    }
-  }
-
-  // 1. Exact match
-  const exact = rulesByAgent.get(normUA)
-  if (exact) return exact
-
-  // 2. Partial prefix match
-  for (const [agent, rules] of rulesByAgent) {
-    if (agent !== '*' && normUA.startsWith(agent)) return rules
-  }
-
-  // 3. Wildcard fallback
-  return rulesByAgent.get('*') ?? { allows: [], disallows: [] }
-}
-
-/**
- * Return `true` if the given URL path is permitted by the parsed robots.txt
- * rules.
- *
- * Per the spec, a more-specific Allow rule wins over a less-specific Disallow
- * rule when both match.  An empty Disallow value means "allow everything".
- */
-export function isPathAllowed(path: string, rules: RobotsTxtRule): boolean {
-  if (rules.disallows.length === 0) return true
-
-  let longestDisallow = -1
-  let longestAllow = -1
-
-  for (const disallow of rules.disallows) {
-    if (disallow === '') continue // empty disallow = allow all
-    if (path.startsWith(disallow) && disallow.length > longestDisallow) {
-      longestDisallow = disallow.length
-    }
-  }
-
-  if (longestDisallow === -1) return true // no matching disallow
-
-  for (const allow of rules.allows) {
-    if (allow !== '' && path.startsWith(allow) && allow.length > longestAllow) {
-      longestAllow = allow.length
-    }
-  }
-
-  // A matching Allow that is at least as specific as the Disallow wins.
-  return longestAllow >= longestDisallow
-}
-
 // ─── HttpClient ───────────────────────────────────────────────────────────────
 
 export class HttpClient {
   private readonly axiosInstance: AxiosInstance
   private readonly opts: Required<HttpClientOptions>
   private readonly cache = new Map<string, FetchResult>()
-  private readonly robotsCache = new Map<string, RobotsTxtRule>()
+  private readonly robotsCache = new Map<string, ReturnType<typeof robotsParser>>()
 
   constructor(options: HttpClientOptions = {}) {
     this.opts = { ...DEFAULT_OPTIONS, ...options }
@@ -199,25 +97,26 @@ export class HttpClient {
   // ── robots.txt ──────────────────────────────────────────────────────────────
 
   /** Fetch and cache the robots.txt rules for the given origin. */
-  private async fetchRobotsTxtRules(origin: string): Promise<RobotsTxtRule> {
+  private async fetchRobotsTxtRules(origin: string): Promise<ReturnType<typeof robotsParser>> {
     const cached = this.robotsCache.get(origin)
     if (cached) return cached
 
+    const robotsUrl = `${origin}/robots.txt`
     try {
-      const resp = await this.axiosInstance.get<string>(`${origin}/robots.txt`, {
+      const resp = await this.axiosInstance.get<string>(robotsUrl, {
         responseType: 'text',
         timeout: 5_000,
       })
       if (resp.status === 200 && typeof resp.data === 'string') {
-        const rules = parseRobotsTxt(resp.data, this.opts.userAgent)
-        this.robotsCache.set(origin, rules)
-        return rules
+        const robots = robotsParser(robotsUrl, resp.data)
+        this.robotsCache.set(origin, robots)
+        return robots
       }
     } catch {
       // If the robots.txt cannot be fetched, allow all by default.
     }
 
-    const allowAll: RobotsTxtRule = { allows: [], disallows: [] }
+    const allowAll = robotsParser(robotsUrl, '')
     this.robotsCache.set(origin, allowAll)
     return allowAll
   }
@@ -225,8 +124,8 @@ export class HttpClient {
   /** Return `true` if the URL is permitted by the site's robots.txt. */
   async isAllowedByRobots(url: string): Promise<boolean> {
     const parsed = new URL(url)
-    const rules = await this.fetchRobotsTxtRules(parsed.origin)
-    return isPathAllowed(parsed.pathname + parsed.search, rules)
+    const robots = await this.fetchRobotsTxtRules(parsed.origin)
+    return robots.isAllowed(url, this.opts.userAgent) !== false
   }
 
   // ── Public fetch ────────────────────────────────────────────────────────────

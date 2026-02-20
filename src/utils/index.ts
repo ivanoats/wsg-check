@@ -12,8 +12,8 @@ export { ok, err } from './errors.js'
 export type { LogLevel, LogEntry, LoggerOptions, Logger } from './logger.js'
 export { createLogger, defaultLogger } from './logger.js'
 
-export type { RedirectEntry, FetchResult, RobotsTxtRule, HttpClientOptions } from './http-client.js'
-export { HttpClient, parseRobotsTxt, isPathAllowed } from './http-client.js'
+export type { RedirectEntry, FetchResult, HttpClientOptions } from './http-client.js'
+export { HttpClient } from './http-client.js'
 
 export type {
   MetaTag,
