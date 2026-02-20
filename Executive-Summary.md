@@ -19,7 +19,7 @@ Phase 3: Reporting & Compliance
  * Impact API: Integrating with the W3C Measurability Task Force's scoring consensus (slated for late 2026) to provide verified carbon estimates.
  * Regulatory Export: Generating reports that satisfy emerging ESG (Environmental, Social, and Governance) reporting requirements.
 
-3. Marketplace Positioning
+## 3. Marketplace Positioning
 The market for "Green IT" tools is currently fragmented, placing wsg-check in a strategic spot:
 | Category | Competitors | wsg-check Position |
 |---|---|---|
