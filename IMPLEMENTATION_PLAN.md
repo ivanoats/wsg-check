@@ -117,44 +117,44 @@ interface WSGCheckConfig {
 
 ### 2.1 HTTP Client
 
-- [ ] Create `src/utils/http-client.ts` using Axios
-- [ ] Implement request caching (avoid duplicate fetches for the same URL)
-- [ ] Support timeout, retry logic, and user-agent configuration
-- [ ] Respect `robots.txt` (WSG 4.6)
-- [ ] Handle redirects and record redirect chains (WSG 4.4)
+- [x] Create `src/utils/http-client.ts` using Axios
+- [x] Implement request caching (avoid duplicate fetches for the same URL)
+- [x] Support timeout, retry logic, and user-agent configuration
+- [x] Respect `robots.txt` (WSG 4.6)
+- [x] Handle redirects and record redirect chains (WSG 4.4)
 
 ### 2.2 HTML Parser
 
-- [ ] Create `src/utils/html-parser.ts` using Cheerio
-- [ ] Parse HTML into a queryable DOM structure
-- [ ] Extract metadata: `<head>` elements, meta tags, structured data
-- [ ] Extract resource references: stylesheets, scripts, images, fonts, media
-- [ ] Extract semantic structure: headings hierarchy, landmarks, ARIA attributes
+- [x] Create `src/utils/html-parser.ts` using Cheerio
+- [x] Parse HTML into a queryable DOM structure
+- [x] Extract metadata: `<head>` elements, meta tags, structured data
+- [x] Extract resource references: stylesheets, scripts, images, fonts, media
+- [x] Extract semantic structure: headings hierarchy, landmarks, ARIA attributes
 
 ### 2.3 Resource Analyzer
 
-- [ ] Create `src/utils/resource-analyzer.ts`
-- [ ] Calculate total page weight (HTML + CSS + JS + images + fonts + media)
-- [ ] Identify resource types and sizes
-- [ ] Detect third-party vs. first-party resources
-- [ ] Analyze compression (gzip/brotli) usage from response headers
+- [x] Create `src/utils/resource-analyzer.ts`
+- [x] Calculate total page weight (HTML + CSS + JS + images + fonts + media)
+- [x] Identify resource types and sizes
+- [x] Detect third-party vs. first-party resources
+- [x] Analyze compression (gzip/brotli) usage from response headers
 
 ### 2.4 Error Handling
 
-- [ ] Create `src/utils/errors.ts` with custom error classes
-- [ ] `FetchError` — network/HTTP errors
-- [ ] `ParseError` — HTML parsing failures
-- [ ] `ConfigError` — invalid configuration
-- [ ] `CheckError` — individual check failures
-- [ ] Implement graceful degradation (one check failing shouldn't abort all)
+- [x] Create `src/utils/errors.ts` with custom error classes
+- [x] `FetchError` — network/HTTP errors
+- [x] `ParseError` — HTML parsing failures
+- [x] `ConfigError` — invalid configuration
+- [x] `CheckError` — individual check failures
+- [x] Implement graceful degradation (one check failing shouldn't abort all)
 
 ### 2.5 Logging
 
-- [ ] Create `src/utils/logger.ts`
-- [ ] Support log levels: `debug`, `info`, `warn`, `error`
-- [ ] Structured logging for API mode, formatted for CLI mode
+- [x] Create `src/utils/logger.ts`
+- [x] Support log levels: `debug`, `info`, `warn`, `error`
+- [x] Structured logging for API mode, formatted for CLI mode
 
-**Deliverable:** All shared utilities with unit tests (>80% coverage).
+**Deliverable:** All shared utilities with unit tests (>80% coverage). ✅
 
 ---
 
