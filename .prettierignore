@@ -1,0 +1,4 @@
+# Ignore GitHub-managed instruction/agent files – these contain embedded code
+# samples with intentionally non-standard formatting and must not be touched
+# by Prettier.
+.github/

@@ -9,7 +9,7 @@
  */
 
 import axios, { AxiosError, type AxiosInstance, type AxiosResponse } from 'axios'
-import { FetchError } from './errors.js'
+import { FetchError, type Result, ok, err } from './errors.js'
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
@@ -35,7 +35,13 @@ export interface FetchResult {
   redirectChain: RedirectEntry[]
   /** `true` when the result was served from the in-memory cache. */
   fromCache: boolean
-  /** Byte length of the response body. */
+  /**
+   * Transfer size in bytes as reported by the `Content-Length` response header.
+   * This is the **compressed** size when `Content-Encoding` is present, giving an
+   * accurate picture of network bandwidth used (relevant for sustainability metrics).
+   * Falls back to the decompressed body byte-length when the header is absent
+   * (e.g. chunked transfer encoding).
+   */
   contentLength: number
   contentEncoding?: string
   contentType?: string
@@ -226,27 +232,36 @@ export class HttpClient {
   // ── Public fetch ────────────────────────────────────────────────────────────
 
   /**
-   * Fetch a URL.
+   * Fetch a URL and return a `Result` — no exceptions are thrown.
    *
-   * - Returns the cached result if the URL was already fetched in this session.
-   * - Checks robots.txt before making the request (unless `ignoreRobots` is set).
+   * - Returns `{ ok: true, value: FetchResult }` on success.
+   * - Returns `{ ok: false, error: FetchError }` on any failure (robots.txt
+   *   disallow, network error, too many redirects, etc.).
+   * - Served from the in-memory cache on duplicate requests (`fromCache: true`).
    * - Follows redirects and records each hop in `redirectChain`.
-   * - Retries on transient network / 5xx errors with exponential back-off.
+   * - Retries on transient network errors with exponential back-off.
    */
-  async fetch(url: string, options?: { ignoreRobots?: boolean }): Promise<FetchResult> {
+  async fetch(
+    url: string,
+    options?: { ignoreRobots?: boolean }
+  ): Promise<Result<FetchResult, FetchError>> {
     const cached = this.cache.get(url)
-    if (cached) return { ...cached, fromCache: true }
+    if (cached) return ok({ ...cached, fromCache: true })
 
     if (!options?.ignoreRobots) {
       const allowed = await this.isAllowedByRobots(url)
       if (!allowed) {
-        throw new FetchError(`URL disallowed by robots.txt: ${url}`, url)
+        return err(new FetchError(`URL disallowed by robots.txt: ${url}`, url))
       }
     }
 
-    const result = await this.fetchWithRetry(url)
-    this.cache.set(url, result)
-    return result
+    try {
+      const result = await this.fetchWithRetry(url)
+      this.cache.set(url, result)
+      return ok(result)
+    } catch (e) {
+      return err(e instanceof FetchError ? e : new FetchError(String(e), url, e))
+    }
   }
 
   // ── Internals ───────────────────────────────────────────────────────────────
@@ -322,6 +337,15 @@ export class HttpClient {
 
     const body = typeof resp.data === 'string' ? resp.data : String(resp.data)
 
+    // Prefer the Content-Length header so the value reflects the compressed
+    // transfer size (accurate bandwidth metric for sustainability analysis).
+    // Fall back to body byte-length when the header is absent (chunked transfer).
+    const headerContentLength = headers['content-length']
+    const contentLength =
+      headerContentLength !== undefined
+        ? parseInt(headerContentLength, 10) || body.length
+        : body.length
+
     return {
       url: finalUrl,
       originalUrl,
@@ -330,7 +354,7 @@ export class HttpClient {
       body,
       redirectChain,
       fromCache: false,
-      contentLength: body.length,
+      contentLength,
       contentEncoding: headers['content-encoding'],
       contentType: headers['content-type'],
     }

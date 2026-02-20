@@ -3,7 +3,40 @@
  *
  * Provides typed, descriptive errors for each failure domain so that callers
  * can catch and handle errors precisely without aborting the entire check run.
+ *
+ * Also exports a `Result<T, E>` discriminated union for callers who prefer a
+ * functional, exception-free style at API boundaries.
  */
+
+// ─── Result type ──────────────────────────────────────────────────────────────
+
+/**
+ * A discriminated union representing the outcome of an operation that can
+ * succeed or fail without throwing.
+ *
+ * @example
+ * ```ts
+ * const result: Result<FetchResult, FetchError> = await client.fetch(url)
+ * if (result.ok) {
+ *   console.log(result.value.statusCode)
+ * } else {
+ *   console.error(result.error.message)
+ * }
+ * ```
+ */
+export type Result<T, E extends Error = Error> =
+  | { readonly ok: true; readonly value: T }
+  | { readonly ok: false; readonly error: E }
+
+/** Construct a successful `Result`. */
+export function ok<T>(value: T): { readonly ok: true; readonly value: T } {
+  return { ok: true, value }
+}
+
+/** Construct a failure `Result`. */
+export function err<E extends Error>(error: E): { readonly ok: false; readonly error: E } {
+  return { ok: false, error }
+}
 
 /**
  * Thrown when a network or HTTP-level failure occurs while fetching a URL.

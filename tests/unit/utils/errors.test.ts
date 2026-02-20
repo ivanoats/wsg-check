@@ -88,3 +88,32 @@ describe('CheckError', () => {
     expect(new CheckError('x', '1.1')).toBeInstanceOf(Error)
   })
 })
+
+import { ok, err } from '@/utils/errors'
+
+describe('Result helpers', () => {
+  it('ok() creates a successful Result', () => {
+    const result = ok(42)
+    expect(result.ok).toBe(true)
+    expect(result.value).toBe(42)
+  })
+
+  it('err() creates a failure Result', () => {
+    const error = new FetchError('network error', 'https://example.com')
+    const result = err(error)
+    expect(result.ok).toBe(false)
+    expect(result.error).toBe(error)
+  })
+
+  it('ok Result has no error property', () => {
+    const result = ok('hello')
+    expect(result.ok).toBe(true)
+    expect('error' in result).toBe(false)
+  })
+
+  it('err Result has no value property', () => {
+    const result = err(new ConfigError('bad config'))
+    expect(result.ok).toBe(false)
+    expect('value' in result).toBe(false)
+  })
+})

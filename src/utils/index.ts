@@ -6,6 +6,8 @@
  */
 
 export { FetchError, ParseError, ConfigError, CheckError } from './errors.js'
+export type { Result } from './errors.js'
+export { ok, err } from './errors.js'
 
 export type { LogLevel, LogEntry, LoggerOptions, Logger } from './logger.js'
 export { createLogger, defaultLogger } from './logger.js'

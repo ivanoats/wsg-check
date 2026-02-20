@@ -218,15 +218,20 @@ export function parseHtml(html: string, baseUrl?: string): ParsedPage {
   // Images via <img src>
   $('img').each((_, el) => {
     const attrs = attrsOf(el as DomElement)
+    const imageUrls = new Set<string>()
+
     const url = resolveUrl(attrs.src, baseUrl)
     if (url) {
+      imageUrls.add(url)
       resources.push({ type: 'image', url, attributes: attrs })
     }
-    // Also handle srcset
+    // Also handle srcset; skip any URL already added via src
     if (attrs.srcset) {
       for (const part of attrs.srcset.split(',')) {
-        const srcUrl = resolveUrl(part.trim().split(/\s+/)[0], baseUrl)
-        if (srcUrl && srcUrl !== url) {
+        const candidate = part.trim().split(/\s+/)[0]
+        const srcUrl = resolveUrl(candidate, baseUrl)
+        if (srcUrl && !imageUrls.has(srcUrl)) {
+          imageUrls.add(srcUrl)
           resources.push({ type: 'image', url: srcUrl, attributes: { srcset: attrs.srcset } })
         }
       }

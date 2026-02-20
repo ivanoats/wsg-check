@@ -56,10 +56,15 @@ export interface PageWeightAnalysis {
 /**
  * Extract the eTLD+1 "site" from a URL for third-party classification.
  *
- * We use a simple heuristic: strip the leading `www.` subdomain and keep
- * the last two label segments (`example.com`).  This is intentionally
- * naive—a full public-suffix list would be more accurate but adds
- * significant complexity.
+ * Uses a simple heuristic: strip the leading `www.` subdomain and keep the
+ * last two label segments (e.g. `example.com`).
+ *
+ * **Known limitation:** This heuristic is intentionally lightweight and does
+ * not consult a Public Suffix List (PSL).  It will incorrectly group resources
+ * that share only a country-code second-level domain (e.g. resources on both
+ * `foo.co.uk` and `bar.co.uk` will be treated as first-party to each other).
+ * For now this trade-off is acceptable; a future iteration can integrate the
+ * `psl` npm package for accurate eTLD+1 extraction.
  */
 function getSite(url: string): string {
   try {

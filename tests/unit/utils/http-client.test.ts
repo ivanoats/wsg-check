@@ -153,7 +153,7 @@ describe('HttpClient', () => {
     expect(client).toBeInstanceOf(HttpClient)
   })
 
-  it('returns a successful fetch result', async () => {
+  it('returns ok result with fetch data on success', async () => {
     mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
     mockGet.mockResolvedValueOnce(
       axiosResp(200, '<html>hello</html>', { 'content-type': 'text/html' })
@@ -162,14 +162,16 @@ describe('HttpClient', () => {
     const client = new HttpClient()
     const result = await client.fetch('https://example.com/page')
 
-    expect(result.statusCode).toBe(200)
-    expect(result.body).toBe('<html>hello</html>')
-    expect(result.fromCache).toBe(false)
-    expect(result.url).toBe('https://example.com/page')
-    expect(result.redirectChain).toEqual([])
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.statusCode).toBe(200)
+    expect(result.value.body).toBe('<html>hello</html>')
+    expect(result.value.fromCache).toBe(false)
+    expect(result.value.url).toBe('https://example.com/page')
+    expect(result.value.redirectChain).toEqual([])
   })
 
-  it('returns a cached result on a second fetch of the same URL', async () => {
+  it('returns ok result with fromCache true on a second fetch', async () => {
     mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
     mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
 
@@ -178,14 +180,20 @@ describe('HttpClient', () => {
     const cached = await client.fetch('https://example.com/')
 
     expect(mockGet).toHaveBeenCalledTimes(2)
-    expect(cached.fromCache).toBe(true)
+    expect(cached.ok).toBe(true)
+    if (!cached.ok) return
+    expect(cached.value.fromCache).toBe(true)
   })
 
-  it('throws FetchError when robots.txt disallows the URL', async () => {
+  it('returns err result when robots.txt disallows the URL', async () => {
     mockGet.mockResolvedValueOnce(axiosResp(200, 'User-agent: *\nDisallow: /'))
 
     const client = new HttpClient()
-    await expect(client.fetch('https://example.com/page')).rejects.toBeInstanceOf(FetchError)
+    const result = await client.fetch('https://example.com/page')
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error).toBeInstanceOf(FetchError)
   })
 
   it('ignores robots.txt when ignoreRobots is true', async () => {
@@ -195,7 +203,9 @@ describe('HttpClient', () => {
     const result = await client.fetch('https://example.com/', { ignoreRobots: true })
 
     expect(mockGet).toHaveBeenCalledTimes(1)
-    expect(result.statusCode).toBe(200)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.statusCode).toBe(200)
   })
 
   it('follows redirects and records the chain', async () => {
@@ -206,9 +216,11 @@ describe('HttpClient', () => {
     const client = new HttpClient()
     const result = await client.fetch('https://example.com/old')
 
-    expect(result.redirectChain).toHaveLength(1)
-    expect(result.redirectChain[0].statusCode).toBe(301)
-    expect(result.url).toBe('https://example.com/new')
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.redirectChain).toHaveLength(1)
+    expect(result.value.redirectChain[0].statusCode).toBe(301)
+    expect(result.value.url).toBe('https://example.com/new')
   })
 
   it('does not follow redirects when followRedirects is false', async () => {
@@ -218,24 +230,34 @@ describe('HttpClient', () => {
     const client = new HttpClient({ followRedirects: false })
     const result = await client.fetch('https://example.com/old')
 
-    expect(result.statusCode).toBe(301)
-    expect(result.redirectChain).toHaveLength(0)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.statusCode).toBe(301)
+    expect(result.value.redirectChain).toHaveLength(0)
   })
 
-  it('throws FetchError on too many redirects', async () => {
+  it('returns err result on too many redirects', async () => {
     mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
     mockGet.mockResolvedValue(axiosResp(301, '', { location: 'https://example.com/loop' }))
 
     const client = new HttpClient()
-    await expect(client.fetch('https://example.com/loop')).rejects.toBeInstanceOf(FetchError)
+    const result = await client.fetch('https://example.com/loop')
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error).toBeInstanceOf(FetchError)
   })
 
-  it('throws FetchError when redirect has no Location header', async () => {
+  it('returns err result when redirect has no Location header', async () => {
     mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
     mockGet.mockResolvedValueOnce(axiosResp(301, '', {})) // no Location
 
     const client = new HttpClient()
-    await expect(client.fetch('https://example.com/page')).rejects.toBeInstanceOf(FetchError)
+    const result = await client.fetch('https://example.com/page')
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error).toBeInstanceOf(FetchError)
   })
 
   it('retries on a network error and succeeds on the next attempt', async () => {
@@ -246,7 +268,9 @@ describe('HttpClient', () => {
     const client = new HttpClient({ retryDelay: 0 })
     const result = await client.fetch('https://example.com/')
 
-    expect(result.statusCode).toBe(200)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.statusCode).toBe(200)
   })
 
   it('includes content-encoding and content-type in the result', async () => {
@@ -261,8 +285,40 @@ describe('HttpClient', () => {
     const client = new HttpClient()
     const result = await client.fetch('https://example.com/')
 
-    expect(result.contentEncoding).toBe('gzip')
-    expect(result.contentType).toBe('text/html; charset=utf-8')
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.contentEncoding).toBe('gzip')
+    expect(result.value.contentType).toBe('text/html; charset=utf-8')
+  })
+
+  it('uses content-length header as contentLength when present', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, ''))
+    mockGet.mockResolvedValueOnce(
+      axiosResp(200, 'body', {
+        'content-length': '42',
+        'content-encoding': 'gzip',
+      })
+    )
+
+    const client = new HttpClient()
+    const result = await client.fetch('https://example.com/')
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.contentLength).toBe(42)
+  })
+
+  it('falls back to body length for contentLength when header is absent', async () => {
+    const body = '<html>hello</html>'
+    mockGet.mockResolvedValueOnce(axiosResp(404, ''))
+    mockGet.mockResolvedValueOnce(axiosResp(200, body))
+
+    const client = new HttpClient()
+    const result = await client.fetch('https://example.com/')
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.contentLength).toBe(body.length)
   })
 
   it('isAllowedByRobots returns true when path is allowed', async () => {
@@ -292,7 +348,9 @@ describe('HttpClient', () => {
     mockGet.mockResolvedValueOnce(axiosResp(404, ''))
     mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
     const result = await client.fetch('https://example.com/')
-    expect(result.fromCache).toBe(false)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.fromCache).toBe(false)
   })
 
   it('clearRobotsCache resets the robots.txt cache', async () => {
@@ -308,7 +366,6 @@ describe('HttpClient', () => {
 
   it('handles array-valued response headers', async () => {
     mockGet.mockResolvedValueOnce(axiosResp(404, ''))
-    // Provide a response with an array-valued header
     mockGet.mockResolvedValueOnce({
       status: 200,
       data: '<html/>',
@@ -317,14 +374,15 @@ describe('HttpClient', () => {
 
     const client = new HttpClient()
     const result = await client.fetch('https://example.com/')
-    expect(result.headers['set-cookie']).toBe('a=1, b=2')
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.headers['set-cookie']).toBe('a=1, b=2')
   })
 
-  it('exhausts retries on non-retryable AxiosError and throws FetchError', async () => {
+  it('returns err result on non-retryable AxiosError', async () => {
     const { AxiosError } = await import('axios')
     mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
-    // Throw an AxiosError with a 4xx response (non-retryable)
-    const err = new AxiosError('Not found', 'ERR_BAD_REQUEST', undefined, undefined, {
+    const axiosErr = new AxiosError('Not found', 'ERR_BAD_REQUEST', undefined, undefined, {
       status: 404,
       data: '',
       headers: {},
@@ -332,9 +390,13 @@ describe('HttpClient', () => {
       statusText: 'Not Found',
       request: {},
     })
-    mockGet.mockRejectedValue(err)
+    mockGet.mockRejectedValue(axiosErr)
 
     const client = new HttpClient({ maxRetries: 0 })
-    await expect(client.fetch('https://example.com/page')).rejects.toBeInstanceOf(FetchError)
+    const result = await client.fetch('https://example.com/page')
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error).toBeInstanceOf(FetchError)
   })
 })
