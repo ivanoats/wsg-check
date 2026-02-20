@@ -2,7 +2,7 @@ The wsg-check tool is a specialized utility designed to bridge the gap between h
 ## 1. Tool Purpose: The "Sustainability Linter"
 The primary function of wsg-check is to automate the auditing of digital products against the Sustainability Progress, Principles, and Prosperity (PPP) model.
  * Automated Auditing: It scans web resources to identify "non-essential" assets (decorative design, heavy scripts, or inefficient paths) that contribute to excessive energy consumption.
- * Success Criteria Mapping: It maps technical findings directly to WSG Success Criteria (e.g., SC 2.1: Environmental Factors, SC 3.1: Efficient Paths).
+ * Success Criteria Mapping: It maps technical findings directly to WSG Success Criteria (e.g., SC 2.1: Undertake Systemic Impacts Mapping, SC 3.1: Identify Redundant Functionality).
  * Developer Feedback: Instead of just providing a high-level "green score," it provides actionable feedback at the code level, much like a linter (e.g., ESLint) but for environmental impact.
 ## 2. Implementation Plan: The Roadmap to 1.0
 Based on the current trajectory of the W3C guidelines (which are moving toward "Note" status in mid-2026), the high-level roadmap for a tool like this typically follows these phases. This conceptual roadmap complements (but does not override) the more granular IMPLEMENTATION_PLAN.md, which currently scopes headless browser integration as a post-launch enhancement.
