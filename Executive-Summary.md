@@ -5,14 +5,15 @@ The primary function of wsg-check is to automate the auditing of digital product
  * Success Criteria Mapping: It maps technical findings directly to WSG Success Criteria (e.g., SC 2.1: Environmental Factors, SC 3.1: Efficient Paths).
  * Developer Feedback: Instead of just providing a high-level "green score," it provides actionable feedback at the code level, much like a linter (e.g., ESLint) but for environmental impact.
 ## 2. Implementation Plan: The Roadmap to 1.0
-Based on the current trajectory of the W3C guidelines (which are moving toward "Note" status in mid-2026), the implementation plan for a tool like this typically follows these phases:
+Based on the current trajectory of the W3C guidelines (which are moving toward "Note" status in mid-2026), the high-level roadmap for a tool like this typically follows these phases. This conceptual roadmap complements (but does not override) the more granular IMPLEMENTATION_PLAN.md, which currently scopes headless browser integration as a post-launch enhancement.
 
 Phase 1: Core Engine (Current State)
  * Data Models: Defining TypeScript interfaces that mirror the WSG 1.0 specification.
  * Rule Engine: Building the logic that translates a specific guideline (e.g., "remove unnecessary assets") into a technical test (e.g., "check for unused CSS or oversized images").
+ * Current Scanning: Using lightweight HTML parsing (e.g., via Cheerio-based scanners) to inspect static and fetched content.
 
 Phase 2: Integration & Connectivity (The "Adapters")
- * Scanner Integration: Connecting the core to headless browsers (like Playwright or Puppeteer) to analyze real-time DOM states.
+ * Scanner Integration (post-launch enhancement): Future connection of the core to headless browsers (like Playwright or Puppeteer) to analyze real-time DOM states, building on top of the existing Cheerio-based scanning approach.
  * CI/CD Hooks: Developing GitHub Actions or GitLab runners so developers can break a build if a sustainability "budget" is exceeded.
 
 Phase 3: Reporting & Compliance
