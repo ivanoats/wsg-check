@@ -4,16 +4,154 @@ A Web Sustainability Guidelines checker for websites. It checks a website agains
 
 ## Architecture
 
-The architecture of WSG-Check is based on a modular design. It consists of the following modules:
+WSG-Check uses a **Hexagonal Architecture** (Ports and Adapters) layered over a **Clean Architecture** dependency rule: the domain core has zero knowledge of frameworks, databases, or external services. All I/O is pushed to the outermost layer and accessed only through well-defined interfaces.
 
-- **Core Module**: This module is responsible for the core functionality of the application, including fetching the website content, parsing it, and running the checks against the Web Sustainability Guidelines.
-- **Checks Module**: This module contains the individual checks that are run against the website content. Each check is implemented as a separate function that takes the website content as input and returns a result indicating whether the check passed or failed.
-- **Report Module**: This module is responsible for generating the report based on the results of the checks. It takes the results from the Checks Module and formats them into a readable report that can be displayed to the user.
-- **CLI Module**: This module provides a command-line interface for users to interact with the application. It allows users to specify the website they want to check and displays the generated report in the terminal.
-- **API Module**: This module provides an API for other applications to interact with WSG-Check. It allows other applications to send requests to WSG-Check and receive the generated report in response.
-- **Utils Module**: This module contains utility functions that are used across the application. See [Utils Module](#utils-module) below for details.
-- **Config Module**: This module is responsible for managing the configuration of the application, including settings for the checks, report generation, and API endpoints.
-- **Frontend Module**: This module provides a user interface for users to interact with the application through a web browser. It allows users to input the website they want to check and displays the generated report in a user-friendly format.
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  External World (frameworks & I/O)                              │
+│  ┌─────────────┐  ┌──────────────┐  ┌──────────┐  ┌─────────┐  │
+│  │  Next.js UI │  │  CLI (Phase7)│  │ REST API │  │ Netlify │  │
+│  └──────┬──────┘  └──────┬───────┘  └────┬─────┘  └─────────┘  │
+│         │                │               │                       │
+│  ┌──────▼────────────────▼───────────────▼──────────────────┐   │
+│  │  Interface Adapters                                        │   │
+│  │  Controllers · Report Formatters · CLI Parser             │   │
+│  └────────────────────────────┬──────────────────────────────┘   │
+│                               │                                   │
+│  ┌────────────────────────────▼──────────────────────────────┐   │
+│  │  Application Layer (Use Cases)                             │   │
+│  │  WsgChecker  ·  CheckRunner  ·  ScoreCalculator           │   │
+│  └────────────────────────────┬──────────────────────────────┘   │
+│                               │                                   │
+│  ┌────────────────────────────▼──────────────────────────────┐   │
+│  │  Domain Core (no framework deps)                           │   │
+│  │  CheckResult · PageData · RunResult · CategoryScore        │   │
+│  └────────────────────────────┬──────────────────────────────┘   │
+│                               │                                   │
+│  ┌────────────────────────────▼──────────────────────────────┐   │
+│  │  Infrastructure / Adapters                                 │   │
+│  │  HttpClient (Axios)  ·  HtmlParser (Cheerio)               │   │
+│  │  ResourceAnalyzer  ·  Config Loader  ·  Logger            │   │
+│  └───────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Dependency Rule
+
+All source-code dependencies point **inward**:
+
+- `core/` may import from `utils/` and `config/` — never from `app/` or `cli/`.
+- `checks/` may import from `core/` and `utils/` — never from `report/` or `cli/`.
+- `report/` may import from `core/` — never from `cli/` or `app/`.
+- `app/` and `cli/` are the outermost adapters; they may import from any inner layer.
+
+### Ports and Adapters
+
+| Port (interface)      | Adapter (implementation)               |
+| --------------------- | -------------------------------------- |
+| HTTP fetch            | `HttpClient` via Axios                 |
+| HTML parsing          | `parseHtml` via Cheerio                |
+| Resource analysis     | `analyzePageWeight`                    |
+| Configuration loading | `resolveConfig` (file + env + CLI)     |
+| Logging               | `createLogger` (terminal or JSON)      |
+| Check execution       | `CheckRunner.run` (parallel execution) |
+| Scoring               | `scoreResults`                         |
+| Report formatting     | (Phase 6) JSON / Markdown / HTML / CLI |
+
+### Data Flow Pipeline
+
+```
+URL
+ │
+ ▼
+PageFetcher.fetch(url)
+ ├─ HttpClient.fetch()     → FetchResult   (headers, body, redirectChain)
+ └─ parseHtml()            → ParsedPage    (DOM, resources, metadata)
+     └─ analyzePageWeight() → PageWeightAnalysis
+         └─ PageData { url, fetchResult, parsedPage, pageWeight }
+              │
+              ▼
+         CheckRunner.run(pageData)
+              ├─ check1(pageData) → CheckResult
+              ├─ check2(pageData) → CheckResult   (parallel via Promise.allSettled)
+              └─ checkN(pageData) → CheckResult
+                   │
+                   ▼
+              scoreResults(results)
+                   ├─ overallScore: number (0–100, impact-weighted)
+                   └─ categoryScores: CategoryScore[]
+                        │
+                        ▼
+                   RunResult { url, timestamp, duration, overallScore, ... }
+```
+
+### Module Overview
+
+| Module       | Path          | Responsibility                                           |
+| ------------ | ------------- | -------------------------------------------------------- |
+| **Core**     | `src/core/`   | Orchestration: fetch → parse → check → score             |
+| **Checks**   | `src/checks/` | Individual WSG guideline checks (Phases 4–5)             |
+| **Report**   | `src/report/` | Format `RunResult` as JSON / Markdown / HTML / Terminal  |
+| **CLI**      | `src/cli/`    | Command-line interface (Phase 7)                         |
+| **API**      | `src/api/`    | REST endpoints (Phase 8)                                 |
+| **Utils**    | `src/utils/`  | Shared infrastructure: HTTP, HTML parser, logger, errors |
+| **Config**   | `src/config/` | Configuration schema, defaults, env/file loading         |
+| **Frontend** | `src/app/`    | Next.js App Router pages and UI components (Phase 9)     |
+
+### Core Module (`src/core/`)
+
+The Core Module is the application-layer heart introduced in **Phase 3**. It contains no framework-specific code; it depends only on `utils/` and `config/`.
+
+#### `types.ts` — Shared Domain Types
+
+```typescript
+interface CheckResult {
+  guidelineId: string // e.g. "3.2"
+  status: 'pass' | 'fail' | 'warn' | 'info' | 'not-applicable'
+  score: number // 0–100
+  impact: 'high' | 'medium' | 'low'
+  category: WSGCategory
+  // …
+}
+
+type CheckFn = (page: PageData) => CheckResult | Promise<CheckResult>
+
+interface PageData {
+  url: string
+  fetchResult: FetchResult
+  parsedPage: ParsedPage
+  pageWeight: PageWeightAnalysis
+}
+```
+
+#### `fetcher.ts` — `PageFetcher`
+
+Wraps `HttpClient` and `parseHtml` to produce a complete `PageData` bundle. Returns a `Result<PageData>` discriminated union — **never throws**.
+
+#### `runner.ts` — `CheckRunner`
+
+Accepts registered `CheckFn` implementations and executes them in parallel using `Promise.allSettled`. Synchronous check errors are transparently converted to rejection-based `'fail'` results, enabling graceful degradation.
+
+#### `scorer.ts` — Score Calculator
+
+Pure functions that derive weighted sustainability scores:
+
+| Score type       | Formula                                                    |
+| ---------------- | ---------------------------------------------------------- |
+| Per check        | `pass → 100`, `warn → 50`, `fail → 0`                      |
+| Impact weighting | `high × 3`, `medium × 2`, `low × 1`                        |
+| Category score   | `Σ(points × weight) / Σ(weight)` for all scoreable results |
+| Overall score    | Same formula across all categories combined                |
+
+#### `index.ts` — `WsgChecker`
+
+The top-level orchestrator. Wires `PageFetcher`, `CheckRunner`, and `scoreResults` into a single `check(url)` method that returns `Result<RunResult>`.
+
+```typescript
+const checker = new WsgChecker({ timeout: 15_000 }, [myCheck1, myCheck2])
+const result = await checker.check('https://example.com')
+if (result.ok) console.log('Score:', result.value.overallScore)
+```
 
 ## Utils Module
 
