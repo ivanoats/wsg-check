@@ -6,34 +6,43 @@ A Web Sustainability Guidelines checker for websites. It checks a website agains
 
 WSG-Check uses a **Hexagonal Architecture** (Ports and Adapters) layered over a **Clean Architecture** dependency rule: the domain core has zero knowledge of frameworks, databases, or external services. All I/O is pushed to the outermost layer and accessed only through well-defined interfaces.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  External World (frameworks & I/O)                              │
-│  ┌─────────────┐  ┌──────────────┐  ┌──────────┐  ┌─────────┐  │
-│  │  Next.js UI │  │  CLI (Phase7)│  │ REST API │  │ Netlify │  │
-│  └──────┬──────┘  └──────┬───────┘  └────┬─────┘  └─────────┘  │
-│         │                │               │                       │
-│  ┌──────▼────────────────▼───────────────▼──────────────────┐   │
-│  │  Interface Adapters                                        │   │
-│  │  Controllers · Report Formatters · CLI Parser             │   │
-│  └────────────────────────────┬──────────────────────────────┘   │
-│                               │                                   │
-│  ┌────────────────────────────▼──────────────────────────────┐   │
-│  │  Application Layer (Use Cases)                             │   │
-│  │  WsgChecker  ·  CheckRunner  ·  ScoreCalculator           │   │
-│  └────────────────────────────┬──────────────────────────────┘   │
-│                               │                                   │
-│  ┌────────────────────────────▼──────────────────────────────┐   │
-│  │  Domain Core (no framework deps)                           │   │
-│  │  CheckResult · PageData · RunResult · CategoryScore        │   │
-│  └────────────────────────────┬──────────────────────────────┘   │
-│                               │                                   │
-│  ┌────────────────────────────▼──────────────────────────────┐   │
-│  │  Infrastructure / Adapters                                 │   │
-│  │  HttpClient (Axios)  ·  HtmlParser (Cheerio)               │   │
-│  │  ResourceAnalyzer  ·  Config Loader  ·  Logger            │   │
-│  └───────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph EW["🌐 External World (Frameworks & I/O)"]
+        UI["Next.js UI"]
+        CLI["CLI (Phase 7)"]
+        RESTAPI["REST API (Phase 8)"]
+        DEPLOY["Netlify"]
+    end
+
+    subgraph IA["Interface Adapters"]
+        CTRL["Controllers"]
+        FMT["Report Formatters"]
+        CLIP["CLI Parser"]
+    end
+
+    subgraph AL["Application Layer (Use Cases)"]
+        WSG["WsgChecker"]
+        CR["CheckRunner"]
+        SC["ScoreCalculator"]
+    end
+
+    subgraph DC["Domain Core (no framework deps)"]
+        TYPES["CheckResult · PageData\nRunResult · CategoryScore"]
+    end
+
+    subgraph INF["Infrastructure Adapters"]
+        HC["HttpClient (Axios)"]
+        HP["parseHtml (Cheerio)"]
+        RA["ResourceAnalyzer"]
+        CL["Config Loader · Logger"]
+    end
+
+    EW -->|depends on| IA
+    IA -->|depends on| AL
+    AL -->|depends on| DC
+    AL -->|uses| INF
+    INF -.->|implements ports defined by| DC
 ```
 
 ### Dependency Rule
@@ -60,29 +69,33 @@ All source-code dependencies point **inward**:
 
 ### Data Flow Pipeline
 
-```
-URL
- │
- ▼
-PageFetcher.fetch(url)
- ├─ HttpClient.fetch()     → FetchResult   (headers, body, redirectChain)
- └─ parseHtml()            → ParsedPage    (DOM, resources, metadata)
-     └─ analyzePageWeight() → PageWeightAnalysis
-         └─ PageData { url, fetchResult, parsedPage, pageWeight }
-              │
-              ▼
-         CheckRunner.run(pageData)
-              ├─ check1(pageData) → CheckResult
-              ├─ check2(pageData) → CheckResult   (parallel via Promise.allSettled)
-              └─ checkN(pageData) → CheckResult
-                   │
-                   ▼
-              scoreResults(results)
-                   ├─ overallScore: number (0–100, impact-weighted)
-                   └─ categoryScores: CategoryScore[]
-                        │
-                        ▼
-                   RunResult { url, timestamp, duration, overallScore, ... }
+```mermaid
+flowchart TD
+    URL(["URL"])
+    PF["PageFetcher.fetch(url)"]
+    HC["HttpClient.fetch()"]
+    PH["parseHtml()"]
+    APW["analyzePageWeight()"]
+    PD["PageData\n{ url, fetchResult, parsedPage, pageWeight }"]
+    CR["CheckRunner.run(pageData)\n— parallel via Promise.allSettled —"]
+    C1["check1(pageData)"]
+    C2["check2(pageData)"]
+    CN["checkN(pageData)"]
+    SR["scoreResults(results)"]
+    OS["overallScore: number\n(0–100, impact-weighted)"]
+    CS["categoryScores: CategoryScore[]"]
+    RR["RunResult\n{ url, timestamp, duration, overallScore, ... }"]
+
+    URL --> PF
+    PF --> HC & PH
+    HC -->|FetchResult| PD
+    PH --> APW
+    APW -->|PageWeightAnalysis| PD
+    PD --> CR
+    CR --> C1 & C2 & CN
+    C1 & C2 & CN -->|CheckResult| SR
+    SR --> OS & CS
+    OS & CS --> RR
 ```
 
 ### Module Overview
