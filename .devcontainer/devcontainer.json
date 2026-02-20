@@ -10,7 +10,6 @@
     "ghcr.io/devcontainers-contrib/features/eza:1": {},
     "ghcr.io/devcontainers-contrib/features/fzf:1": {}
   },
-  "onCreateCommand": "sudo chsh -s $(which zsh) $USER",
   "postCreateCommand": "npm install",
   "customizations": {
     "vscode": {
