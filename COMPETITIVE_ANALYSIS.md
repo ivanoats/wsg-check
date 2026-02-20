@@ -2,7 +2,7 @@
 
 > **Purpose:** Compare the WSG-Check implementation plan against existing tools in the web sustainability space. Identify gaps, overlaps, and unique differentiators. Recommend adjustments to the roadmap — **no implementation in this document**.
 >
-> **Date:** February 2026
+> **Date:** February 2026 (updated after direct review of all sources)
 
 ---
 
@@ -20,6 +20,16 @@
    - [GreenFrame](#37-greenframe-greenframeio)
 4. [WSG-Check Differentiators](#4-wsg-check-differentiators)
 5. [Gaps in WSG-Check Plan](#5-gaps-in-wsg-check-plan)
+   - [Gap 1: No CO2 estimate](#gap-1-no-co2--carbon-footprint-estimate)
+   - [Gap 2: No green hosting check — WSG 4.1 correction](#gap-2-no-green-hosting-check-wsg-41)
+   - [Gap 3: No Core Web Vitals](#gap-3-no-performance-score--core-web-vitals-integration)
+   - [Gap 4: Transfer vs. source sizes](#gap-4-transfer-sizes-vs-source-sizes)
+   - [Gap 5: Dark mode OLED framing](#gap-5-dark-mode-as-an-energy-saving-feature)
+   - [Gap 6: WSG 4.1 missing from matrix](#gap-6-wsg-41-sustainable-hosting-missing-from-coverage-matrix)
+   - [Gap 7: WSG Section 5 entirely absent](#gap-7-wsg-section-5-business-strategy-entirely-uncovered)
+   - [Gap 8: No PDF / document analysis](#gap-8-no-pdf--downloadable-document-analysis)
+   - [Gap 9: Country-specific grid intensity](#gap-9-country-specific-grid-intensity)
+   - [Gap 10: WSG 3.20 missing](#gap-10-wsg-320-database-query-complexity-missing)
 6. [Recommendations](#6-recommendations)
 7. [Implementation Priority Summary](#7-implementation-priority-summary)
 
@@ -121,7 +131,7 @@
 
 **Output:** Letter grade (A+ to F) plus an estimated grams of CO2 per page view, with per-dimension breakdowns.
 
-**Methodology:** [Sustainable Web Design v3](https://sustainablewebdesign.org/), the same model that underpins CO2.js and Website Carbon Calculator.
+**Methodology:** [Sustainable Web Design model](https://sustainablewebdesign.org/) — the same model that underpins CO2.js and Website Carbon Calculator. As of July 2025, Website Carbon (from the same team at Wholegrain Digital) moved to v4 of the SWD model; Digital Beacon is expected to follow.
 
 **Strengths:**
 - Letter grade is intuitive and sharable
@@ -149,6 +159,8 @@ Converts a URL into an estimated CO2 per page view using two inputs:
 1. **Page weight** — either from a fetch or provided directly
 2. **Green hosting** — from the Green Web Foundation dataset
 
+**Version:** [Website Carbon V4](https://www.wholegraindigital.com/blog/updating-website-carbon-to-v4-of-the-sustainable-web-design-model/) launched July 2025, aligning with SWD model v4.
+
 The estimate applies the **Sustainable Web Design (SWD) methodology** which distributes energy consumption across data centres, networks, and end-user devices as a proportion of data transferred.
 
 **API endpoint:** `https://api.websitecarbon.com/site?url=<url>` — returns JSON with `statistics.co2.renewable.grams` and `statistics.co2.grid.grams`.
@@ -171,7 +183,8 @@ The estimate applies the **Sustainable Web Design (SWD) methodology** which dist
 
 **Created by:** Green Web Foundation  
 **Access:** Open source (Apache 2.0), published on npm as `@tgwf/co2`  
-**Version as of Feb 2026:** v0.17.x (v0.18 imminent, switching default model to SWD v4)
+**Version as of Feb 2026:** v0.17.x (v0.18 imminent, switching default model to SWD v4)  
+**Funding:** GitHub, Google Season of Docs, SIDN Fonds, Internet Society Foundation, RIPE NCC
 
 **What it provides:**
 
@@ -201,56 +214,81 @@ const isGreen = await hosting.check('example.com');
 ```
 
 **Strengths:**
-- Battle-tested, widely adopted (used by Digital Beacon, Sitespeed.io, WebPageTest, and others)
+- Battle-tested, widely adopted (used by Digital Beacon, Sitespeed.io, WebPageTest, Firefox DevTools, and others)
 - TypeScript types via `@types/tgwf__co2`
 - ESM and CJS builds — fully compatible with this project's stack
 - Green hosting check built in
 - Country-specific emissions data
-- Apache 2.0 license
+- Apache 2.0 license (compatible with any open-source license)
+- Well-funded and actively maintained
 
 **Limitations:**
-- Library only — no HTML analysis, no checks
 - Does not map to WSG guidelines
 - SWD methodology is an approximation; it estimates based on bytes transferred, not measured energy
 
 **Relationship to WSG-Check:**  
-CO2.js is currently in the "Future Enhancements" section of `IMPLEMENTATION_PLAN.md`. It should be promoted to a concrete phase — see [Recommendation R1](#r1-integrate-co2js-for-carbon-estimation) and [R2](#r2-add-green-hosting-check).
+CO2.js is currently in the "Future Enhancements" section of `IMPLEMENTATION_PLAN.md`. It should be promoted to a concrete phase — see [Recommendation R1](#r1-integrate-co2js-for-carbon-estimation) and [R2](#r2-add-green-hosting-check--wsg-41).
 
 ---
 
 ### 3.5 SquareEye Sustainability Audit Guide
 
 **URL:** https://squareeye.com/how-to-audit-and-optimise-your-website-for-sustainability/  
-**Type:** Editorial / manual audit guide (not a tool)
+**Type:** Editorial / manual audit guide (not a tool)  
+**Context:** Written for law firms and barristers' chambers; second in a three-part series on digital sustainability
 
-**What it covers:**
+**What it covers — a 6-step framework:**
 
-The SquareEye guide is a practitioner-written checklist for auditing a website's sustainability manually. It spans:
+**Step 1: Measure your website's carbon footprint**  
+Establish a baseline using Website Carbon Calculator V4, EcoGrader, and Digital Beacon. Record results across representative page types (homepage, profile pages, document-heavy pages).
 
-- **Measurement baseline** — Using Website Carbon or EcoGrader to establish a starting point
-- **Images** — Optimising formats (WebP, AVIF), dimensions, and compression; removing unnecessary decorative images
-- **Video** — Avoiding auto-play, offering lower-quality options, hosting video on specialist platforms
-- **Fonts** — Subsetting, preferring system fonts, using `font-display: swap`
-- **JavaScript** — Removing unused code, deferring non-critical scripts, auditing third-party scripts
-- **CSS** — Minifying, removing unused rules, avoiding CSS-in-JS overhead
-- **Hosting** — Choosing a green host; CDN for static assets
-- **Caching** — Aggressive cache headers for immutable assets
-- **Dark/eco mode** — Implementing `prefers-color-scheme` dark mode as an energy-saving feature (particularly relevant for OLED screens)
-- **Content strategy** — Removing stale pages, avoiding duplication, content-first design
-- **Measurement and iteration** — Re-auditing after changes to confirm improvement
+**Step 2: Review hosting and infrastructure**  
+Use the [Green Web Foundation Checker](https://www.thegreenwebfoundation.org/green-web-check/) to verify renewable energy hosting. Ask hosting providers for PUE (Power Usage Effectiveness) scores, CDN usage, and energy policy documentation. For shared hosting and specialist CMS platforms, check energy policies with the provider directly.
+
+**Step 3: Evaluate page weight and asset optimisation**  
+The [HTTP Archive data](https://httparchive.org/reports/page-weight) shows average page weight has grown ~500% since 2010. Key areas:
+- **Images** — WebP/AVIF formats, compression, lazy loading; profile photos cited as a common source of oversized files
+- **Documents (PDFs)** — identified as the *single most significant emissions source* on document-heavy sites (law firms, chambers with large publication libraries). Checks: compression, HTML alternatives for long-term content, deduplication. The guide recommends a standalone PDF audit as a dedicated exercise.
+- **Video** — Adaptive streaming platforms (Vimeo, YouTube) over self-hosting; transcripts to reduce reliance on video stream; avoid autoplay
+
+**Step 4: Audit code, scripts and integrations**  
+- **Analytics platforms** — Google Analytics 4 is more efficient than predecessors; additional platforms (Clarity, Hotjar, HubSpot) add weight on every page load
+- **CRM integrations** — Check frequency and per-page necessity of integration scripts (Lex, Peppermint, Dynamics, LexisNexis, custom API endpoints)
+- **Google Tag Manager** — Often accumulates outdated/orphaned tags; regular cleanup is a meaningful sustainability action and one no automated tool currently raises
+- **Cookie banners** — Some consent tools load dozens of external resources; lighter alternatives exist
+
+**Step 5: Review content structure and user journeys**  
+Remove: outdated news, duplicate PDFs, old profiles, archived events, unused practice areas. Check: Does every page still serve a business purpose? Are user journeys efficient? Can content be consolidated (e.g., case updates grouped by practice area)?
+
+**Step 6: Use monitoring tools and set improvement targets**  
+Recommended ongoing tools: Google Lighthouse, WebPageTest, GTmetrix. Example targets: reduce average page weight by 20%, reduce third-party scripts by 30%, improve Website Carbon rating from "average" to "cleaner than 70% of sites tested."
+
+**Content governance framework proposed:**
+- Aged content policy (for events, news items, low-traffic pages)
+- Content review cycles (to keep evergreen content accurate)
+- Image upload policy (to prevent oversized uploads recurring)
+- PDF usage policy (when to upload a PDF vs. create a webpage)
+- PDF audit policy (eliminate duplication, assess necessity and compression)
 
 **Strengths:**
-- Holistic — covers organisational and content concerns that no automated tool can
-- Practical; actionable steps for non-engineers
-- Dark/eco mode framing is distinct from WSG's `prefers-color-scheme` check — highlights the energy-saving motivation on OLED displays
+- Holistic — covers organisational and content concerns that no automated tool can address
+- Practical; actionable steps for non-engineers and content editors
+- PDF library focus is a real-world blindspot for all automated tools
+- Tag Manager audit is a concrete, actionable recommendation no competitor raises
+- Dark/eco mode explicitly highlighted as an energy-saving feature for OLED screens (not just accessibility)
+- Content governance policies create a sustainability framework beyond a one-time audit
+- Links directly to established third-party tools for each audit area
 
 **Limitations:**
-- Manual process; no automation
+- Manual process; no automation or repeatable checks
 - Does not map to WSG guidelines
-- Not repeatable as CI/CD checks
+- Not integrable into CI/CD pipelines
+- Legal-sector focus means some advice is domain-specific
 
 **Relationship to WSG-Check:**  
-The SquareEye guide validates that WSG-Check's planned checks (images, fonts, JS deferral, caching, preference queries) are the right priorities. It also highlights that **dark mode as an energy-saving strategy** deserves its own recommendation in WSG-Check's report output, beyond just detecting `prefers-color-scheme` (WSG 3.12).
+The SquareEye guide confirms that WSG-Check's planned checks (images, fonts, JS deferral, caching, preference queries) are the right priorities. It highlights two important gaps not currently in the plan:
+1. **PDF / downloadable document analysis** — directly maps to WSG 2.17 (see [Gap 8](#gap-8-no-pdf--downloadable-document-analysis))
+2. **Tag Manager and analytics script governance** — partially covered by third-party script checks but deserves specific recommendations in report output
 
 ---
 
@@ -328,7 +366,7 @@ GreenFrame occupies the "deep monitoring" niche. WSG-Check targets the "quick au
 
 WSG-Check has a genuinely unique position in the ecosystem. No existing tool does all of the following:
 
-1. **Full W3C WSG mapping** — WSG-Check is the only planned tool that checks every automatable guideline across WSG Sections 2, 3, and 4 and links results back to specific WSG IDs (e.g., "3.12 — Preference media queries"). This is a clear, defensible differentiator.
+1. **Full W3C WSG mapping** — WSG-Check is the only planned tool that checks every automatable guideline across WSG Sections 2, 3, 4, and 5 and links results back to specific WSG IDs (e.g., "3.12 — Preference media queries"). This is a clear, defensible differentiator.
 
 2. **Semantic HTML and ARIA analysis** — No competitor inspects heading hierarchy, landmark usage, skip-nav links, or ARIA attributes as sustainability/accessibility signals.
 
@@ -357,12 +395,14 @@ Every major competitor surfaces an estimated grams of CO2 per page view as the h
 **Relevant plan section:** Phase 3 (Core Module), mentioned in "Future Enhancements"  
 **Effort to fix:** Low — CO2.js is small, ESM-native, Apache 2.0, and directly applicable
 
-### Gap 2: No Green Hosting Check
+### Gap 2: No Green Hosting Check (WSG 4.1)
 
 All four competitor tools check whether the target website is hosted on infrastructure verified to use renewable energy. This check uses the [Green Web Foundation API](https://www.thegreenwebfoundation.org/tools/green-web-dataset/) (or the bundled offline dataset in CO2.js). It is the single most impactful sustainability factor for most websites, and its absence will be noticed.
 
-**Relevant WSG guideline:** WSG 4.9 (Use a content delivery network) and 4.8 (Choose green hosting) — the latter exists in the WSG but is not currently listed in the WSG-Check coverage matrix.  
-**Effort to fix:** Low — CO2.js `hosting.js` module provides this directly
+> ⚠️ **Guideline correction:** The relevant WSG guideline is **4.1 "Use sustainable hosting"**, not 4.8 or 4.9. WSG 4.8 in the actual specification is "Back up critical data at routine intervals" — unrelated to hosting sustainability. WSG 4.9 is "Consider the impact and requirements of data processing." The IMPLEMENTATION_PLAN.md coverage matrix omits 4.1 entirely.
+
+**Relevant WSG guideline:** 4.1 — Use sustainable hosting  
+**Effort to fix:** Low — CO2.js `hosting.check()` provides this directly
 
 ### Gap 3: No Performance Score / Core Web Vitals Integration
 
@@ -389,17 +429,53 @@ The SquareEye guide explicitly positions dark mode (`prefers-color-scheme: dark`
 
 **Effort to fix:** Trivial — improve the recommendation text for the `prefers-color-scheme` check when implemented
 
-### Gap 6: WSG 4.8 (Green Hosting) Missing from Coverage Matrix
+### Gap 6: WSG 4.1 (Sustainable Hosting) Missing from Coverage Matrix
 
-The WSG-Check coverage matrix in `IMPLEMENTATION_PLAN.md` includes WSG 4.2 (caching), 4.3 (compression), 4.4 (error pages), 4.4 (redirects), and 4.10 (CDN), but **WSG 4.8 (hosting provider) is absent**. This is the most impactful hosting check and aligns directly with the green hosting feature all competitors offer.
+The WSG-Check coverage matrix in `IMPLEMENTATION_PLAN.md` covers WSG 4.2 (caching), 4.3 (compression), 4.4 (error pages/redirects), and 4.10 (CDN), but **WSG 4.1 "Use sustainable hosting" is absent**. This is the most impactful hosting check and the one all competitors offer. It is directly automatable via the Green Web Foundation dataset.
 
-**Effort to fix:** Low — add WSG 4.8 to Phase 5 coverage matrix and implement with CO2.js
+**Effort to fix:** Low — add WSG 4.1 to Phase 5 coverage matrix and implement with CO2.js `hosting.check()`
 
-### Gap 7: Country-Specific Grid Intensity
+### Gap 7: WSG Section 5 (Business Strategy) Entirely Uncovered
 
-CO2.js includes per-country grid intensity data. WSG-Check makes no use of this. A CO2 estimate that accounts for where a site's servers and audience are located is more accurate than a global average. This is a "nice to have" but would make WSG-Check's carbon estimate more sophisticated than competitors.
+The W3C WSG specification has **four sections**, not three:
+- Section 2: User Experience Design (21 guidelines)
+- Section 3: Web Development (20 guidelines)
+- Section 4: Hosting, Infrastructure, and Systems (12 guidelines)
+- **Section 5: Business Strategy and Product Management (27 guidelines)** ← not mentioned in the plan
+
+Section 5 includes guidelines such as:
+- **5.4** Communicate the environmental impact of user choices
+- **5.5** Calculate the environmental impact ← directly relevant to CO2 estimation
+- **5.25** Define performance and environmental budgets ← directly relevant to WSG-Check's `failThreshold` feature
+- **5.26** Use open source where possible ← WSG-Check itself fulfills this
+
+Most Section 5 guidelines are `manual-only` (they require organizational policy, not code), but several (5.5, 5.25) are automatable as checks, and all of them should be present in the **Guidelines Reference page** (`/guidelines`) of the web app to give users a complete picture of the WSG spec.
+
+**Effort to fix:** Medium — add all 27 Section 5 guidelines to the registry as `manual-only` entries; flag 5.5 and 5.25 as automation candidates for a future phase
+
+### Gap 8: No PDF / Downloadable Document Analysis
+
+The SquareEye guide identifies PDF libraries as the **single most significant emissions source** on document-heavy websites. The HTTP Archive reports average page weight grew ~500% since 2010, partly driven by document hosting. WSG-Check has no planned check for:
+- Detecting large PDF or document downloads linked from the page
+- Flagging documents above a size threshold for review
+- Recommending document-to-HTML conversion for long-term content
+
+The relevant WSG guideline **2.17 "Reduce the impact of downloadable and physical documents"** exists in the specification but is not listed in the WSG-Check coverage matrix.
+
+**Relevant WSG guideline:** 2.17 — Reduce the impact of downloadable and physical documents  
+**Effort to fix:** Medium — add link analysis for document MIME types; flag files above a configurable size threshold
+
+### Gap 9: Country-Specific Grid Intensity
+
+CO2.js includes per-country grid intensity data from Ember (annual averages) and the UNFCCC (marginal intensity). WSG-Check makes no use of this. A CO2 estimate that accounts for where a site's servers are located is more accurate than a global average. This is a "nice to have" but would make WSG-Check's carbon estimate more sophisticated than competitors.
 
 **Effort to fix:** Medium — requires user input (country selection) or geo-detection; defer to a v2 feature
+
+### Gap 10: WSG 3.20 (Database Query Complexity) Missing
+
+The current WSG-Check coverage matrix lists guidelines up to 3.19 but omits **WSG 3.20 "Reduce the number and complexity of database queries"**. This guideline is `semi-automated` at best (requires server-side instrumentation), but it should appear in the guidelines registry. It could be partially addressed by detecting API response patterns or recommending database query analysis tools in the report.
+
+**Effort to fix:** Low to document; medium to implement (likely `manual-only` or `semi-automated` tag in the registry for v1)
 
 ---
 
@@ -417,16 +493,17 @@ The following recommendations are ordered by impact and ease of implementation. 
 - Apache 2.0 licensed
 - ESM-native (compatible with this project's `"type": "module"`)
 - Small (~15 KB)
-- Already used by Digital Beacon, Sitespeed.io, and WebPageTest
-- Well-maintained by the Green Web Foundation (v0.18 in Feb 2026)
+- Already used by Digital Beacon, Sitespeed.io, WebPageTest, and Firefox DevTools
+- Well-maintained by the Green Web Foundation (v0.18 switching to SWD v4 in Feb 2026)
+- Funded by GitHub, Google Season of Docs, and others — low abandonment risk
 
 **Suggested phase:** Promote from "Future Enhancements" to **Phase 3 or Phase 6**. The byte count is already computed by `resource-analyzer.ts`.
 
 **Before integrating, check vulnerability status:**
-```
+```bash
 npm install @tgwf/co2
+npm audit
 ```
-Run `npm audit` after adding.
 
 **Example integration point** (pseudocode, do not implement):
 ```ts
@@ -435,29 +512,32 @@ metadata: {
   pageWeight: number        // bytes (already planned)
   co2PerPageView: number    // grams — NEW
   co2Model: 'swd-v4'       // which model was used — NEW
+  isGreenHosted: boolean    // NEW (see R2)
 }
 ```
 
 ---
 
-### R2: Add Green Hosting Check via CO2.js (Priority: **High**)
+### R2: Add Green Hosting Check — WSG 4.1 (Priority: **High**)
 
-**What:** Use `hosting.check(domain)` from CO2.js to query the Green Web Foundation API and determine whether the target site's primary domain is served from verified renewable-energy infrastructure. Expose the result as a dedicated check tied to **WSG 4.8**.
+**What:** Use `hosting.check(domain)` from CO2.js to query the Green Web Foundation's dataset and determine whether the target site's primary domain is served from verified renewable-energy infrastructure. Expose the result as a dedicated check tied to **WSG 4.1 "Use sustainable hosting"**.
+
+> ⚠️ **Correction from initial draft:** This check maps to **WSG 4.1**, not 4.8. WSG 4.8 in the current specification is "Back up critical data at routine intervals" — it has no relation to hosting sustainability. WSG 4.9 is "Consider the impact and requirements of data processing."
 
 **Why:**
 - All competitors (EcoGrader, Digital Beacon, Website Carbon) provide this check
 - It is the highest-impact single factor affecting a site's carbon footprint
 - CO2.js bundles an offline snapshot of the GWF dataset, so it works without a live API call (important for rate-limit resilience)
-- WSG 4.8 (hosting provider sustainability) is currently missing from the WSG-Check coverage matrix
+- WSG 4.1 (sustainable hosting) is currently absent from the WSG-Check coverage matrix
 
 **Suggested phase:** Add to **Phase 5 (Hosting Checks, Section 4)** alongside 4.2, 4.3, and 4.4.
 
-**Add WSG 4.8 to the guidelines registry** with:
+**Add WSG 4.1 to the guidelines registry** with:
 ```
-ID: 4.8
-Title: Choose a sustainable hosting provider
+ID: 4.1
+Title: Use sustainable hosting
 Category: hosting
-Machine-testable: true (green hosting API lookup)
+Machine-testable: true (Green Web Foundation dataset lookup)
 ```
 
 ---
@@ -482,41 +562,55 @@ Machine-testable: true (green hosting API lookup)
 
 ---
 
-### R5: Add WSG 4.8 (Green Hosting) to the Coverage Matrix (Priority: **High**)
+### R5: Fix WSG 4.1 in Coverage Matrix and Add Section 5 (Priority: **High**)
 
-**What:** Update the WSG Guidelines Coverage Matrix in `IMPLEMENTATION_PLAN.md` to include WSG 4.8. This is a documentation gap that should be corrected before the Phase 5 work begins.
+**What:** Update the WSG Guidelines Coverage Matrix in `IMPLEMENTATION_PLAN.md`:
+1. Replace any erroneous reference to "WSG 4.8 (green hosting)" with the correct **WSG 4.1 "Use sustainable hosting"**
+2. Add a Section 5 block to the coverage matrix, marking all 27 Business Strategy guidelines as `manual-only` in the guidelines registry, with **5.5** ("Calculate the environmental impact") and **5.25** ("Define performance and environmental budgets") flagged as candidates for automation
 
-**Why:** WSG 4.8 is an explicitly automatable guideline (it can be checked via the GWF API). Its omission is likely an oversight. It is the most visible hosting sustainability check.
+**Why:** WSG 4.1 omission is a straightforward coverage gap. Section 5 absence means the `/guidelines` reference page in the web app will be materially incomplete — users consulting WSG-Check as a reference tool will find it covers only ~60% of the full specification.
 
 ---
 
-### R6: Disclose Static-Analysis Limitations in Report Output (Priority: **Low**)
+### R6: Add WSG 2.17 (Downloadable Documents) Check (Priority: **Medium**)
+
+**What:** Implement a check for WSG 2.17 "Reduce the impact of downloadable and physical documents". At minimum: detect `<a href>` links pointing to PDFs or other large document formats (`.pdf`, `.docx`, `.pptx`, `.zip`), flag documents above a size threshold (e.g., 1 MB), and recommend compression and HTML alternatives.
+
+**Why:** The SquareEye guide identifies PDF libraries as the **single most significant emissions source** on document-heavy sites. WSG 2.17 is already in the specification but is entirely missing from the Phase 5 coverage matrix. This check would be meaningfully differentiated from all existing competitors, none of which audit linked documents.
+
+**Suggested phase:** Add to **Phase 5 (UX Checks, Section 2)**.
+
+---
+
+### R7: Disclose Static-Analysis Limitations in Report Output (Priority: **Low**)
 
 **What:** Add a `methodology` section to the `SustainabilityReport` type that explains:
 1. That analysis is performed via static HTML/HTTP analysis without a browser
 2. That resource sizes are measured from source, not actual CDN-compressed transfer sizes
 3. That JavaScript-rendered content is not evaluated
+4. That CO2 estimates use the SWD v4 model and are approximations based on data transferred
 
-**Why:** Digital Beacon and EcoGrader make similar trade-offs without disclosing them. WSG-Check's open-source transparency is a differentiator. Users who also use Sitespeed.io or GreenFrame will understand the complementary role.
+**Why:** Digital Beacon and EcoGrader make the same trade-offs without disclosing them. WSG-Check's open-source transparency is a differentiator. Users who also use Sitespeed.io or GreenFrame will understand the complementary role.
 
 ---
 
-### R7: Consider a CO2.js Country-Specific Estimate as a v2 Feature (Priority: **Low**)
+### R8: Consider CO2.js Country-Specific Estimate as a v2 Feature (Priority: **Low**)
 
 **What:** Offer an optional user input (or auto-detect from server IP location) to use country-specific average grid intensity from CO2.js's bundled Ember dataset, producing a more accurate CO2 estimate. Document this as a planned v2 feature.
 
-**Why:** The global SWD average is a simplification. A UK-hosted site has a markedly different grid intensity than a coal-heavy region. CO2.js already includes the data; it is just a matter of exposing the option.
+**Why:** The global SWD average is a simplification. A UK-hosted site has markedly different grid intensity than a coal-heavy region. CO2.js already includes the data; it is a matter of exposing the option.
 
 **Suggested phase:** v2 enhancement, not core roadmap.
 
 ---
 
-### R8: Acknowledge Complementary Tools in Reports and Documentation (Priority: **Low**)
+### R9: Acknowledge Complementary Tools in Reports and Documentation (Priority: **Low**)
 
 **What:** In the WSG-Check report output and documentation, recommend complementary tools for dimensions WSG-Check does not cover:
-- GreenFrame for scenario-based energy monitoring
-- Sitespeed.io for performance-with-sustainability analysis
-- Google PageSpeed Insights / Lighthouse for Core Web Vitals
+- **GreenFrame** — scenario-based energy monitoring for JS-heavy applications
+- **Sitespeed.io** — performance-with-sustainability analysis using a real browser
+- **Google PageSpeed Insights / Lighthouse** — Core Web Vitals and performance budgets
+- **WebPageTest** — detailed waterfall analysis and carbon estimates
 
 **Why:** WSG-Check occupies a distinct niche (WSG-aligned, static analysis, CI-friendly). Positioning it as part of an ecosystem rather than a replacement for all tools avoids overselling and builds community trust.
 
@@ -529,24 +623,26 @@ The following table summarises which recommendations should be folded into the e
 | Recommendation | Phase | Effort | Impact |
 |---|---|---|---|
 | R1: CO2.js carbon estimation | Phase 3 or 6 | Low (1–2 days) | High — matches user expectations |
-| R2: Green hosting check (WSG 4.8) | Phase 5 | Low (0.5 day) | High — all competitors have this |
-| R5: Add WSG 4.8 to coverage matrix | IMPLEMENTATION_PLAN.md update | Trivial | High (enables R2) |
+| R2: Green hosting check (WSG 4.1) | Phase 5 | Low (0.5 day) | High — all competitors have this |
+| R5: Fix WSG 4.1 in matrix; add Section 5 | Plan + registry | Low (0.5 day) | High — correctness + completeness |
+| R6: WSG 2.17 document/PDF check | Phase 5 | Medium (1–2 days) | Medium — unique, high real-world impact |
 | R3: OLED energy framing for dark mode | Phase 4, WSG 3.12 | Trivial | Medium — improves recommendations |
 | R4: PageSpeed disclaimer + link | Phase 6 | Low | Medium — manages expectations |
-| R6: Methodology disclosure | Phase 6 | Low | Low — transparency |
-| R7: Country-specific CO2 estimate | v2 | Medium | Low (future) |
-| R8: Complementary tools references | Docs / Phase 6 | Trivial | Low — ecosystem positioning |
+| R7: Methodology disclosure | Phase 6 | Low | Low — transparency |
+| R8: Country-specific CO2 estimate | v2 | Medium | Low (future) |
+| R9: Complementary tools references | Docs / Phase 6 | Trivial | Low — ecosystem positioning |
 
 ### Revised Phasing Impact
 
-With R1, R2, and R5 incorporated:
+With R1, R2, R5, and R6 incorporated:
 
-1. **Phase 3 (Core Module):** Add CO2.js as a dependency; compute `co2PerPageView` from `pageWeight` bytes as part of the orchestration pipeline.
-2. **Phase 5 (Hosting Checks):** Add WSG 4.8 entry to guidelines registry; implement green hosting check using `hosting.check()` from CO2.js.
-3. **Phase 6 (Report Module):** Surface `co2PerPageView`, `isGreenHosted`, and a methodology disclaimer in `SustainabilityReport`. Add PageSpeed Insights link in WSG 3.1/3.8 recommendations.
+1. **Phase 1 (Config Module / Guidelines Registry):** Add all 27 Section 5 guidelines as `manual-only` entries. Flag WSG 5.5 and 5.25 as automation candidates. Correct WSG 4.1 label (was missing; "4.8" reference was an error).
+2. **Phase 3 (Core Module):** Add `@tgwf/co2` as a dependency; compute `co2PerPageView` from `pageWeight` bytes as part of the orchestration pipeline.
+3. **Phase 5 (Hosting & UX Checks):** Add WSG 4.1 entry to guidelines registry; implement green hosting check using `hosting.check()` from CO2.js. Add WSG 2.17 linked-document size check.
+4. **Phase 6 (Report Module):** Surface `co2PerPageView`, `isGreenHosted`, and a methodology disclaimer in `SustainabilityReport`. Add PageSpeed Insights link in WSG 3.1/3.8 recommendations.
 
-These three additions require **~1.5–2.5 days of additional effort** and would close the most visible gaps against every existing competitor.
+These additions require **~2.5–3.5 days of additional effort** over the original plan and close the most visible gaps against every existing competitor, while making WSG-Check's guideline coverage materially more complete than any current tool in the space.
 
 ---
 
-*This document was produced as part of the WSG-Check project analysis. It is intended to inform the roadmap; implementation decisions rest with the project maintainer.*
+*This document was produced as part of the WSG-Check project analysis after direct review of the W3C WSG specification and the listed tools. It is intended to inform the roadmap; implementation decisions rest with the project maintainer.*
