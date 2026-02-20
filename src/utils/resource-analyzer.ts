@@ -9,6 +9,7 @@
  *   - Compression detection from HTTP response headers
  */
 
+import { parse as parsePsl } from 'psl'
 import type { FetchResult } from './http-client.js'
 import type { ParsedPage, ResourceReference, ResourceType } from './html-parser.js'
 
@@ -54,23 +55,17 @@ export interface PageWeightAnalysis {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
- * Extract the eTLD+1 "site" from a URL for third-party classification.
+ * Extract the eTLD+1 "site" from a URL for third-party classification using
+ * the `psl` (Public Suffix List) package for accurate domain parsing.
  *
- * Uses a simple heuristic: strip the leading `www.` subdomain and keep the
- * last two label segments (e.g. `example.com`).
- *
- * **Known limitation:** This heuristic is intentionally lightweight and does
- * not consult a Public Suffix List (PSL).  It will incorrectly group resources
- * that share only a country-code second-level domain (e.g. resources on both
- * `foo.co.uk` and `bar.co.uk` will be treated as first-party to each other).
- * For now this trade-off is acceptable; a future iteration can integrate the
- * `psl` npm package for accurate eTLD+1 extraction.
+ * This correctly handles country-code second-level domains
+ * (e.g. `foo.co.uk` and `bar.co.uk` are treated as different sites).
  */
 function getSite(url: string): string {
   try {
-    const hostname = new URL(url).hostname.replace(/^www\./, '')
-    const parts = hostname.split('.')
-    return parts.length >= 2 ? parts.slice(-2).join('.') : hostname
+    const hostname = new URL(url).hostname
+    const parsed = parsePsl(hostname)
+    return 'domain' in parsed && parsed.domain ? parsed.domain : hostname
   } catch {
     return url
   }
