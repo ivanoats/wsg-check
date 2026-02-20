@@ -164,19 +164,19 @@ interface WSGCheckConfig {
 
 ### 3.1 Page Fetcher
 
-- [ ] Create `src/core/fetcher.ts`
-- [ ] Fetch the target URL's HTML content
-- [ ] Collect all HTTP response headers (for caching, compression, security checks)
-- [ ] Follow and record redirect chains
-- [ ] Fetch linked resources (CSS, JS) for analysis
-- [ ] Respect `maxDepth` configuration for multi-page crawling
+- [x] Create `src/core/fetcher.ts`
+- [x] Fetch the target URL's HTML content
+- [x] Collect all HTTP response headers (for caching, compression, security checks)
+- [x] Follow and record redirect chains
+- [x] Fetch linked resources (CSS, JS) for analysis
+- [x] Respect `maxDepth` configuration for multi-page crawling
 
 ### 3.2 Check Runner
 
-- [ ] Create `src/core/runner.ts`
-- [ ] Accept a list of checks (from the Checks Module) and page data
-- [ ] Execute checks in parallel where possible
-- [ ] Collect results in a standardized format:
+- [x] Create `src/core/runner.ts`
+- [x] Accept a list of checks (from the Checks Module) and page data
+- [x] Execute checks in parallel where possible
+- [x] Collect results in a standardized format:
 
 ```typescript
 interface CheckResult {
@@ -197,19 +197,19 @@ interface CheckResult {
 
 ### 3.3 Score Calculator
 
-- [ ] Create `src/core/scorer.ts`
-- [ ] Calculate per-guideline scores
-- [ ] Calculate per-category scores (UX, Web Dev, Hosting, Business)
-- [ ] Calculate overall sustainability score (0–100)
-- [ ] Weight scores by impact level
+- [x] Create `src/core/scorer.ts`
+- [x] Calculate per-guideline scores
+- [x] Calculate per-category scores (UX, Web Dev, Hosting, Business)
+- [x] Calculate overall sustainability score (0–100)
+- [x] Weight scores by impact level
 
 ### 3.4 Main Orchestrator
 
-- [ ] Create `src/core/index.ts` — the main entry point
-- [ ] Pipeline: Config → Fetch → Parse → Run Checks → Score → Report
-- [ ] Support single-page and multi-page analysis modes
+- [x] Create `src/core/index.ts` — the main entry point
+- [x] Pipeline: Config → Fetch → Parse → Run Checks → Score → Report
+- [x] Support single-page and multi-page analysis modes
 
-**Deliverable:** Core module that can fetch a URL, run registered checks, and return scored results.
+**Deliverable:** Core module that can fetch a URL, run registered checks, and return scored results. ✅
 
 ---
 
