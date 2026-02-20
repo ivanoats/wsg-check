@@ -4,7 +4,7 @@ The primary function of wsg-check is to automate the auditing of digital product
  * Automated Auditing: It scans web resources to identify "non-essential" assets (decorative design, heavy scripts, or inefficient paths) that contribute to excessive energy consumption.
  * Success Criteria Mapping: It maps technical findings directly to WSG Success Criteria (e.g., SC 2.1: Environmental Factors, SC 3.1: Efficient Paths).
  * Developer Feedback: Instead of just providing a high-level "green score," it provides actionable feedback at the code level, much like a linter (e.g., ESLint) but for environmental impact.
-2. Implementation Plan: The Roadmap to 1.0
+## 2. Implementation Plan: The Roadmap to 1.0
 Based on the current trajectory of the W3C guidelines (which are moving toward "Note" status in mid-2026), the implementation plan for a tool like this typically follows these phases:
 
 Phase 1: Core Engine (Current State)
