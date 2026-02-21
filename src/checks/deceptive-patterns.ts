@@ -33,9 +33,10 @@ const RESOURCES = [
 /**
  * Matches an element with a "close" class whose opening tag also contains an
  * inline style that hides the element (display:none or visibility:hidden).
+ * Uses lookaheads so attribute order (class vs style) does not matter.
  */
 const HIDDEN_CLOSE_PATTERN =
-  /class=["'][^"']*\bclose\b[^"']*["'][^>]*style=["'][^"']*(?:display\s*:\s*none|visibility\s*:\s*hidden)/i
+  /<[^>]*(?=[^>]*class=["'][^"']*\bclose\b[^"']*["'])(?=[^>]*style=["'][^"']*(?:display\s*:\s*none|visibility\s*:\s*hidden)[^"']*["'])[^>]*>/i
 
 /** Matches elements with common countdown-timer class names. */
 const COUNTDOWN_PATTERN = /class=["'][^"']*\b(?:countdown|count-down|timer)\b[^"']*["']/i
