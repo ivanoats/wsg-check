@@ -814,3 +814,4 @@ wsg-check/
 - **Compare mode** — Compare two URLs or track improvements over time
 - **Badge/widget** — Embeddable sustainability score badge for websites
 - **API v2** — WebSocket support for real-time check progress
+- **ESG enrichment module (v2)** — Optional integration with the [FMP ESG API](https://site.financialmodelingprep.com/developer/docs#esg) to surface corporate-level Environmental, Social, and Governance scores alongside WSG technical results. Implemented as an opt-in `--esg-ticker` flag (CLI) and UI toggle (web app); requires operator-supplied FMP API key; gracefully skipped if ticker is absent or API call fails. Targets enterprises subject to EU CSRD or SEC climate disclosure requirements. See `COMPETITIVE_ANALYSIS.md` Section 3.8, Gap 11, and Recommendation R10 for full trade-off analysis.
