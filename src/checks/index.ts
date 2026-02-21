@@ -1,8 +1,8 @@
 /**
- * Checks module – Phase 4.1, Phase 4.2, Phase 4.3 & Phase 4.4
+ * Checks module – Phase 4.1, Phase 4.2, Phase 4.3, Phase 4.4 & Phase 5.1
  *
  * Exports all automated check functions that correspond to WSG web-development
- * guidelines (Phases 4.1–4.4 of the implementation plan).
+ * guidelines (Phases 4.1–4.4 and Phase 5.1 of the implementation plan).
  *
  * Each check is a pure `CheckFn` — a function that accepts a `PageData`
  * bundle and returns a `CheckResult` (or a `Promise<CheckResult>`).  Checks
@@ -11,9 +11,9 @@
  * Usage:
  * ```ts
  * import { WsgChecker } from '@/core'
- * import { performanceChecks, semanticChecks, sustainabilityChecks, securityChecks } from '@/checks'
+ * import { performanceChecks, semanticChecks, sustainabilityChecks, securityChecks, uxDesignChecks } from '@/checks'
  *
- * const checker = new WsgChecker({}, [...performanceChecks, ...semanticChecks, ...sustainabilityChecks, ...securityChecks])
+ * const checker = new WsgChecker({}, [...performanceChecks, ...semanticChecks, ...sustainabilityChecks, ...securityChecks, ...uxDesignChecks])
  * const result  = await checker.check('https://example.com')
  * ```
  */
@@ -42,6 +42,19 @@ export { checkDependencyCount } from './dependency-count.js'
 export { checkExpectedFiles, checkBeneficialFiles } from './expected-files.js'
 export { checkHtmlVersion } from './html-version.js'
 
+// ─── Phase 5.1 — UX Design (Section 2) ───────────────────────────────────────
+export { checkNonEssentialContent } from './non-essential-content.js'
+export { checkNavigationStructure } from './navigation-structure.js'
+export { checkDeceptivePatterns } from './deceptive-patterns.js'
+export { checkOptimizedMedia } from './optimized-media.js'
+export { checkLazyLoading } from './lazy-loading.js'
+export { checkAnimationControl } from './animation-control.js'
+export { checkWebTypography } from './web-typography.js'
+export { checkAltText } from './alt-text.js'
+export { checkFontStackFallbacks } from './font-stack-fallbacks.js'
+export { checkMinimalForms } from './minimal-forms.js'
+export { checkDownloadableDocuments } from './downloadable-documents.js'
+
 import { checkMinification } from './minification.js'
 import { checkRenderBlocking } from './render-blocking.js'
 import { checkPageWeight } from './page-weight.js'
@@ -58,6 +71,17 @@ import { checkSecurityHeaders } from './security-headers.js'
 import { checkDependencyCount } from './dependency-count.js'
 import { checkExpectedFiles, checkBeneficialFiles } from './expected-files.js'
 import { checkHtmlVersion } from './html-version.js'
+import { checkNonEssentialContent } from './non-essential-content.js'
+import { checkNavigationStructure } from './navigation-structure.js'
+import { checkDeceptivePatterns } from './deceptive-patterns.js'
+import { checkOptimizedMedia } from './optimized-media.js'
+import { checkLazyLoading } from './lazy-loading.js'
+import { checkAnimationControl } from './animation-control.js'
+import { checkWebTypography } from './web-typography.js'
+import { checkAltText } from './alt-text.js'
+import { checkFontStackFallbacks } from './font-stack-fallbacks.js'
+import { checkMinimalForms } from './minimal-forms.js'
+import { checkDownloadableDocuments } from './downloadable-documents.js'
 
 /**
  * All Phase 4.1 Performance & Efficiency checks bundled for convenience.
@@ -125,4 +149,35 @@ export const securityChecks = [
   checkExpectedFiles,
   checkBeneficialFiles,
   checkHtmlVersion,
+] as const
+
+/**
+ * All Phase 5.1 UX Design checks bundled for convenience.
+ *
+ * | Check                        | WSG Guideline | Testability     |
+ * | ---------------------------- | ------------- | --------------- |
+ * | `checkNonEssentialContent`   | 2.9           | automated       |
+ * | `checkNavigationStructure`   | 2.8           | automated       |
+ * | `checkDeceptivePatterns`     | 2.10          | automated       |
+ * | `checkOptimizedMedia`        | 2.7           | automated       |
+ * | `checkLazyLoading`           | 2.11          | automated       |
+ * | `checkAnimationControl`      | 2.15          | automated       |
+ * | `checkWebTypography`         | 2.16          | automated       |
+ * | `checkAltText`               | 2.17          | automated       |
+ * | `checkFontStackFallbacks`    | 2.16          | automated       |
+ * | `checkMinimalForms`          | 2.19          | automated       |
+ * | `checkDownloadableDocuments` | 2.17          | semi-automated  |
+ */
+export const uxDesignChecks = [
+  checkNonEssentialContent,
+  checkNavigationStructure,
+  checkDeceptivePatterns,
+  checkOptimizedMedia,
+  checkLazyLoading,
+  checkAnimationControl,
+  checkWebTypography,
+  checkAltText,
+  checkFontStackFallbacks,
+  checkMinimalForms,
+  checkDownloadableDocuments,
 ] as const
