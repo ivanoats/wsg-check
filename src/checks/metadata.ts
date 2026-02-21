@@ -90,9 +90,9 @@ export const checkMetadata: CheckFn = (page) => {
   }
 }
 
-// ─── checkStructuredData (WSG 3.13) ──────────────────────────────────────────
+// ─── checkStructuredData (WSG 3.11) ──────────────────────────────────────────
 
-const SD_GUIDELINE_ID = '3.13'
+const SD_GUIDELINE_ID = '3.11'
 const SD_GUIDELINE_NAME = 'Use Metadata, Microdata, and Schema.org'
 const SD_SUCCESS_CRITERION =
   'Pages should include Schema.org JSON-LD structured data to enable rich search results'

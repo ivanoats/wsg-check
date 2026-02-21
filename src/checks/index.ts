@@ -65,11 +65,11 @@ export const performanceChecks = [checkMinification, checkRenderBlocking, checkP
  *
  * | Check                  | WSG Guideline | Testability     |
  * | ---------------------- | ------------- | --------------- |
- * | `checkSemanticHtml`    | 3.8           | automated       |
- * | `checkAccessibilityAids` | 3.10        | automated       |
- * | `checkFormValidation`  | 3.12          | semi-automated  |
+ * | `checkSemanticHtml`    | 3.7           | automated       |
+ * | `checkAccessibilityAids` | 3.9         | automated       |
+ * | `checkFormValidation`  | 3.10          | semi-automated  |
  * | `checkMetadata`        | 3.4           | automated       |
- * | `checkStructuredData`  | 3.13          | automated       |
+ * | `checkStructuredData`  | 3.11          | automated       |
  */
 export const semanticChecks = [
   checkSemanticHtml,

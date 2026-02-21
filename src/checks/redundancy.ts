@@ -36,8 +36,8 @@ const RESOURCES = [
  */
 const INLINE_STYLE_REPEAT_THRESHOLD = 3
 
-/** Matches `style="..."` attribute values (double-quoted). */
-const INLINE_STYLE_ATTR_PATTERN = /\bstyle="([^"]+)"/gi
+/** Matches `style="..."` or `style='...'` attribute values (both quote styles). */
+const INLINE_STYLE_ATTR_PATTERN = /\bstyle=(?:"([^"]+)"|'([^']+)')/gi
 
 /** Matches `<style ...> ... </style>` blocks (case-insensitive, multiline). */
 const STYLE_BLOCK_PATTERN = /<style\b[^>]*>[\s\S]*?<\/style>/gi
@@ -51,7 +51,8 @@ export const checkCssRedundancy: CheckFn = (page) => {
   const inlineStyleRegex = new RegExp(INLINE_STYLE_ATTR_PATTERN.source, 'gi')
   let match: RegExpExecArray | null
   while ((match = inlineStyleRegex.exec(body)) !== null) {
-    const val = match[1].trim().toLowerCase()
+    // Capture group 1 = double-quoted value, group 2 = single-quoted value
+    const val = (match[1] ?? match[2]).trim().toLowerCase()
     styleValueCounts.set(val, (styleValueCounts.get(val) ?? 0) + 1)
   }
 

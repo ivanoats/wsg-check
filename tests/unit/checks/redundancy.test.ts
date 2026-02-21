@@ -58,7 +58,13 @@ const TWO_REPEATED_STYLES = `<!DOCTYPE html><html><body>
   <p style="color: blue;">Two</p>
 </body></html>`
 
-/** HTML with multiple inline style blocks. */
+/** HTML with a single inline style value repeated 3 times using single quotes. */
+const REPEATED_SINGLE_QUOTE_STYLES = `<!DOCTYPE html><html><body>
+  <p style='color: red; font-weight: bold;'>One</p>
+  <p style='color: red; font-weight: bold;'>Two</p>
+  <p style='color: red; font-weight: bold;'>Three</p>
+</body></html>`
+
 const MULTIPLE_STYLE_BLOCKS = `<!DOCTYPE html><html><head>
   <style>body { margin: 0; }</style>
   <style>h1 { color: blue; }</style>
@@ -107,6 +113,12 @@ describe('checkCssRedundancy (WSG 3.5)', () => {
   it('passes when a style value appears only twice (below threshold)', async () => {
     const result = await checkCssRedundancy(makePageData(TWO_REPEATED_STYLES))
     expect(result.status).toBe('pass')
+  })
+
+  it('warns when the same single-quoted inline style value appears 3+ times', async () => {
+    const result = await checkCssRedundancy(makePageData(REPEATED_SINGLE_QUOTE_STYLES))
+    expect(result.status).toBe('warn')
+    expect(result.score).toBe(50)
   })
 
   it('warns when there are multiple inline <style> blocks', async () => {

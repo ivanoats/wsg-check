@@ -55,10 +55,10 @@ function makePageData(formInputs: FormInputInfo[]): PageData {
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
-describe('checkFormValidation (WSG 3.12)', () => {
-  it('returns guidelineId 3.12', async () => {
+describe('checkFormValidation (WSG 3.10)', () => {
+  it('returns guidelineId 3.10', async () => {
     const result = await checkFormValidation(makePageData([]))
-    expect(result.guidelineId).toBe('3.12')
+    expect(result.guidelineId).toBe('3.10')
   })
 
   it('returns category web-dev', async () => {

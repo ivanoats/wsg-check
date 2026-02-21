@@ -1,5 +1,5 @@
 /**
- * WSG 3.9 – Resolve Render Blocking Content
+ * WSG 3.8 – Resolve Render Blocking Content
  *
  * Checks for two common sources of render-blocking behaviour:
  *
@@ -23,7 +23,7 @@
 
 import type { CheckFn } from '../core/types.js'
 
-const GUIDELINE_ID = '3.9'
+const GUIDELINE_ID = '3.8'
 const GUIDELINE_NAME = 'Resolve Render Blocking Content'
 const SUCCESS_CRITERION = 'Scripts should use async or defer; images should use loading="lazy"'
 const RESOURCES = [

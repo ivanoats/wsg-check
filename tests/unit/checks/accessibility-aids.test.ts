@@ -46,10 +46,10 @@ function makePageData(opts: { hasSkipLink?: boolean; landmarks?: string[] }): Pa
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
-describe('checkAccessibilityAids (WSG 3.10)', () => {
-  it('returns guidelineId 3.10', async () => {
+describe('checkAccessibilityAids (WSG 3.9)', () => {
+  it('returns guidelineId 3.9', async () => {
     const result = await checkAccessibilityAids(makePageData({}))
-    expect(result.guidelineId).toBe('3.10')
+    expect(result.guidelineId).toBe('3.9')
   })
 
   it('returns category web-dev', async () => {

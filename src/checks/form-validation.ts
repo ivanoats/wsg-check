@@ -1,5 +1,5 @@
 /**
- * WSG 3.12 – Validate Forms
+ * WSG 3.10 – Validate Forms
  *
  * Checks that forms are accessible and use native HTML features that reduce
  * user effort and unnecessary round-trips caused by failed submissions:
@@ -24,7 +24,7 @@
 
 import type { CheckFn } from '../core/types.js'
 
-const GUIDELINE_ID = '3.12'
+const GUIDELINE_ID = '3.10'
 const GUIDELINE_NAME = 'Validate Forms'
 const SUCCESS_CRITERION = 'Form inputs must have labels; use autocomplete to reduce user effort'
 const RESOURCES = ['https://www.w3.org/TR/web-sustainability-guidelines/#validate-forms']
