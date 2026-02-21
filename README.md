@@ -61,6 +61,7 @@ All source-code dependencies point **inward**:
 | HTTP fetch            | `HttpClient` via Axios                 |
 | HTML parsing          | `parseHtml` via Cheerio                |
 | Resource analysis     | `analyzePageWeight`                    |
+| Carbon estimation     | `estimateCO2` / `checkGreenHosting` via `@tgwf/co2` |
 | Configuration loading | `resolveConfig` (file + env + CLI)     |
 | Logging               | `createLogger` (terminal or JSON)      |
 | Check execution       | `CheckRunner.run` (parallel execution) |
@@ -84,7 +85,9 @@ flowchart TD
     SR["scoreResults(results)"]
     OS["overallScore: number\n(0–100, impact-weighted)"]
     CS["categoryScores: CategoryScore[]"]
-    RR["RunResult\n{ url, timestamp, duration, overallScore, ... }"]
+    CO2["estimateCO2(htmlSize, isGreenHosted)\ncheckGreenHosting(domain)"]
+    CO2OUT["co2PerPageView · co2Model · isGreenHosted"]
+    RR["RunResult\n{ url, timestamp, duration, overallScore,\n  co2PerPageView, co2Model, isGreenHosted, ... }"]
 
     URL --> PF
     PF --> HC & PH
@@ -92,10 +95,12 @@ flowchart TD
     PH --> APW
     APW -->|PageWeightAnalysis| PD
     PD --> CR
+    PD --> CO2
     CR --> C1 & C2 & CN
     C1 & C2 & CN -->|CheckResult| SR
     SR --> OS & CS
-    OS & CS --> RR
+    CO2 --> CO2OUT
+    OS & CS & CO2OUT --> RR
 ```
 
 ### Module Overview
@@ -134,6 +139,18 @@ interface PageData {
   fetchResult: FetchResult
   parsedPage: ParsedPage
   pageWeight: PageWeightAnalysis
+}
+
+interface RunResult {
+  url: string
+  timestamp: string
+  duration: number
+  overallScore: number
+  categoryScores: CategoryScore[]
+  results: CheckResult[]
+  co2PerPageView: number  // grams of CO2 per page view (SWD v4 model)
+  co2Model: 'swd-v4'
+  isGreenHosted: boolean  // from Green Web Foundation API
 }
 ```
 
@@ -217,6 +234,25 @@ Aggregates resource data into sustainability metrics.
 - `classifyResources()` — labels each resource as first-party or third-party.
 - `analyzeCompression()` — detects gzip / brotli / zstd from response headers.
 - `analyzePageWeight()` — returns `htmlSize`, `resourceCount`, first/third-party split, compression info, and per-type counts.
+
+### `carbon-estimator.ts` — Carbon Estimator
+
+Estimates CO2 emissions per page view using the [CO2.js](https://www.thegreenwebfoundation.org/co2-js/) library (Sustainable Web Design v4 model) and checks whether a domain is served from renewable energy via the [Green Web Foundation API](https://www.thegreenwebfoundation.org/tools/green-web-dataset/).
+
+**Provides:**
+
+- `estimateCO2(bytes, isGreenHosted)` — pure function; returns grams of CO2 rounded to 4 decimal places.
+- `checkGreenHosting(domain)` — async; queries the Green Web Foundation API and returns `boolean`. Falls back to `false` on network errors so the pipeline is never blocked.
+- `CO2_MODEL` — string constant `'swd-v4'` exposed as the `co2Model` field in `RunResult`.
+
+```typescript
+import { estimateCO2, checkGreenHosting, CO2_MODEL } from '@/utils'
+
+const isGreen = await checkGreenHosting('example.com')
+const grams   = estimateCO2(pageWeight.htmlSize, isGreen)
+// grams: e.g. 0.0012 (rounded to 4 d.p.)
+// CO2_MODEL: 'swd-v4'
+```
 
 ### `errors.ts` — Custom Error Classes
 

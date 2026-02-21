@@ -28,3 +28,6 @@ export { parseHtml } from './html-parser.js'
 
 export type { ResourceInfo, CompressionInfo, PageWeightAnalysis } from './resource-analyzer.js'
 export { classifyResources, analyzeCompression, analyzePageWeight } from './resource-analyzer.js'
+
+export type { CO2Model } from './carbon-estimator.js'
+export { CO2_MODEL, estimateCO2, checkGreenHosting } from './carbon-estimator.js'

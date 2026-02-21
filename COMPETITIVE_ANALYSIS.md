@@ -37,46 +37,46 @@
 
 ## 1. Tools Surveyed
 
-| Tool | Type | Free/Open | Primary Metric | WSG Mapping |
-|---|---|---|---|---|
-| [EcoGrader](https://ecograder.com) | Web app | Free | 0-100 score + CO2/page | ❌ |
-| [Digital Beacon](https://digitalbeacon.co) | Web app | Free | A+ – F grade + CO2/page | ❌ |
-| [Website Carbon Calculator](https://websitecarbon.com) | Web app + API | Free | CO2g/page view | ❌ |
-| [CO2.js](https://github.com/thegreenwebfoundation/co2.js) | npm library | Open (Apache-2.0) | bytes → CO2e | ❌ |
-| [SquareEye Guide](https://squareeye.com/how-to-audit-and-optimise-your-website-for-sustainability/) | Manual audit guide | Free (content) | Manual checklist | Partial |
-| [Sitespeed.io + Coach](https://www.sitespeed.io/) | CLI / Docker | Open (MIT) | Performance + sustainability | ❌ |
-| [GreenFrame](https://greenframe.io) | SaaS monitoring | Freemium | Scenario energy (µWh) | ❌ |
-| **WSG-Check** _(planned)_ | Web app + CLI + API | Open (planned) | Per-guideline pass/fail + score | ✅ Full |
+| Tool                                                                                                | Type                | Free/Open         | Primary Metric                  | WSG Mapping |
+| --------------------------------------------------------------------------------------------------- | ------------------- | ----------------- | ------------------------------- | ----------- |
+| [EcoGrader](https://ecograder.com)                                                                  | Web app             | Free              | 0-100 score + CO2/page          | ❌          |
+| [Digital Beacon](https://digitalbeacon.co)                                                          | Web app             | Free              | A+ – F grade + CO2/page         | ❌          |
+| [Website Carbon Calculator](https://websitecarbon.com)                                              | Web app + API       | Free              | CO2g/page view                  | ❌          |
+| [CO2.js](https://github.com/thegreenwebfoundation/co2.js)                                           | npm library         | Open (Apache-2.0) | bytes → CO2e                    | ❌          |
+| [SquareEye Guide](https://squareeye.com/how-to-audit-and-optimise-your-website-for-sustainability/) | Manual audit guide  | Free (content)    | Manual checklist                | Partial     |
+| [Sitespeed.io + Coach](https://www.sitespeed.io/)                                                   | CLI / Docker        | Open (MIT)        | Performance + sustainability    | ❌          |
+| [GreenFrame](https://greenframe.io)                                                                 | SaaS monitoring     | Freemium          | Scenario energy (µWh)           | ❌          |
+| **WSG-Check** _(planned)_                                                                           | Web app + CLI + API | Open (planned)    | Per-guideline pass/fail + score | ✅ Full     |
 
 ---
 
 ## 2. Feature Comparison Matrix
 
-| Feature | EcoGrader | Digital Beacon | Website Carbon | CO2.js | Sitespeed.io | WSG-Check (planned) |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|
-| **Carbon/CO2 estimate per page** | ✅ | ✅ | ✅ | ✅ (library) | ✅ | ❌ Future |
-| **Green hosting check** | ✅ | ✅ | ✅ | ✅ (API) | ✅ | ❌ Not planned |
-| **Page weight / transfer size** | ✅ | ✅ | ✅ | — | ✅ | ✅ |
-| **Compression check (gzip/brotli)** | ❌ | ✅ | ❌ | — | ✅ | ✅ |
-| **Image format check (WebP/AVIF)** | ✅ | ✅ | ❌ | — | ✅ | ✅ |
-| **Lazy loading check** | ✅ | ✅ | ❌ | — | ✅ | ✅ |
-| **Cache headers analysis** | ❌ | ✅ | ❌ | — | ✅ | ✅ |
-| **Third-party script audit** | ❌ | ✅ (count) | ❌ | — | ✅ | ✅ |
-| **Core Web Vitals / PageSpeed** | ✅ (via PSI) | ❌ | ❌ | — | ✅ | ❌ Not planned |
-| **Security headers check** | ❌ | ❌ | ❌ | — | ❌ | ✅ |
-| **Semantic HTML analysis** | ❌ | ❌ | ❌ | — | ❌ | ✅ |
-| **Preference media queries** | ❌ | ❌ | ❌ | — | ❌ | ✅ |
-| **Redirect chain analysis** | ❌ | ❌ | ❌ | — | ✅ | ✅ |
-| **`carbon.txt` / `robots.txt` / `security.txt`** | ❌ | ❌ | ❌ | — | ❌ | ✅ |
-| **Font optimization checks** | ❌ | ❌ | ❌ | — | ❌ | ✅ |
-| **ARIA / accessibility signals** | ❌ | ❌ | ❌ | — | ❌ | ✅ |
-| **Full W3C WSG guideline mapping** | ❌ | ❌ | ❌ | — | ❌ | ✅ |
-| **CLI interface** | ❌ | ❌ | ❌ | ✅ (lib) | ✅ | ✅ |
-| **CI/CD integration** | ❌ | ❌ | ❌ | ✅ (lib) | ✅ | ✅ (planned) |
-| **Multiple output formats** | ❌ | ❌ | JSON API | — | JSON/HTML | ✅ JSON/MD/HTML/terminal |
-| **Multi-page crawling** | ❌ | ❌ | ❌ | — | ✅ | ✅ (planned) |
-| **Country-level grid intensity** | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ Not planned |
-| **Open source / self-hostable** | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| Feature                                          |  EcoGrader   | Digital Beacon | Website Carbon |    CO2.js    | Sitespeed.io |   WSG-Check (planned)    |
+| ------------------------------------------------ | :----------: | :------------: | :------------: | :----------: | :----------: | :----------------------: |
+| **Carbon/CO2 estimate per page**                 |      ✅      |       ✅       |       ✅       | ✅ (library) |      ✅      |       ✅ Phase 3.5       |
+| **Green hosting check**                          |      ✅      |       ✅       |       ✅       |   ✅ (API)   |      ✅      |       ✅ Phase 3.5       |
+| **Page weight / transfer size**                  |      ✅      |       ✅       |       ✅       |      —       |      ✅      |            ✅            |
+| **Compression check (gzip/brotli)**              |      ❌      |       ✅       |       ❌       |      —       |      ✅      |            ✅            |
+| **Image format check (WebP/AVIF)**               |      ✅      |       ✅       |       ❌       |      —       |      ✅      |            ✅            |
+| **Lazy loading check**                           |      ✅      |       ✅       |       ❌       |      —       |      ✅      |            ✅            |
+| **Cache headers analysis**                       |      ❌      |       ✅       |       ❌       |      —       |      ✅      |            ✅            |
+| **Third-party script audit**                     |      ❌      |   ✅ (count)   |       ❌       |      —       |      ✅      |            ✅            |
+| **Core Web Vitals / PageSpeed**                  | ✅ (via PSI) |       ❌       |       ❌       |      —       |      ✅      |      ❌ Not planned      |
+| **Security headers check**                       |      ❌      |       ❌       |       ❌       |      —       |      ❌      |            ✅            |
+| **Semantic HTML analysis**                       |      ❌      |       ❌       |       ❌       |      —       |      ❌      |            ✅            |
+| **Preference media queries**                     |      ❌      |       ❌       |       ❌       |      —       |      ❌      |            ✅            |
+| **Redirect chain analysis**                      |      ❌      |       ❌       |       ❌       |      —       |      ✅      |            ✅            |
+| **`carbon.txt` / `robots.txt` / `security.txt`** |      ❌      |       ❌       |       ❌       |      —       |      ❌      |            ✅            |
+| **Font optimization checks**                     |      ❌      |       ❌       |       ❌       |      —       |      ❌      |            ✅            |
+| **ARIA / accessibility signals**                 |      ❌      |       ❌       |       ❌       |      —       |      ❌      |            ✅            |
+| **Full W3C WSG guideline mapping**               |      ❌      |       ❌       |       ❌       |      —       |      ❌      |            ✅            |
+| **CLI interface**                                |      ❌      |       ❌       |       ❌       |   ✅ (lib)   |      ✅      |            ✅            |
+| **CI/CD integration**                            |      ❌      |       ❌       |       ❌       |   ✅ (lib)   |      ✅      |       ✅ (planned)       |
+| **Multiple output formats**                      |      ❌      |       ❌       |    JSON API    |      —       |  JSON/HTML   | ✅ JSON/MD/HTML/terminal |
+| **Multi-page crawling**                          |      ❌      |       ❌       |       ❌       |      —       |      ✅      |       ✅ (planned)       |
+| **Country-level grid intensity**                 |      ❌      |       ❌       |       ❌       |      ✅      |      ❌      |      ❌ Not planned      |
+| **Open source / self-hostable**                  |      ❌      |       ❌       |       ❌       |      ✅      |      ✅      |            ✅            |
 
 ---
 
@@ -97,12 +97,14 @@
 **Output:** A single 0–100 sustainability score, broken down by the above four dimensions, plus an estimated CO2 per page view (using the Sustainable Web Design methodology).
 
 **Strengths:**
+
 - Very easy to use; non-technical audience friendly
 - Unique PageSpeed integration brings real-browser rendering metrics
 - Green hosting check is a user expectation (people ask "is this site green?")
 - Clean Energy CDN dimension has no WSG-Check equivalent
 
 **Limitations:**
+
 - No W3C WSG guideline mapping
 - Web-only; no CLI, no API
 - Shallow checks — no security headers, semantic HTML, font analysis, preference queries
@@ -134,11 +136,13 @@
 **Methodology:** [Sustainable Web Design model](https://sustainablewebdesign.org/) — the same model that underpins CO2.js and Website Carbon Calculator. As of July 2025, Website Carbon (from the same team at Wholegrain Digital) moved to v4 of the SWD model; Digital Beacon is expected to follow.
 
 **Strengths:**
+
 - Letter grade is intuitive and sharable
 - Broader technical checks than EcoGrader (caching, compression)
 - Good for quick audits with a clear summary
 
 **Limitations:**
+
 - No W3C WSG mapping
 - Web-only
 - No security checks, semantic HTML, preference media queries
@@ -156,6 +160,7 @@
 **What it does:**
 
 Converts a URL into an estimated CO2 per page view using two inputs:
+
 1. **Page weight** — either from a fetch or provided directly
 2. **Green hosting** — from the Green Web Foundation dataset
 
@@ -166,11 +171,13 @@ The estimate applies the **Sustainable Web Design (SWD) methodology** which dist
 **API endpoint:** `https://api.websitecarbon.com/site?url=<url>` — returns JSON with `statistics.co2.renewable.grams` and `statistics.co2.grid.grams`.
 
 **Strengths:**
+
 - The industry-standard baseline for CO2 estimation
 - API is free, widely used, and trusted
 - Simple integration into other tools
 
 **Limitations:**
+
 - CO2 estimate only; no guidance on improvement
 - No WSG mapping
 - No checks beyond page weight and hosting
@@ -202,18 +209,20 @@ CO2.js is a **library**, not a checker. It gives developers the building blocks 
    Bundled annual, country-level average and marginal grid intensity data from Ember and the UNFCCC. Useful for country-specific emissions estimates.
 
 **Usage example:**
+
 ```js
-import { co2, hosting } from '@tgwf/co2';
+import { co2, hosting } from '@tgwf/co2'
 
 // Carbon estimate
-const swd = new co2({ model: 'swd', version: 4 });
-const grams = swd.perByte(pageWeightInBytes, isGreenHosted);
+const swd = new co2({ model: 'swd', version: 4 })
+const grams = swd.perByte(pageWeightInBytes, isGreenHosted)
 
 // Green hosting check (requires API call or offline dataset)
-const isGreen = await hosting.check('example.com');
+const isGreen = await hosting.check('example.com')
 ```
 
 **Strengths:**
+
 - Battle-tested, widely adopted (used by Digital Beacon, Sitespeed.io, WebPageTest, Firefox DevTools, and others)
 - TypeScript types via `@types/tgwf__co2`
 - ESM and CJS builds — fully compatible with this project's stack
@@ -223,11 +232,12 @@ const isGreen = await hosting.check('example.com');
 - Well-funded and actively maintained
 
 **Limitations:**
+
 - Does not map to WSG guidelines
 - SWD methodology is an approximation; it estimates based on bytes transferred, not measured energy
 
 **Relationship to WSG-Check:**  
-CO2.js is currently in the "Future Enhancements" section of `IMPLEMENTATION_PLAN.md`. It should be promoted to a concrete phase — see [Recommendation R1](#r1-integrate-co2js-for-carbon-estimation) and [R2](#r2-add-green-hosting-check--wsg-41).
+CO2.js is integrated in **Phase 3.5** of WSG-Check. `@tgwf/co2` is a direct dependency; `estimateCO2()` uses the SWD v4 model and `checkGreenHosting()` queries the Green Web Foundation API. Both results are exposed as top-level fields in `RunResult` (`co2PerPageView`, `co2Model`, `isGreenHosted`).
 
 ---
 
@@ -247,11 +257,13 @@ Use the [Green Web Foundation Checker](https://www.thegreenwebfoundation.org/gre
 
 **Step 3: Evaluate page weight and asset optimisation**  
 The [HTTP Archive data](https://httparchive.org/reports/page-weight) shows average page weight has grown ~500% since 2010. Key areas:
+
 - **Images** — WebP/AVIF formats, compression, lazy loading; profile photos cited as a common source of oversized files
-- **Documents (PDFs)** — identified as the *single most significant emissions source* on document-heavy sites (law firms, chambers with large publication libraries). Checks: compression, HTML alternatives for long-term content, deduplication. The guide recommends a standalone PDF audit as a dedicated exercise.
+- **Documents (PDFs)** — identified as the _single most significant emissions source_ on document-heavy sites (law firms, chambers with large publication libraries). Checks: compression, HTML alternatives for long-term content, deduplication. The guide recommends a standalone PDF audit as a dedicated exercise.
 - **Video** — Adaptive streaming platforms (Vimeo, YouTube) over self-hosting; transcripts to reduce reliance on video stream; avoid autoplay
 
-**Step 4: Audit code, scripts and integrations**  
+**Step 4: Audit code, scripts and integrations**
+
 - **Analytics platforms** — Google Analytics 4 is more efficient than predecessors; additional platforms (Clarity, Hotjar, HubSpot) add weight on every page load
 - **CRM integrations** — Check frequency and per-page necessity of integration scripts (Lex, Peppermint, Dynamics, LexisNexis, custom API endpoints)
 - **Google Tag Manager** — Often accumulates outdated/orphaned tags; regular cleanup is a meaningful sustainability action and one no automated tool currently raises
@@ -264,6 +276,7 @@ Remove: outdated news, duplicate PDFs, old profiles, archived events, unused pra
 Recommended ongoing tools: Google Lighthouse, WebPageTest, GTmetrix. Example targets: reduce average page weight by 20%, reduce third-party scripts by 30%, improve Website Carbon rating from "average" to "cleaner than 70% of sites tested."
 
 **Content governance framework proposed:**
+
 - Aged content policy (for events, news items, low-traffic pages)
 - Content review cycles (to keep evergreen content accurate)
 - Image upload policy (to prevent oversized uploads recurring)
@@ -271,6 +284,7 @@ Recommended ongoing tools: Google Lighthouse, WebPageTest, GTmetrix. Example tar
 - PDF audit policy (eliminate duplication, assess necessity and compression)
 
 **Strengths:**
+
 - Holistic — covers organisational and content concerns that no automated tool can address
 - Practical; actionable steps for non-engineers and content editors
 - PDF library focus is a real-world blindspot for all automated tools
@@ -280,6 +294,7 @@ Recommended ongoing tools: Google Lighthouse, WebPageTest, GTmetrix. Example tar
 - Links directly to established third-party tools for each audit area
 
 **Limitations:**
+
 - Manual process; no automation or repeatable checks
 - Does not map to WSG guidelines
 - Not integrable into CI/CD pipelines
@@ -287,6 +302,7 @@ Recommended ongoing tools: Google Lighthouse, WebPageTest, GTmetrix. Example tar
 
 **Relationship to WSG-Check:**  
 The SquareEye guide confirms that WSG-Check's planned checks (images, fonts, JS deferral, caching, preference queries) are the right priorities. It highlights two important gaps not currently in the plan:
+
 1. **PDF / downloadable document analysis** — directly maps to WSG 2.17 (see [Gap 8](#gap-8-no-pdf--downloadable-document-analysis))
 2. **Tag Manager and analytics script governance** — partially covered by third-party script checks but deserves specific recommendations in report output
 
@@ -313,12 +329,14 @@ Sitespeed.io is a comprehensive performance testing framework. Its **Coach** mod
 - CO2 estimate via CO2.js integration
 
 Sitespeed.io uses a **real browser** (Chrome/Firefox via Selenium or Puppeteer) so it captures:
+
 - JavaScript-rendered content
 - Network waterfall
 - Core Web Vitals (LCP, CLS, FID/INP)
 - Actual transfer sizes after CDN and server-side compression
 
 **Strengths:**
+
 - Real browser rendering — catches what static analysis misses
 - Already integrates CO2.js
 - Highly scriptable; used in CI pipelines
@@ -326,6 +344,7 @@ Sitespeed.io uses a **real browser** (Chrome/Firefox via Selenium or Puppeteer) 
 - Docker image available
 
 **Limitations:**
+
 - Performance-centric; no WSG guideline mapping
 - Heavy — requires browser binary; not suitable for a lightweight SaaS
 - Requires more infrastructure than a Node.js HTTP fetch
@@ -346,12 +365,14 @@ Sitespeed.io is a complement, not a competitor. WSG-Check's check-as-function pa
 GreenFrame measures the **actual energy consumption** of user journeys using Puppeteer-driven scenarios. It instruments the browser, CPU, and network to measure real energy use (in µWh), not an estimate from bytes. It integrates into CI pipelines to detect energy regressions.
 
 **Strengths:**
+
 - Measures actual energy rather than estimating from bytes
 - Scenario-based: catches JS-heavy pages that static analysis cannot
 - CI integration with regression detection
 - Budget alerts
 
 **Limitations:**
+
 - Proprietary SaaS; not open source
 - Requires writing test scenarios (Playwright/Puppeteer scripts)
 - High setup barrier for quick audits
@@ -388,21 +409,19 @@ WSG-Check has a genuinely unique position in the ecosystem. No existing tool doe
 
 The following are capabilities that competitors provide and that are absent from or under-specified in the current `IMPLEMENTATION_PLAN.md`:
 
-### Gap 1: No CO2 / Carbon Footprint Estimate
+### ~~Gap 1: No CO2 / Carbon Footprint Estimate~~ ✅ Resolved in Phase 3.5
 
-Every major competitor surfaces an estimated grams of CO2 per page view as the headline metric. WSG-Check relegates CO2.js integration to "Future Enhancements." This is a strategic mistake: **users expect a carbon number**. Without it, WSG-Check will feel incomplete compared to Digital Beacon or EcoGrader even when it provides far more guideline detail.
+Every major competitor surfaces an estimated grams of CO2 per page view as the headline metric. ~~WSG-Check relegates CO2.js integration to "Future Enhancements." This is a strategic mistake: **users expect a carbon number**. Without it, WSG-Check will feel incomplete compared to Digital Beacon or EcoGrader even when it provides far more guideline detail.~~
 
-**Relevant plan section:** Phase 3 (Core Module), mentioned in "Future Enhancements"  
-**Effort to fix:** Low — CO2.js is small, ESM-native, Apache 2.0, and directly applicable
+**Resolved:** `@tgwf/co2` was added as a dependency in Phase 3.5. `estimateCO2(bytes, isGreenHosted)` uses the Sustainable Web Design v4 model to compute `co2PerPageView` in grams from `pageWeight.htmlSize`. The value is exposed as a top-level field in `RunResult`.
 
-### Gap 2: No Green Hosting Check (WSG 4.1)
+### ~~Gap 2: No Green Hosting Check (WSG 4.1)~~ ✅ Partially Resolved in Phase 3.5
 
-All four competitor tools check whether the target website is hosted on infrastructure verified to use renewable energy. This check uses the [Green Web Foundation API](https://www.thegreenwebfoundation.org/tools/green-web-dataset/) (or the bundled offline dataset in CO2.js). It is the single most impactful sustainability factor for most websites, and its absence will be noticed.
+All four competitor tools check whether the target website is hosted on infrastructure verified to use renewable energy. ~~This check uses the [Green Web Foundation API](https://www.thegreenwebfoundation.org/tools/green-web-dataset/) (or the bundled offline dataset in CO2.js). It is the single most impactful sustainability factor for most websites, and its absence will be noticed.~~
 
 > ⚠️ **Guideline correction:** The relevant WSG guideline is **4.1 "Use sustainable hosting"**, not 4.8 or 4.9. WSG 4.8 in the actual specification is "Back up critical data at routine intervals" — unrelated to hosting sustainability. WSG 4.9 is "Consider the impact and requirements of data processing." The IMPLEMENTATION_PLAN.md coverage matrix omits 4.1 entirely.
 
-**Relevant WSG guideline:** 4.1 — Use sustainable hosting  
-**Effort to fix:** Low — CO2.js `hosting.check()` provides this directly
+**Partially resolved:** `checkGreenHosting(domain)` in Phase 3.5 queries the Green Web Foundation API via CO2.js and exposes `isGreenHosted: boolean` as a top-level field in `RunResult`. A dedicated `CheckResult` for **WSG 4.1** (with a guideline ID, recommendation text, and score) remains to be added in **Phase 5 (Hosting Checks)**.
 
 ### Gap 3: No Performance Score / Core Web Vitals Integration
 
@@ -415,6 +434,7 @@ EcoGrader integrates Google PageSpeed Insights (PSI) to retrieve a real performa
 ### Gap 4: Transfer Sizes vs. Source Sizes
 
 WSG-Check's `resource-analyzer.ts` computes sizes from HTML source analysis. This misses:
+
 - CDN-level compression applied server-side after analysis
 - Actual network transfer size (which differs from source size)
 - Resources loaded dynamically by JavaScript
@@ -438,12 +458,14 @@ The WSG-Check coverage matrix in `IMPLEMENTATION_PLAN.md` covers WSG 4.2 (cachin
 ### Gap 7: WSG Section 5 (Business Strategy) Entirely Uncovered
 
 The W3C WSG specification has **four sections**, not three:
+
 - Section 2: User Experience Design (21 guidelines)
 - Section 3: Web Development (20 guidelines)
 - Section 4: Hosting, Infrastructure, and Systems (12 guidelines)
 - **Section 5: Business Strategy and Product Management (27 guidelines)** ← not mentioned in the plan
 
 Section 5 includes guidelines such as:
+
 - **5.4** Communicate the environmental impact of user choices
 - **5.5** Calculate the environmental impact ← directly relevant to CO2 estimation
 - **5.25** Define performance and environmental budgets ← directly relevant to WSG-Check's `failThreshold` feature
@@ -456,6 +478,7 @@ Most Section 5 guidelines are `manual-only` (they require organizational policy,
 ### Gap 8: No PDF / Downloadable Document Analysis
 
 The SquareEye guide identifies PDF libraries as the **single most significant emissions source** on document-heavy websites. The HTTP Archive reports average page weight grew ~500% since 2010, partly driven by document hosting. WSG-Check has no planned check for:
+
 - Detecting large PDF or document downloads linked from the page
 - Flagging documents above a size threshold for review
 - Recommending document-to-HTML conversion for long-term content
@@ -485,11 +508,12 @@ The following recommendations are ordered by impact and ease of implementation. 
 
 ---
 
-### R1: Integrate CO2.js for Carbon Estimation (Priority: **High**)
+### ~~R1: Integrate CO2.js for Carbon Estimation~~ ✅ Implemented in Phase 3.5
 
-**What:** Add `@tgwf/co2` as a dependency. In Phase 3 (Core Module) or Phase 6 (Report Module), after `analyzePageWeight()` returns the total transfer size, pass that byte count through `co2.perByte()` using the Sustainable Web Design v4 model to produce a grams-of-CO2-per-page-view estimate. Expose it as a top-level field in `SustainabilityReport`.
+**What:** ~~Add `@tgwf/co2` as a dependency. In Phase 3 (Core Module) or Phase 6 (Report Module), after `analyzePageWeight()` returns the total transfer size, pass that byte count through `co2.perByte()` using the Sustainable Web Design v4 model to produce a grams-of-CO2-per-page-view estimate. Expose it as a top-level field in `SustainabilityReport`.~~ **Done.** `@tgwf/co2` is a production dependency. `estimateCO2(htmlSize, isGreenHosted)` in `src/utils/carbon-estimator.ts` uses the SWD v4 model. `co2PerPageView` and `co2Model: 'swd-v4'` are top-level fields in `RunResult`.
 
 **Why:** Every competitor shows a carbon number. Users expect it. CO2.js is:
+
 - Apache 2.0 licensed
 - ESM-native (compatible with this project's `"type": "module"`)
 - Small (~15 KB)
@@ -497,47 +521,23 @@ The following recommendations are ordered by impact and ease of implementation. 
 - Well-maintained by the Green Web Foundation (v0.18 switching to SWD v4 in Feb 2026)
 - Funded by GitHub, Google Season of Docs, and others — low abandonment risk
 
-**Suggested phase:** Promote from "Future Enhancements" to **Phase 3 or Phase 6**. The byte count is already computed by `resource-analyzer.ts`.
-
-**Before integrating, check vulnerability status:**
-```bash
-npm install @tgwf/co2
-npm audit
-```
-
-**Example integration point** (pseudocode, do not implement):
-```ts
-// In SustainabilityReport metadata
-metadata: {
-  pageWeight: number        // bytes (already planned)
-  co2PerPageView: number    // grams — NEW
-  co2Model: 'swd-v4'       // which model was used — NEW
-  isGreenHosted: boolean    // NEW (see R2)
-}
-```
-
 ---
 
-### R2: Add Green Hosting Check — WSG 4.1 (Priority: **High**)
+### ~~R2: Add Green Hosting Check — WSG 4.1~~ ✅ Partially Implemented in Phase 3.5
 
-**What:** Use `hosting.check(domain)` from CO2.js to query the Green Web Foundation's dataset and determine whether the target site's primary domain is served from verified renewable-energy infrastructure. Expose the result as a dedicated check tied to **WSG 4.1 "Use sustainable hosting"**.
+**What:** ~~Use `hosting.check(domain)` from CO2.js to query the Green Web Foundation's dataset and determine whether the target site's primary domain is served from verified renewable-energy infrastructure. Expose the result as a dedicated check tied to **WSG 4.1 "Use sustainable hosting"**.~~
 
 > ⚠️ **Correction from initial draft:** This check maps to **WSG 4.1**, not 4.8. WSG 4.8 in the current specification is "Back up critical data at routine intervals" — it has no relation to hosting sustainability. WSG 4.9 is "Consider the impact and requirements of data processing."
 
-**Why:**
-- All competitors (EcoGrader, Digital Beacon, Website Carbon) provide this check
-- It is the highest-impact single factor affecting a site's carbon footprint
-- CO2.js bundles an offline snapshot of the GWF dataset, so it works without a live API call (important for rate-limit resilience)
-- WSG 4.1 (sustainable hosting) is currently absent from the WSG-Check coverage matrix
+**Partially implemented:** `checkGreenHosting(domain)` in `src/utils/carbon-estimator.ts` calls `hosting.check(domain)` from CO2.js and exposes the result as `isGreenHosted: boolean` in `RunResult`. A dedicated **WSG 4.1 `CheckResult`** (with guideline ID, pass/fail scoring, and recommendation text) remains to be added in **Phase 5 (Hosting Checks)**:
 
-**Suggested phase:** Add to **Phase 5 (Hosting Checks, Section 4)** alongside 4.2, 4.3, and 4.4.
+**Remaining Phase 5 work — Add WSG 4.1 to the guidelines registry** with:
 
-**Add WSG 4.1 to the guidelines registry** with:
 ```
 ID: 4.1
 Title: Use sustainable hosting
 Category: hosting
-Machine-testable: true (Green Web Foundation dataset lookup)
+Machine-testable: true (Green Web Foundation dataset lookup — already available via isGreenHosted)
 ```
 
 ---
@@ -565,6 +565,7 @@ Machine-testable: true (Green Web Foundation dataset lookup)
 ### R5: Fix WSG 4.1 in Coverage Matrix and Add Section 5 (Priority: **High**)
 
 **What:** Update the WSG Guidelines Coverage Matrix in `IMPLEMENTATION_PLAN.md`:
+
 1. Replace any erroneous reference to "WSG 4.8 (green hosting)" with the correct **WSG 4.1 "Use sustainable hosting"**
 2. Add a Section 5 block to the coverage matrix, marking all 27 Business Strategy guidelines as `manual-only` in the guidelines registry, with **5.5** ("Calculate the environmental impact") and **5.25** ("Define performance and environmental budgets") flagged as candidates for automation
 
@@ -585,6 +586,7 @@ Machine-testable: true (Green Web Foundation dataset lookup)
 ### R7: Disclose Static-Analysis Limitations in Report Output (Priority: **Low**)
 
 **What:** Add a `methodology` section to the `SustainabilityReport` type that explains:
+
 1. That analysis is performed via static HTML/HTTP analysis without a browser
 2. That resource sizes are measured from source, not actual CDN-compressed transfer sizes
 3. That JavaScript-rendered content is not evaluated
@@ -607,6 +609,7 @@ Machine-testable: true (Green Web Foundation dataset lookup)
 ### R9: Acknowledge Complementary Tools in Reports and Documentation (Priority: **Low**)
 
 **What:** In the WSG-Check report output and documentation, recommend complementary tools for dimensions WSG-Check does not cover:
+
 - **GreenFrame** — scenario-based energy monitoring for JS-heavy applications
 - **Sitespeed.io** — performance-with-sustainability analysis using a real browser
 - **Google PageSpeed Insights / Lighthouse** — Core Web Vitals and performance budgets
@@ -620,29 +623,29 @@ Machine-testable: true (Green Web Foundation dataset lookup)
 
 The following table summarises which recommendations should be folded into the existing implementation plan phases:
 
-| Recommendation | Phase | Effort | Impact |
-|---|---|---|---|
-| R1: CO2.js carbon estimation | Phase 3 or 6 | Low (1–2 days) | High — matches user expectations |
-| R2: Green hosting check (WSG 4.1) | Phase 5 | Low (0.5 day) | High — all competitors have this |
-| R5: Fix WSG 4.1 in matrix; add Section 5 | Plan + registry | Low (0.5 day) | High — correctness + completeness |
-| R6: WSG 2.17 document/PDF check | Phase 5 | Medium (1–2 days) | Medium — unique, high real-world impact |
-| R3: OLED energy framing for dark mode | Phase 4, WSG 3.12 | Trivial | Medium — improves recommendations |
-| R4: PageSpeed disclaimer + link | Phase 6 | Low | Medium — manages expectations |
-| R7: Methodology disclosure | Phase 6 | Low | Low — transparency |
-| R8: Country-specific CO2 estimate | v2 | Medium | Low (future) |
-| R9: Complementary tools references | Docs / Phase 6 | Trivial | Low — ecosystem positioning |
+| Recommendation                                   | Phase                                        | Effort            | Impact                                  |
+| ------------------------------------------------ | -------------------------------------------- | ----------------- | --------------------------------------- |
+| ~~R1: CO2.js carbon estimation~~ ✅              | Phase 3.5 (done)                             | —                 | High — matches user expectations        |
+| ~~R2: Green hosting check (WSG 4.1)~~ ✅ partial | Phase 3.5 (data done); Phase 5 (CheckResult) | —                 | High — all competitors have this        |
+| R5: Fix WSG 4.1 in matrix; add Section 5         | Plan + registry                              | Low (0.5 day)     | High — correctness + completeness       |
+| R6: WSG 2.17 document/PDF check                  | Phase 5                                      | Medium (1–2 days) | Medium — unique, high real-world impact |
+| R3: OLED energy framing for dark mode            | Phase 4, WSG 3.12                            | Trivial           | Medium — improves recommendations       |
+| R4: PageSpeed disclaimer + link                  | Phase 6                                      | Low               | Medium — manages expectations           |
+| R7: Methodology disclosure                       | Phase 6                                      | Low               | Low — transparency                      |
+| R8: Country-specific CO2 estimate                | v2                                           | Medium            | Low (future)                            |
+| R9: Complementary tools references               | Docs / Phase 6                               | Trivial           | Low — ecosystem positioning             |
 
 ### Revised Phasing Impact
 
-With R1, R2, R5, and R6 incorporated:
+With R1 and R2 partially resolved, R5 and R6 remaining:
 
 1. **Phase 1 (Config Module / Guidelines Registry):** Add all 27 Section 5 guidelines as `manual-only` entries. Flag WSG 5.5 and 5.25 as automation candidates. Correct WSG 4.1 label (was missing; "4.8" reference was an error).
-2. **Phase 3 (Core Module):** Add `@tgwf/co2` as a dependency; compute `co2PerPageView` from `pageWeight` bytes as part of the orchestration pipeline.
-3. **Phase 5 (Hosting & UX Checks):** Add WSG 4.1 entry to guidelines registry; implement green hosting check using `hosting.check()` from CO2.js. Add WSG 2.17 linked-document size check.
-4. **Phase 6 (Report Module):** Surface `co2PerPageView`, `isGreenHosted`, and a methodology disclaimer in `SustainabilityReport`. Add PageSpeed Insights link in WSG 3.1/3.8 recommendations.
+2. **Phase 3.5 (Core Module — done):** `@tgwf/co2` added as a dependency; `co2PerPageView` computed from `pageWeight.htmlSize` bytes; `isGreenHosted` queried via the Green Web Foundation API. Both exposed in `RunResult`.
+3. **Phase 5 (Hosting & UX Checks):** Add WSG 4.1 entry to guidelines registry; implement a dedicated `CheckResult` for sustainable hosting reusing the `isGreenHosted` value already in `RunResult`. Add WSG 2.17 linked-document size check.
+4. **Phase 6 (Report Module):** Surface `co2PerPageView`, `isGreenHosted`, and a methodology disclaimer in the report output. Add PageSpeed Insights link in WSG 3.1/3.8 recommendations.
 
-These additions require **~2.5–3.5 days of additional effort** over the original plan and close the most visible gaps against every existing competitor, while making WSG-Check's guideline coverage materially more complete than any current tool in the space.
+The R1/R2 work required **~1 day of effort** and closes the most visible perception gaps against every existing competitor.
 
 ---
 
-*This document was produced as part of the WSG-Check project analysis after direct review of the W3C WSG specification and the listed tools. It is intended to inform the roadmap; implementation decisions rest with the project maintainer.*
+_This document was produced as part of the WSG-Check project analysis after direct review of the W3C WSG specification and the listed tools. It is intended to inform the roadmap; implementation decisions rest with the project maintainer._
