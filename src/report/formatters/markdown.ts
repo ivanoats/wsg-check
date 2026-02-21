@@ -35,8 +35,11 @@ const formatBytes = (bytes: number): string => {
 const formatDuration = (ms: number): string =>
   ms < 1_000 ? `${ms}ms` : `${(ms / 1_000).toFixed(1)}s`
 
-/** Escape pipe characters so they don't break Markdown table cells. */
-const mdCell = (text: string): string => text.replace(/\|/g, '\\|')
+/**
+ * Escape characters with special meaning inside a Markdown table cell.
+ * Backslashes must be escaped first (before `|`) to avoid double-escaping.
+ */
+const mdCell = (text: string): string => text.replace(/\\/g, '\\\\').replace(/\|/g, '\\|')
 
 // ─── Section builders ─────────────────────────────────────────────────────────
 

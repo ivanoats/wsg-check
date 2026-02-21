@@ -114,6 +114,13 @@ describe('formatMarkdown', () => {
     expect(md).toContain('3.1')
   })
 
+  it('escapes backslash characters in guideline names', () => {
+    const results = [makeCheckResult({ guidelineName: 'Path\\to\\resource', status: 'pass' })]
+    const report = fromRunResult(makeRunResult({ results }))
+    const md = formatMarkdown(report)
+    expect(md).toContain('Path\\\\to\\\\resource')
+  })
+
   it('contains a Check Results section with guideline IDs', () => {
     const md = formatMarkdown(makeReport())
     expect(md).toContain('## Check Results')
