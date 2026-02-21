@@ -64,10 +64,22 @@ function extractStyleBlocks(body: string): string {
 }
 
 /** Returns true when the font-family value string contains a suitable fallback. */
+function normalizeFontToken(token: string): string {
+  // Trim whitespace, remove surrounding single/double quotes, and lowercase for comparison.
+  return token.trim().replace(/^['"]+|['"]+$/g, '').toLowerCase()
+}
+
 function hasFallback(value: string): boolean {
-  const lower = value.toLowerCase()
-  if (GENERIC_FAMILIES.some((g) => lower.includes(g))) return true
-  if (SYSTEM_FONTS.some((s) => lower.includes(s))) return true
+  // Split on commas per CSS font-family syntax and inspect each token individually.
+  const tokens = value.split(',')
+
+  for (const rawToken of tokens) {
+    const token = normalizeFontToken(rawToken)
+    if (!token) continue
+
+    if (GENERIC_FAMILIES.includes(token)) return true
+    if (SYSTEM_FONTS.includes(token)) return true
+  }
   return false
 }
 
