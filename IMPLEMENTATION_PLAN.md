@@ -340,10 +340,10 @@ interface SustainabilityReport {
 
 ### 6.2 Report Formatters
 
-- [ ] Create `src/report/formatters/json.ts` — Raw JSON output
-- [ ] Create `src/report/formatters/markdown.ts` — Markdown report
-- [ ] Create `src/report/formatters/html.ts` — Styled HTML report
-- [ ] Create `src/report/formatters/terminal.ts` — Colorized terminal output with tables
+- [x] Create `src/report/formatters/json.ts` — Raw JSON output
+- [x] Create `src/report/formatters/markdown.ts` — Markdown report
+- [x] Create `src/report/formatters/html.ts` — Styled HTML report
+- [x] Create `src/report/formatters/terminal.ts` — Colorized terminal output with tables
 
 ### 6.3 Recommendations Engine
 

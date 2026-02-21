@@ -56,17 +56,17 @@ All source-code dependencies point **inward**:
 
 ### Ports and Adapters
 
-| Port (interface)      | Adapter (implementation)                                                         |
-| --------------------- | -------------------------------------------------------------------------------- |
-| HTTP fetch            | `HttpClient` via Axios                                                           |
-| HTML parsing          | `parseHtml` via Cheerio                                                          |
-| Resource analysis     | `analyzePageWeight`                                                              |
-| Carbon estimation     | `estimateCO2` / `checkGreenHosting` via `@tgwf/co2`                              |
-| Configuration loading | `resolveConfig` (file + env + CLI)                                               |
-| Logging               | `createLogger` (terminal or JSON)                                                |
-| Check execution       | `CheckRunner.run` (parallel execution)                                           |
-| Scoring               | `scoreResults`                                                                   |
-| Report formatting     | `fromRunResult` → `SustainabilityReport` (Phase 6.1 ✅); formatters in Phase 6.2 |
+| Port (interface)      | Adapter (implementation)                                                                                                                  |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP fetch            | `HttpClient` via Axios                                                                                                                    |
+| HTML parsing          | `parseHtml` via Cheerio                                                                                                                   |
+| Resource analysis     | `analyzePageWeight`                                                                                                                       |
+| Carbon estimation     | `estimateCO2` / `checkGreenHosting` via `@tgwf/co2`                                                                                       |
+| Configuration loading | `resolveConfig` (file + env + CLI)                                                                                                        |
+| Logging               | `createLogger` (terminal or JSON)                                                                                                         |
+| Check execution       | `CheckRunner.run` (parallel execution)                                                                                                    |
+| Scoring               | `scoreResults`                                                                                                                            |
+| Report formatting     | `fromRunResult` → `SustainabilityReport` (Phase 6.1 ✅); `formatJson` / `formatMarkdown` / `formatHtml` / `formatTerminal` (Phase 6.2 ✅) |
 
 ### Data Flow Pipeline
 
@@ -789,6 +789,56 @@ console.log(`Score: ${report.overallScore}`) // e.g. 82
 console.log(`Passed: ${report.summary.passed}`)
 console.log(`Top recommendation: ${report.recommendations[0]?.recommendation}`)
 console.log(`CO₂ per view: ${report.metadata.co2PerPageView}g`)
+```
+
+### Phase 6.2 — Report Formatters
+
+Four formatters convert a `SustainabilityReport` into different output formats, all exported from `@/report`.
+
+| Formatter | Function         | Output                                                 |
+| --------- | ---------------- | ------------------------------------------------------ |
+| JSON      | `formatJson`     | Machine-readable JSON string (CI, APIs, data storage)  |
+| Markdown  | `formatMarkdown` | GitHub-flavoured Markdown (PR comments, documentation) |
+| HTML      | `formatHtml`     | Self-contained HTML5 document (browser, email, static) |
+| Terminal  | `formatTerminal` | ANSI-colourised terminal output (CLI, local dev)       |
+
+#### `formatJson(report, indent?)`
+
+Serialises the report to a JSON string. Pass `indent = 0` for compact/minified output.
+
+#### `formatMarkdown(report)`
+
+Renders a full Markdown document with sections for summary, category scores, recommendations, check results, page metrics, and methodology.
+
+#### `formatHtml(report)`
+
+Renders a self-contained HTML5 document with inline CSS. Supports light/dark mode via `prefers-color-scheme` and is print-friendly. All user-supplied strings are HTML-escaped to prevent XSS.
+
+#### `formatTerminal(report, options?)`
+
+Renders a colourised terminal report using ANSI escape codes. Pass `{ colors: false }` to disable colour (e.g., when piping to a file or when `NO_COLOR` is set).
+
+#### Usage
+
+```typescript
+import { fromRunResult, formatJson, formatMarkdown, formatHtml, formatTerminal } from '@/report'
+
+const report = fromRunResult(runResult, htmlSize, resourceCount, thirdPartyCount)
+
+// JSON (for CI or API responses)
+const json = formatJson(report)
+
+// Markdown (for GitHub PR comments)
+const md = formatMarkdown(report)
+
+// HTML (for browser or static site)
+const html = formatHtml(report)
+
+// Terminal (for CLI output)
+process.stdout.write(formatTerminal(report))
+
+// Terminal without colour (plain-text file or pipe)
+process.stdout.write(formatTerminal(report, { colors: false }))
 ```
 
 ## Technologies Used
