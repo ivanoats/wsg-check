@@ -62,6 +62,8 @@ export interface FormInputInfo {
   hasLabel: boolean
   /** `true` when the input carries an `autocomplete` attribute. */
   hasAutocomplete: boolean
+  /** `true` when the input carries an `inputmode` attribute. */
+  hasInputmode: boolean
 }
 
 /**
@@ -366,6 +368,7 @@ export function parseHtml(html: string, baseUrl?: string): ParsedPage {
       type,
       hasLabel,
       hasAutocomplete: 'autocomplete' in attrs,
+      hasInputmode: 'inputmode' in attrs,
     })
   })
 

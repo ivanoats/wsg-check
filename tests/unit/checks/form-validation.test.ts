@@ -10,6 +10,7 @@ function makeInput(overrides: Partial<FormInputInfo> = {}): FormInputInfo {
     type: 'text',
     hasLabel: true,
     hasAutocomplete: true,
+    hasInputmode: false,
     ...overrides,
   }
 }
