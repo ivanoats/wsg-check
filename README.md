@@ -736,8 +736,8 @@ The Report Module — introduced in **Phase 6** — converts a `RunResult` into 
 #### Types
 
 | Type / Interface       | Purpose                                                                          |
-| ---------------------- | -------------------------------------------------------------------------------- | --- | --- | --- | ----------------------------------- |
-| `Grade`                | Letter grade `'A'                                                                | 'B' | 'C' | 'D' | 'F'` derived from the overall score |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| `Grade`                | Letter grade (`'A'`, `'B'`, `'C'`, `'D'`, `'F'`) derived from the overall score  |
 | `Recommendation`       | Single actionable improvement from a `fail`/`warn` check result                  |
 | `ReportMetadata`       | Page metrics: weight, resource count, CO₂, green hosting                         |
 | `ReportMethodology`    | Notes on analysis type, limitations, and complementary tools                     |
