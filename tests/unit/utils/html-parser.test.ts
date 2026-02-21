@@ -162,6 +162,7 @@ describe('parseHtml – edge cases', () => {
     expect(page.lang).toBeNull()
     expect(page.resources).toEqual([])
     expect(page.headings).toEqual([])
+    expect(page.formInputs).toEqual([])
   })
 
   it('handles HTML without a lang attribute', () => {
@@ -263,5 +264,80 @@ describe('parseHtml – resolveUrl edge cases', () => {
     const page = parseHtml(html)
     const css = page.resources.find((r) => r.type === 'stylesheet')
     expect(css?.url).toBe('/styles.css')
+  })
+})
+
+describe('parseHtml – form inputs', () => {
+  it('returns an empty formInputs array when no inputs are present', () => {
+    const page = parseHtml('<html><body><p>No forms here</p></body></html>')
+    expect(page.formInputs).toEqual([])
+  })
+
+  it('detects an input labelled via for/id pairing', () => {
+    const html = `<html><body>
+      <label for="email">Email</label>
+      <input id="email" type="email" />
+    </body></html>`
+    const page = parseHtml(html)
+    expect(page.formInputs).toHaveLength(1)
+    expect(page.formInputs[0].hasLabel).toBe(true)
+    expect(page.formInputs[0].type).toBe('email')
+  })
+
+  it('detects an input labelled by wrapping label element', () => {
+    const html = `<html><body>
+      <label>Name <input type="text" /></label>
+    </body></html>`
+    const page = parseHtml(html)
+    expect(page.formInputs[0].hasLabel).toBe(true)
+  })
+
+  it('marks an input without a label as not having a label', () => {
+    const html = `<html><body><input type="text" /></body></html>`
+    const page = parseHtml(html)
+    expect(page.formInputs[0].hasLabel).toBe(false)
+  })
+
+  it('detects autocomplete attribute on an input', () => {
+    const html = `<html><body>
+      <label for="u">User</label>
+      <input id="u" type="text" autocomplete="username" />
+    </body></html>`
+    const page = parseHtml(html)
+    expect(page.formInputs[0].hasAutocomplete).toBe(true)
+  })
+
+  it('marks an input without autocomplete correctly', () => {
+    const html = `<html><body><input type="text" /></body></html>`
+    const page = parseHtml(html)
+    expect(page.formInputs[0].hasAutocomplete).toBe(false)
+  })
+
+  it('ignores hidden inputs', () => {
+    const html = `<html><body><input type="hidden" value="csrf" /></body></html>`
+    const page = parseHtml(html)
+    expect(page.formInputs).toHaveLength(0)
+  })
+
+  it('includes select elements', () => {
+    const html = `<html><body>
+      <label for="c">Country</label>
+      <select id="c"><option>UK</option></select>
+    </body></html>`
+    const page = parseHtml(html)
+    const sel = page.formInputs.find((i) => i.type === 'select')
+    expect(sel).toBeDefined()
+    expect(sel?.hasLabel).toBe(true)
+  })
+
+  it('includes textarea elements', () => {
+    const html = `<html><body>
+      <label for="msg">Message</label>
+      <textarea id="msg"></textarea>
+    </body></html>`
+    const page = parseHtml(html)
+    const ta = page.formInputs.find((i) => i.type === 'textarea')
+    expect(ta).toBeDefined()
+    expect(ta?.hasLabel).toBe(true)
   })
 })

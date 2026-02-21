@@ -32,6 +32,7 @@ function makeParsedPage(overrides: Partial<ParsedPage> = {}): ParsedPage {
     ariaAttributes: [],
     structuredData: [],
     doctype: null,
+    formInputs: [],
     ...overrides,
   }
 }

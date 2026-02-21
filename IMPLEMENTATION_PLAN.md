@@ -229,17 +229,18 @@ interface CheckResult {
 
 - [x] **WSG 3.3 — Minify Your HTML, CSS, and JavaScript** — Detect unminified HTML (blank-line ratio, HTML comment count); implemented in `src/checks/minification.ts`
 - [x] **WSG 3.9 — Resolve Render Blocking Content** — Check for `async`/`defer` on scripts and `loading="lazy"` on images; implemented in `src/checks/render-blocking.ts`
-- [ ] **3.1 Performance goals** — Check total page weight against budgets, count requests (static analysis only; external resource sizes not available without fetching each asset)
+- [x] **3.1 Performance goals** — Check total page weight against budgets (HTML > 100 KB → warn, > 500 KB → fail; resources > 50 → warn, > 100 → fail); implemented in `src/checks/page-weight.ts`
 - [ ] **3.3 Code splitting** — Check for large monolithic JS bundles (>250KB; requires fetching individual JS files — deferred to a future phase)
 - [ ] **3.4 Remove unnecessary code** — Detect unused CSS (compare selectors to DOM; requires headless browser execution — deferred to a future phase)
 
 ### 4.2 Semantic & Standards Checks
 
-- [ ] **3.7 Semantic code** — Validate semantic HTML usage (headings hierarchy, landmarks, ARIA)
-- [ ] **3.7 Built-in over custom** — Detect custom implementations of native HTML elements
-- [ ] **3.9 Accessibility aids** — Check for skip links, ARIA landmarks
-- [ ] **3.10 Form validation** — Check forms for labels, error handling, clipboard access
-- [ ] **3.11 Metadata** — Validate `<title>`, meta tags, Open Graph, structured data (Schema.org)
+- [x] **3.8 Semantic code** — Validate semantic HTML usage (headings hierarchy, landmarks, lang attribute); implemented in `src/checks/semantic-html.ts`
+- [x] **3.8 Built-in over custom** — Detect custom implementations of native HTML elements (`<div role="button">` etc.); implemented in `src/checks/semantic-html.ts`
+- [x] **3.10 Accessibility aids** — Check for skip navigation links and `<main>` landmark; implemented in `src/checks/accessibility-aids.ts`
+- [x] **3.12 Form validation** — Check form inputs for associated labels and autocomplete attributes; implemented in `src/checks/form-validation.ts`
+- [x] **3.4 Metadata** — Validate `<title>`, meta description, and Open Graph tags; implemented in `src/checks/metadata.ts`
+- [x] **3.13 Structured data** — Check for Schema.org JSON-LD blocks; implemented in `src/checks/metadata.ts`
 
 ### 4.3 Sustainability-Specific Checks
 

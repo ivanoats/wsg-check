@@ -30,6 +30,7 @@ function makePageData(body: string): PageData {
       ariaAttributes: [],
       structuredData: [],
       doctype: '<!DOCTYPE html>',
+      formInputs: [],
     },
     pageWeight: {
       htmlSize: body.length,

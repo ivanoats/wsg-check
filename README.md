@@ -217,6 +217,7 @@ Parses raw HTML into a structured `ParsedPage` object using [Cheerio](https://ch
 - Semantic structure: heading hierarchy, landmark elements, ARIA attributes
 - Accessibility signals: skip-navigation links
 - Structured data: JSON-LD blocks
+- Form inputs: `formInputs` array — each entry captures the input `type`, whether it has a `<label>` (`hasLabel`), and whether it carries an `autocomplete` attribute (`hasAutocomplete`)
 
 ```typescript
 import { parseHtml } from '@/utils'
@@ -291,6 +292,7 @@ The Checks Module contains the individual WSG guideline check functions introduc
 | --------------------- | -------------------- | ----------------------------------------- | ------ |
 | `checkMinification`   | `minification.ts`    | 3.3 Minify Your HTML, CSS, and JavaScript | medium |
 | `checkRenderBlocking` | `render-blocking.ts` | 3.9 Resolve Render Blocking Content       | high   |
+| `checkPageWeight`     | `page-weight.ts`     | 3.1 Set Performance Budgets               | medium |
 
 #### `checkMinification` — WSG 3.3
 
@@ -317,22 +319,96 @@ Scoring:
 | All scripts deferred, all images lazy  | `pass`           | 100   |
 | No scripts or images on the page       | `not-applicable` | —     |
 
+#### `checkPageWeight` — WSG 3.1
+
+Checks the HTML document size and total referenced resource count against sustainability-driven performance budgets. Static analysis only — external resource sizes are not individually fetched.
+
+| Condition                        | Status | Score |
+| -------------------------------- | ------ | ----- |
+| HTML > 500 KB or resources > 100 | `fail` | 0     |
+| HTML > 100 KB or resources > 50  | `warn` | 50    |
+| Within both budgets              | `pass` | 100   |
+
+### Phase 4.2 — Semantic & Standards Checks
+
+| Check                    | File                    | WSG Guideline                                  | Impact |
+| ------------------------ | ----------------------- | ---------------------------------------------- | ------ |
+| `checkSemanticHtml`      | `semantic-html.ts`      | 3.8 Use HTML Elements Correctly                | medium |
+| `checkAccessibilityAids` | `accessibility-aids.ts` | 3.10 Provide Code-Based Way-Finding Mechanisms | medium |
+| `checkFormValidation`    | `form-validation.ts`    | 3.12 Validate Forms                            | medium |
+| `checkMetadata`          | `metadata.ts`           | 3.4 Use Metadata Correctly                     | low    |
+| `checkStructuredData`    | `metadata.ts`           | 3.13 Use Metadata, Microdata, and Schema.org   | low    |
+
+#### `checkSemanticHtml` — WSG 3.8
+
+Validates semantic HTML structure across three areas:
+
+1. **Document language** — the `<html>` element must declare a `lang` attribute.
+2. **Heading hierarchy** — headings must not skip levels (e.g., `h1 → h3`), and the page should have exactly one `<h1>`.
+3. **Native elements over custom implementations** — detects `<div role="button">` and similar patterns that should use native `<button>`, `<a>`, or `<input>` elements instead.
+
+#### `checkAccessibilityAids` — WSG 3.10
+
+Checks for way-finding mechanisms that allow keyboard and screen-reader users to navigate efficiently:
+
+1. **Skip navigation link** — an `<a href="#…">` that lets users bypass repeated navigation blocks. Required when a `<nav>` landmark is present.
+2. **`<main>` landmark** — identifies the primary content region for assistive technology.
+
+| Condition                           | Status           | Score |
+| ----------------------------------- | ---------------- | ----- |
+| Nav present, no skip link           | `fail`           | 0     |
+| Missing `<main>` landmark only      | `warn`           | 50    |
+| Skip link and `<main>` both present | `pass`           | 100   |
+| No navigation structure             | `not-applicable` | —     |
+
+#### `checkFormValidation` — WSG 3.12
+
+Checks that form inputs use accessible and efficient HTML patterns:
+
+1. **Labels** — every `<input>`, `<select>`, and `<textarea>` must have an associated `<label>` (via `for`/`id` pairing or nesting).
+2. **Autocomplete** — at least one input should carry an `autocomplete` attribute to enable browser/password manager pre-fill.
+
+| Condition                           | Status           | Score |
+| ----------------------------------- | ---------------- | ----- |
+| Any input missing a label           | `fail`           | 0     |
+| Labels present, autocomplete absent | `warn`           | 50    |
+| All labelled, autocomplete used     | `pass`           | 100   |
+| No form inputs found                | `not-applicable` | —     |
+
+#### `checkMetadata` — WSG 3.4
+
+Validates essential page metadata that enables accurate search-engine previews and social-media cards:
+
+- `<title>` element (required)
+- `<meta name="description">` (required)
+- Open Graph tags `og:title` and `og:description` (recommended)
+
+Missing title or description → `fail`; missing Open Graph only → `warn`.
+
+#### `checkStructuredData` — WSG 3.13
+
+Checks for Schema.org JSON-LD structured data that enables rich search results, reducing the number of clicks users need to find information:
+
+- No JSON-LD blocks found → `warn` (50)
+- One or more valid JSON-LD blocks → `pass` (100)
+
 ### Using the Checks Module
 
 ```typescript
 import { WsgChecker } from '@/core'
-import { performanceChecks } from '@/checks'
+import { performanceChecks, semanticChecks } from '@/checks'
 
-// Register all Phase 4.1 checks at once
-const checker = new WsgChecker({ timeout: 15_000 }, performanceChecks)
+// Register all Phase 4.1 + 4.2 checks at once
+const checker = new WsgChecker({ timeout: 15_000 }, [...performanceChecks, ...semanticChecks])
 const result = await checker.check('https://example.com')
 
 // Or register individual checks for more granular control
-import { checkMinification, checkRenderBlocking } from '@/checks'
+import { checkSemanticHtml, checkMetadata, checkStructuredData } from '@/checks'
 
 const checker2 = new WsgChecker()
-checker2.runner.register(checkMinification)
-checker2.runner.register(checkRenderBlocking)
+checker2.runner.register(checkSemanticHtml)
+checker2.runner.register(checkMetadata)
+checker2.runner.register(checkStructuredData)
 ```
 
 ## Technologies Used
