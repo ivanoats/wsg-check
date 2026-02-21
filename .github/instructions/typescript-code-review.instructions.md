@@ -1,4 +1,5 @@
 ---
+applyTo: '**/*.{ts,tsx}'
 name: typescript-code-review
 description: Perform comprehensive code reviews for TypeScript projects, analyzing type safety, best practices, performance, security, and code quality with actionable feedback
 ---

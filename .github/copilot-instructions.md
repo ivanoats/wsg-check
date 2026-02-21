@@ -1,12 +1,3 @@
-# ⚠️ Deprecated — use `copilot-instructions.md`
-
-> This file used an underscore in its name and was **not** picked up by GitHub
-> Copilot.  The canonical instructions have been moved to
-> `.github/copilot-instructions.md` (hyphen), which is the filename that
-> GitHub Copilot recognizes.  Please edit that file instead.
-
-<!-- original content preserved below for reference -->
-
 # Copilot Instructions
 
 This is a mobile-first designed web app
@@ -17,6 +8,20 @@ Usability, Performance, Accessibility, Maintainability, Security, and Sustainabi
 Use the ParkUI design system <https://park-ui.com/>
 
 Use ReactJS and NodeJS
+
+## TypeScript Style
+
+Write TypeScript in a **functional programming style**:
+
+- Prefer pure functions with no side effects
+- Use `const` arrow functions: `const fn = (x: T): U => ...`
+- Use `readonly` properties and `Readonly<T>` / `ReadonlyArray<T>` (preferred over `readonly T[]`) to prevent mutation
+- Favor `map`, `filter`, `reduce`, and `flatMap` over imperative `for` loops
+- Use discriminated unions (e.g. `Result<T, E>`) instead of throwing exceptions at boundaries
+- Compose small, single-purpose functions rather than large classes
+- Avoid `class` unless encapsulation of mutable state is genuinely required
+- Use TypeScript utility types (`Pick`, `Omit`, `Partial`, `Required`, `Record`) over ad-hoc shapes
+- Prefer `type` aliases for union/intersection types; use `interface` for object shapes that may be extended
 
 ## Usability
 
