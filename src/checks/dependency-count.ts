@@ -26,8 +26,8 @@ const GUIDELINE_NAME = 'Reducing Third-Party Dependencies'
 const SUCCESS_CRITERION = 'Pages should minimise third-party resource dependencies'
 const RESOURCES = ['https://www.w3.org/TR/web-sustainability-guidelines/#reducing-third-party-code']
 
-/** Total third-party resource count above which a fail is issued. */
-const FAIL_THRESHOLD = 9
+/** Maximum third-party resource count that results in a warn (values above this fail). */
+const MAX_WARN_COUNT = 9
 
 export const checkDependencyCount: CheckFn = (page) => {
   const { thirdPartyCount, byType } = page.pageWeight
@@ -57,7 +57,7 @@ export const checkDependencyCount: CheckFn = (page) => {
 
   const breakdownStr = breakdown.length > 0 ? ` (${breakdown.join(', ')})` : ''
 
-  if (thirdPartyCount > FAIL_THRESHOLD) {
+  if (thirdPartyCount > MAX_WARN_COUNT) {
     return {
       guidelineId: GUIDELINE_ID,
       guidelineName: GUIDELINE_NAME,
