@@ -53,10 +53,10 @@ function makePageData(resources: ResourceReference[]): PageData {
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
-describe('checkRenderBlocking (WSG 3.9)', () => {
-  it('returns guidelineId 3.9', async () => {
+describe('checkRenderBlocking (WSG 3.8)', () => {
+  it('returns guidelineId 3.8', async () => {
     const result = await checkRenderBlocking(makePageData([]))
-    expect(result.guidelineId).toBe('3.9')
+    expect(result.guidelineId).toBe('3.8')
   })
 
   it('returns category web-dev', async () => {

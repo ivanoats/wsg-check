@@ -1,5 +1,5 @@
 /**
- * WSG 3.8 – Use HTML Elements Correctly
+ * WSG 3.7 – Use HTML Elements Correctly
  *
  * Validates semantic HTML usage across three areas:
  *
@@ -25,7 +25,7 @@
 import type { CheckFn } from '../core/types.js'
 import type { HeadingNode } from '../utils/html-parser.js'
 
-const GUIDELINE_ID = '3.8'
+const GUIDELINE_ID = '3.7'
 const GUIDELINE_NAME = 'Use HTML Elements Correctly'
 const SUCCESS_CRITERION =
   'Use semantic HTML elements to structure content and reduce reliance on CSS/JS workarounds'

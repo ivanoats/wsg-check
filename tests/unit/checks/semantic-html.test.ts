@@ -69,10 +69,10 @@ const SKIPPED_HEADING_HTML =
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
-describe('checkSemanticHtml (WSG 3.8)', () => {
-  it('returns guidelineId 3.8', async () => {
+describe('checkSemanticHtml (WSG 3.7)', () => {
+  it('returns guidelineId 3.7', async () => {
     const result = await checkSemanticHtml(makePageData({ headings: GOOD_HEADINGS }))
-    expect(result.guidelineId).toBe('3.8')
+    expect(result.guidelineId).toBe('3.7')
   })
 
   it('returns category web-dev', async () => {

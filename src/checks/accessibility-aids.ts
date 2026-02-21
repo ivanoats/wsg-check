@@ -1,12 +1,12 @@
 /**
- * WSG 3.10 – Provide Code-Based Way-Finding Mechanisms
+ * WSG 3.9 – Provide Code-Based Way-Finding Mechanisms
  *
  * Checks for accessibility aids that allow users to navigate pages efficiently
  * without excessive interaction, reducing device and network energy use:
  *
  *   1. Skip navigation link — an `<a href="#…">` that allows keyboard and
  *      screen-reader users to bypass repeated navigation blocks.  Mandatory
- *      when a navigation landmark is present (WCAG 2.4.1 / WSG 3.10).
+ *      when a navigation landmark is present (WCAG 2.4.1 / WSG 3.9).
  *
  *   2. `<main>` landmark — identifies the primary content region so assistive
  *      technology users can jump directly to it.
@@ -22,7 +22,7 @@
 
 import type { CheckFn } from '../core/types.js'
 
-const GUIDELINE_ID = '3.10'
+const GUIDELINE_ID = '3.9'
 const GUIDELINE_NAME = 'Provide Code-Based Way-Finding Mechanisms'
 const SUCCESS_CRITERION =
   'Pages with navigation should include a skip navigation link and a <main> landmark'

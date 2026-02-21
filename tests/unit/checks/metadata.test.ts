@@ -135,12 +135,12 @@ describe('checkMetadata (WSG 3.4)', () => {
   })
 })
 
-// ─── checkStructuredData (WSG 3.13) ──────────────────────────────────────────
+// ─── checkStructuredData (WSG 3.11) ──────────────────────────────────────────
 
-describe('checkStructuredData (WSG 3.13)', () => {
-  it('returns guidelineId 3.13', async () => {
+describe('checkStructuredData (WSG 3.11)', () => {
+  it('returns guidelineId 3.11', async () => {
     const result = await checkStructuredData(makePageData({}))
-    expect(result.guidelineId).toBe('3.13')
+    expect(result.guidelineId).toBe('3.11')
   })
 
   it('returns category web-dev', async () => {

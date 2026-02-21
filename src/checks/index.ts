@@ -1,8 +1,8 @@
 /**
- * Checks module – Phase 4.1 & Phase 4.2
+ * Checks module – Phase 4.1, Phase 4.2 & Phase 4.3
  *
  * Exports all automated check functions that correspond to WSG web-development
- * guidelines (Phases 4.1 and 4.2 of the implementation plan).
+ * guidelines (Phases 4.1, 4.2 and 4.3 of the implementation plan).
  *
  * Each check is a pure `CheckFn` — a function that accepts a `PageData`
  * bundle and returns a `CheckResult` (or a `Promise<CheckResult>`).  Checks
@@ -11,9 +11,9 @@
  * Usage:
  * ```ts
  * import { WsgChecker } from '@/core'
- * import { performanceChecks, semanticChecks } from '@/checks'
+ * import { performanceChecks, semanticChecks, sustainabilityChecks } from '@/checks'
  *
- * const checker = new WsgChecker({}, [...performanceChecks, ...semanticChecks])
+ * const checker = new WsgChecker({}, [...performanceChecks, ...semanticChecks, ...sustainabilityChecks])
  * const result  = await checker.check('https://example.com')
  * ```
  */
@@ -29,6 +29,13 @@ export { checkAccessibilityAids } from './accessibility-aids.js'
 export { checkFormValidation } from './form-validation.js'
 export { checkMetadata, checkStructuredData } from './metadata.js'
 
+// ─── Phase 4.3 — Sustainability-Specific ─────────────────────────────────────
+export { checkCssRedundancy } from './redundancy.js'
+export { checkThirdParty } from './third-party.js'
+export { checkPreferenceMediaQueries } from './preference-media-queries.js'
+export { checkResponsiveDesign } from './responsive-design.js'
+export { checkSustainableJs } from './sustainable-js.js'
+
 import { checkMinification } from './minification.js'
 import { checkRenderBlocking } from './render-blocking.js'
 import { checkPageWeight } from './page-weight.js'
@@ -36,6 +43,11 @@ import { checkSemanticHtml } from './semantic-html.js'
 import { checkAccessibilityAids } from './accessibility-aids.js'
 import { checkFormValidation } from './form-validation.js'
 import { checkMetadata, checkStructuredData } from './metadata.js'
+import { checkCssRedundancy } from './redundancy.js'
+import { checkThirdParty } from './third-party.js'
+import { checkPreferenceMediaQueries } from './preference-media-queries.js'
+import { checkResponsiveDesign } from './responsive-design.js'
+import { checkSustainableJs } from './sustainable-js.js'
 
 /**
  * All Phase 4.1 Performance & Efficiency checks bundled for convenience.
@@ -53,11 +65,11 @@ export const performanceChecks = [checkMinification, checkRenderBlocking, checkP
  *
  * | Check                  | WSG Guideline | Testability     |
  * | ---------------------- | ------------- | --------------- |
- * | `checkSemanticHtml`    | 3.8           | automated       |
- * | `checkAccessibilityAids` | 3.10        | automated       |
- * | `checkFormValidation`  | 3.12          | semi-automated  |
+ * | `checkSemanticHtml`    | 3.7           | automated       |
+ * | `checkAccessibilityAids` | 3.9         | automated       |
+ * | `checkFormValidation`  | 3.10          | semi-automated  |
  * | `checkMetadata`        | 3.4           | automated       |
- * | `checkStructuredData`  | 3.13          | automated       |
+ * | `checkStructuredData`  | 3.11          | automated       |
  */
 export const semanticChecks = [
   checkSemanticHtml,
@@ -65,4 +77,23 @@ export const semanticChecks = [
   checkFormValidation,
   checkMetadata,
   checkStructuredData,
+] as const
+
+/**
+ * All Phase 4.3 Sustainability-Specific checks bundled for convenience.
+ *
+ * | Check                        | WSG Guideline | Testability |
+ * | ---------------------------- | ------------- | ----------- |
+ * | `checkCssRedundancy`         | 3.5           | automated   |
+ * | `checkThirdParty`            | 3.6           | automated   |
+ * | `checkPreferenceMediaQueries`| 3.12          | automated   |
+ * | `checkResponsiveDesign`      | 3.13          | automated   |
+ * | `checkSustainableJs`         | 3.14          | automated   |
+ */
+export const sustainabilityChecks = [
+  checkCssRedundancy,
+  checkThirdParty,
+  checkPreferenceMediaQueries,
+  checkResponsiveDesign,
+  checkSustainableJs,
 ] as const
