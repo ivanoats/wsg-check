@@ -40,7 +40,9 @@ function isModernFormat(url: string): boolean {
     const pathname = new URL(url).pathname.toLowerCase()
     return MODERN_IMAGE_FORMATS.some((ext) => pathname.endsWith(ext))
   } catch {
-    return MODERN_IMAGE_FORMATS.some((ext) => url.toLowerCase().includes(ext))
+    const lowerUrl = url.toLowerCase()
+    const pathOnly = lowerUrl.split(/[?#]/, 1)[0]
+    return MODERN_IMAGE_FORMATS.some((ext) => pathOnly.endsWith(ext))
   }
 }
 
