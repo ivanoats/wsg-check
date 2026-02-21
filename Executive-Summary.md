@@ -26,7 +26,7 @@ Based on the current trajectory of the W3C guidelines (which are moving toward "
 ### Phase 3: Reporting & Compliance
 
 - Impact API: Integrating with the W3C Measurability Task Force's scoring consensus (slated for late 2026) to provide verified carbon estimates.
-- Regulatory Export: Generating reports that satisfy emerging ESG (Environmental, Social, and Governance) reporting requirements.
+- Regulatory Export: Generating reports that satisfy emerging ESG (Environmental, Social, and Governance) reporting requirements. The [FMP ESG API](https://site.financialmodelingprep.com/developer/docs#esg) has been evaluated as one potential data source for this goal: it provides corporate-level Environmental, Social, and Governance scores (0–100) and letter-grade ratings for publicly-traded companies. Analysis in `COMPETITIVE_ANALYSIS.md` (Section 3.8, Gap 11, and Recommendation R10) concludes that FMP integration is best deferred to a post-launch v2 opt-in module — its coverage is limited to publicly-traded companies, it introduces a paid commercial API dependency, and mixing corporate ESG scores with W3C WSG technical checks requires careful UX framing to avoid conflating two distinct accountability frameworks.
 
 ## 3. Marketplace Positioning
 

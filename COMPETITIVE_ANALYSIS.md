@@ -18,6 +18,7 @@
    - [SquareEye Sustainability Audit Guide](#35-squareeye-sustainability-audit-guide)
    - [Sitespeed.io + Coach](#36-sitespeedio--coach)
    - [GreenFrame](#37-greenframe-greenframeio)
+   - [Financial Modeling Prep ESG API](#38-financial-modeling-prep-fmp-esg-api)
 4. [WSG-Check Differentiators](#4-wsg-check-differentiators)
 5. [Gaps in WSG-Check Plan](#5-gaps-in-wsg-check-plan)
    - [Gap 1: No CO2 estimate](#gap-1-no-co2--carbon-footprint-estimate)
@@ -30,6 +31,7 @@
    - [Gap 8: No PDF / document analysis](#gap-8-no-pdf--downloadable-document-analysis)
    - [Gap 9: Country-specific grid intensity](#gap-9-country-specific-grid-intensity)
    - [Gap 10: WSG 3.20 missing](#gap-10-wsg-320-database-query-complexity-missing)
+   - [Gap 11: No corporate ESG context layer](#gap-11-no-corporate-esg-context-layer)
 6. [Recommendations](#6-recommendations)
 7. [Implementation Priority Summary](#7-implementation-priority-summary)
 
@@ -46,6 +48,7 @@
 | [SquareEye Guide](https://squareeye.com/how-to-audit-and-optimise-your-website-for-sustainability/) | Manual audit guide  | Free (content)    | Manual checklist                | Partial     |
 | [Sitespeed.io + Coach](https://www.sitespeed.io/)                                                   | CLI / Docker        | Open (MIT)        | Performance + sustainability    | ❌          |
 | [GreenFrame](https://greenframe.io)                                                                 | SaaS monitoring     | Freemium          | Scenario energy (µWh)           | ❌          |
+| [FMP ESG API](https://site.financialmodelingprep.com/developer/docs#esg)                           | Commercial REST API | Paid (freemium)   | Corporate E/S/G scores (0–100)  | ❌          |
 | **WSG-Check** _(planned)_                                                                           | Web app + CLI + API | Open (planned)    | Per-guideline pass/fail + score | ✅ Full     |
 
 ---
@@ -383,6 +386,49 @@ GreenFrame occupies the "deep monitoring" niche. WSG-Check targets the "quick au
 
 ---
 
+### 3.8 Financial Modeling Prep (FMP) ESG API
+
+**URL:** https://site.financialmodelingprep.com/developer/docs#esg  
+**Type:** Commercial REST API  
+**Access:** Paid (freemium tier with daily request limits)
+
+**What it does:**
+
+The FMP ESG API provides **corporate-level Environmental, Social, and Governance (ESG) scores** for publicly-traded companies. Given a stock ticker symbol (e.g., `AAPL`, `MSFT`, `GOOG`), the API returns:
+
+- `environmentalScore` — a 0–100 numeric score measuring the company's environmental footprint (carbon emissions, energy use, waste, water)
+- `socialScore` — a 0–100 score measuring labour practices, supply-chain ethics, and community relations
+- `governanceScore` — a 0–100 score measuring board oversight, executive pay, and transparency
+- `ESGScore` — a combined weighted score
+- `rating` — a letter-grade summary (e.g., AAA, AA, A, BBB, BB, B, CCC)
+- Historical time-series data for trend analysis
+
+The data is aggregated from regulatory filings, third-party ratings agencies, and company disclosures. Unlike web-page metrics, these are organisational-level signals that describe the company _operating_ the website, not the website itself.
+
+**Strengths:**
+
+- Machine-readable corporate ESG data via a REST API with JSON output
+- Historical data enables trend tracking year-over-year
+- Covers thousands of publicly-traded companies globally
+- Well-documented; widely used in fintech and ESG reporting applications
+- Could bridge the gap between web-level sustainability (WSG) and enterprise-level ESG reporting frameworks (GRI, SASB, TCFD)
+
+**Limitations:**
+
+- **Scope mismatch**: Data is limited to publicly-traded companies — most websites checked with WSG-Check are operated by SMEs, non-profits, or individuals with no stock ticker
+- **Commercial dependency**: The free tier allows only ~250 API calls/day; meaningful production use requires a paid subscription (pricing starts at ~$19/month; enterprise tiers are significantly higher)
+- **Methodology opacity**: ESG scores from different providers (FMP aggregates multiple agencies) frequently disagree by 30–50 points for the same company; users may find the scores confusing or misleading without proper caveats
+- **Privacy / data sharing concern**: Querying FMP for company ESG data would require WSG-Check to infer or accept the user's company identity, which is out of scope for a URL-only tool
+- **No WSG alignment**: FMP ESG scores measure corporate-level sustainability, not W3C Web Sustainability Guideline compliance; mixing them risks confusing two fundamentally different accountability frameworks
+- **Latency**: Adding a second external API call (alongside the Green Web Foundation check) increases pipeline latency for every run
+
+**Relationship to WSG-Check:**  
+FMP ESG data operates at the _organisational_ level, while WSG-Check operates at the _technical implementation_ level. These are complementary, not competitive.
+
+The most plausible integration point is **Phase 3 Regulatory Export** (identified in the Executive Summary), where WSG-Check could produce a combined ESG+WSG report for enterprises complying with frameworks such as EU CSRD or the SEC climate disclosure rules. However, this feature is niche: it depends on a commercial paid API and is relevant only to the subset of WSG-Check users whose organisations are publicly traded. It is therefore assessed as a **low-priority future enhancement**, not part of the core roadmap.
+
+---
+
 ## 4. WSG-Check Differentiators
 
 WSG-Check has a genuinely unique position in the ecosystem. No existing tool does all of the following:
@@ -499,6 +545,22 @@ CO2.js includes per-country grid intensity data from Ember (annual averages) and
 The current WSG-Check coverage matrix lists guidelines up to 3.19 but omits **WSG 3.20 "Reduce the number and complexity of database queries"**. This guideline is `semi-automated` at best (requires server-side instrumentation), but it should appear in the guidelines registry. It could be partially addressed by detecting API response patterns or recommending database query analysis tools in the report.
 
 **Effort to fix:** Low to document; medium to implement (likely `manual-only` or `semi-automated` tag in the registry for v1)
+
+---
+
+### Gap 11: No Corporate ESG Context Layer
+
+WSG-Check checks the _technical_ sustainability of a website against W3C WSG guidelines, but it provides no information about the _organisational_ sustainability posture of the company behind the site. This creates a context gap for users in regulated industries or those preparing ESG disclosures: a technically green website could belong to an organisation with poor environmental practices, and vice versa.
+
+The [FMP ESG API](https://site.financialmodelingprep.com/developer/docs#esg) could partially address this by enriching a WSG-Check report with the target company's Environmental, Social, and Governance scores (see Section 3.8). No existing competitor in this analysis surfaces corporate ESG context alongside technical web sustainability checks.
+
+However, this gap is a **low-priority** item because:
+1. FMP data covers only publicly-traded companies, which is a small fraction of WSG-Check's expected audience
+2. The connection between corporate ESG scores and W3C WSG technical compliance is indirect and may confuse users
+3. Adding a paid commercial API dependency conflicts with WSG-Check's open-source positioning
+
+**Effort to fix:** High — requires user identity input (stock ticker or company name), FMP API key management, optional feature flag, and clear UX framing to avoid mixing corporate ESG with WSG technical scores  
+**Recommended phase:** Post-launch v2 as an optional "ESG enrichment" module
 
 ---
 
@@ -619,7 +681,34 @@ Machine-testable: true (Green Web Foundation dataset lookup — already availabl
 
 ---
 
-## 7. Implementation Priority Summary
+### R10: Evaluate FMP ESG API as an Optional v2 "ESG Enrichment" Module (Priority: **Low**)
+
+**What:** Defer integration of the [FMP ESG API](https://site.financialmodelingprep.com/developer/docs#esg) to a post-launch v2 "ESG Enrichment" module. If implemented, it should be:
+
+- **Opt-in only** — users supply a stock ticker symbol alongside the URL; the ESG lookup is never performed automatically
+- **Clearly labelled** — displayed in a separate "Corporate ESG Context" section of the report, visually distinct from the W3C WSG technical score to prevent conflation
+- **Feature-flagged** — disabled by default; enabled via a `--esg-ticker` CLI flag or a UI toggle, with the API key provided by the operator (not bundled in the open-source tool)
+- **Gracefully degraded** — if the FMP API call fails or the ticker is unrecognised, the WSG report is returned without the ESG section; the check pipeline is never blocked
+
+**Why this is low priority:**
+
+| Factor | Assessment |
+|--------|-----------|
+| Audience overlap | FMP ESG data covers only publicly-traded companies; most WSG-Check users audit SME, non-profit, or personal sites that have no ticker symbol |
+| Commercial dependency | FMP's production tiers start at ~$19/month; this conflicts with WSG-Check's open-source / self-hostable positioning — operators would bear the API cost |
+| Methodology risk | ESG scores from different agencies diverge by 30–50 points for the same company; surfacing them without extensive methodology caveats risks misleading users |
+| Scope inflation | Mixing corporate-level ESG with page-level W3C WSG compliance risks blurring WSG-Check's clear identity as a developer tool |
+| Regulatory demand | The EU CSRD and SEC climate disclosure frameworks that would motivate this feature apply to large enterprises, not the typical WSG-Check user |
+
+**Why it is still worth tracking:**
+
+- The Executive Summary explicitly targets "Regulatory Export: Generating reports that satisfy emerging ESG reporting requirements" as a Phase 3 goal; FMP ESG is one concrete data source for that goal
+- No competing web sustainability tool surfaces corporate ESG context — this would be a genuine differentiator for the enterprise segment
+- If WSG-Check gains traction with enterprise customers subject to CSRD or TCFD reporting, demand for this feature will increase; the low-coupling opt-in design above ensures it can be added without breaking the core pipeline
+
+**Suggested phase:** v2 post-launch enhancement. Document in `IMPLEMENTATION_PLAN.md` Future Enhancements section.
+
+---
 
 The following table summarises which recommendations should be folded into the existing implementation plan phases:
 
@@ -634,6 +723,7 @@ The following table summarises which recommendations should be folded into the e
 | R7: Methodology disclosure                       | Phase 6                                      | Low               | Low — transparency                      |
 | R8: Country-specific CO2 estimate                | v2                                           | Medium            | Low (future)                            |
 | R9: Complementary tools references               | Docs / Phase 6                               | Trivial           | Low — ecosystem positioning             |
+| R10: FMP ESG API optional enrichment module      | v2 post-launch                               | High              | Low (enterprise niche, paid API)        |
 
 ### Revised Phasing Impact
 
