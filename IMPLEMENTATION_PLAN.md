@@ -106,6 +106,8 @@ interface WSGCheckConfig {
 - [x] Create `src/config/guidelines-registry.ts` — a structured map of all WSG guidelines
 - [x] Include for each guideline: ID, title, section, category, machine-testability flag, description
 - [x] Tag guidelines as `automated`, `semi-automated`, or `manual-only`
+- [ ] Add **WSG 4.1 "Use sustainable hosting"** to the registry as `automated` (machine-testable via Green Web Foundation dataset lookup using CO2.js)
+- [ ] Add all **27 Section 5 (Business Strategy and Product Management)** guidelines to the registry as `manual-only`, and flag **5.5** ("Calculate the environmental impact") and **5.25** ("Define performance and environmental budgets") as `semi-automated` candidates for a future phase
 
 **Deliverable:** Config module that loads, validates, and merges configuration from all sources. ✅
 
@@ -209,6 +211,12 @@ interface CheckResult {
 - [x] Pipeline: Config → Fetch → Parse → Run Checks → Score → Report
 - [x] Support single-page and multi-page analysis modes
 
+### 3.5 Carbon Estimation (CO2.js Integration)
+
+- [ ] Add `@tgwf/co2` as a dependency (Apache 2.0, ESM-native, ~15 KB)
+- [ ] After `analyzePageWeight()` returns total transfer bytes, pass the byte count to `co2.perByte()` using the Sustainable Web Design v4 model to compute `co2PerPageView` in grams
+- [ ] Expose `co2PerPageView`, `co2Model: 'swd-v4'`, and `isGreenHosted` as top-level fields in `SustainabilityReport` metadata
+
 **Deliverable:** Core module that can fetch a URL, run registered checks, and return scored results. ✅
 
 ---
@@ -237,7 +245,7 @@ interface CheckResult {
 
 - [ ] **3.5 Avoid redundancy** — Detect duplicate CSS rules, repeated inline styles
 - [ ] **3.6 Third-party assessment** — Count and assess third-party scripts/resources
-- [ ] **3.12 Preference media queries** — Check for `prefers-color-scheme`, `prefers-reduced-motion`, `prefers-reduced-data`
+- [ ] **3.12 Preference media queries** — Check for `prefers-color-scheme`, `prefers-reduced-motion`, `prefers-reduced-data`; include in recommendation text that dark mode reduces energy consumption on OLED screens by up to 47% ([Google research](https://support.google.com/pixelphone/answer/7158589)), in addition to accessibility benefits
 - [ ] **3.13 Responsive design** — Check viewport meta, responsive images (`srcset`), media queries
 - [ ] **3.14 Sustainable JavaScript** — Detect unnecessary JS, check for API efficiency
 
@@ -269,9 +277,11 @@ interface CheckResult {
 - [ ] **2.14 Alternative text** — Verify all `<img>` have meaningful `alt` attributes
 - [ ] **2.14 Font stack fallbacks** — Check for system font fallbacks in CSS
 - [ ] **2.15 Minimal forms** — Audit form field count, check for `autocomplete`, `inputmode`
+- [ ] **2.17 Downloadable documents** — Detect `<a href>` links to PDFs and other large document formats (e.g., `.pdf`, `.docx`, `.pptx`, `.zip`; list is configurable); flag documents above a configurable size threshold (default: 1 MB); recommend compression and HTML alternatives for long-term content
 
 ### 5.2 Hosting & Infrastructure Checks (Section 4 — machine-testable subset)
 
+- [ ] **4.1 Sustainable hosting** — Use `hosting.check(domain)` from CO2.js to query the Green Web Foundation dataset and determine whether the target domain is served from verified renewable-energy infrastructure
 - [ ] **4.2 Caching** — Check cache headers (`Cache-Control`, `ETag`, `Expires`)
 - [ ] **4.2 Offline access** — Check for service worker registration, PWA manifest
 - [ ] **4.3 Compression** — Verify gzip/brotli encoding on responses
@@ -280,7 +290,7 @@ interface CheckResult {
 - [ ] **4.10 CDN usage** — Detect CDN headers, check static resource distribution
 - [ ] **4.7 Data refresh** — Check for appropriate cache TTLs
 
-**Deliverable:** ~17 additional automated checks covering WSG Sections 2 and 4.
+**Deliverable:** ~19 additional automated checks covering WSG Sections 2 and 4.
 
 ---
 
@@ -314,6 +324,15 @@ interface SustainabilityReport {
     requestCount: number
     thirdPartyCount: number
     loadTime?: number
+    co2PerPageView?: number   // grams of CO2 per page view (SWD model)
+    co2Model?: 'swd-v4'       // CO2 estimation model used
+    isGreenHosted?: boolean   // Green Web Foundation hosting check result
+  }
+  methodology: {
+    analysisType: 'static' | 'browser' // 'static' = HTML/HTTP analysis; 'browser' = future headless mode
+    disclaimer: string        // notes on static-analysis limitations
+    co2EstimationModel?: string
+    coreWebVitalsNote?: string // link to PageSpeed Insights for real CWV data
   }
 }
 ```
@@ -331,6 +350,8 @@ interface SustainabilityReport {
 - [ ] Map each failed/warned check to actionable improvement steps
 - [ ] Prioritize recommendations by impact level
 - [ ] Include links to relevant WSG resources and success criteria
+- [ ] For WSG 3.1 (performance goals) and 3.8 (deferred resources): include a note that static analysis cannot measure Core Web Vitals and link to Google PageSpeed Insights (`https://pagespeed.web.dev/report?url=<encoded-url>`) for live CWV data
+- [ ] Reference complementary tools in the report for dimensions WSG-Check does not cover: **GreenFrame** (scenario-based energy monitoring), **Sitespeed.io** (performance + sustainability with real browser), **Google PageSpeed Insights / Lighthouse** (Core Web Vitals), **WebPageTest** (detailed waterfall + carbon estimates)
 
 ### 6.4 Score Visualization
 
@@ -603,26 +624,29 @@ wsg-check --version
 | Web typography                                   | 2.13 | Yes       | 5     |
 | Alternative text                                 | 2.14 | Yes       | 5     |
 | Minimal forms                                    | 2.15 | Partial   | 5     |
+| Downloadable documents                           | 2.17 | Yes       | 5     |
 | Caching and offline access                       | 4.2  | Yes       | 5     |
 | Compression                                      | 4.3  | Yes       | 5     |
 | Error pages and redirects                        | 4.4  | Yes       | 5     |
 | CDN usage                                        | 4.10 | Partial   | 5     |
+| Sustainable hosting                              | 4.1  | Yes       | 5     |
 
 ### Manual/Advisory (Reported as guidelines, not checked — future phases)
 
-| Guideline                  | ID   | Notes                                |
-| -------------------------- | ---- | ------------------------------------ |
-| External factors           | 2.1  | Manual review required               |
-| User requirements          | 2.2  | Manual review required               |
-| Sustainability in ideation | 2.3  | Process-oriented                     |
-| Design to assist           | 2.6  | Manual UX review                     |
-| Deceptive patterns         | 2.7  | Partially automatable                |
-| Deliverables reuse         | 2.8  | Process-oriented                     |
-| Design systems             | 2.9  | Manual review                        |
-| Clear content              | 2.10 | NLP analysis potential (future)      |
-| Sustainable hosting        | 4.1  | Requires hosting provider info       |
-| Database queries           | 3.20 | Requires server access               |
-| All Section 5 (Business)   | 5.x  | Organizational, not machine-testable |
+| Guideline                                    | ID   | Notes                                                          |
+| -------------------------------------------- | ---- | -------------------------------------------------------------- |
+| External factors                             | 2.1  | Manual review required                                         |
+| User requirements                            | 2.2  | Manual review required                                         |
+| Sustainability in ideation                   | 2.3  | Process-oriented                                               |
+| Design to assist                             | 2.6  | Manual UX review                                               |
+| Deceptive patterns                           | 2.7  | Partially automatable                                          |
+| Deliverables reuse                           | 2.8  | Process-oriented                                               |
+| Design systems                               | 2.9  | Manual review                                                  |
+| Clear content                                | 2.10 | NLP analysis potential (future)                                |
+| Database queries                             | 3.20 | Requires server access; `semi-automated` tag in registry       |
+| Section 5 (Business) — all 27 guidelines     | 5.x  | Organizational; registry entries marked `manual-only`          |
+| ↳ Calculate the environmental impact         | 5.5  | Automation candidate (future phase) — ties to CO2 estimation   |
+| ↳ Performance and environmental budgets      | 5.25 | Automation candidate (future phase) — ties to `failThreshold`  |
 
 ---
 
@@ -785,8 +809,8 @@ wsg-check/
 - **Scheduled monitoring** — Cron-based recurring checks with trend tracking
 - **CI integration** — GitHub Action that runs WSG-Check on PRs
 - **NLP-based content checks** — Use NLP to assess content clarity (WSG 2.10)
-- **Carbon footprint estimation** — Integrate with CO2.js for emissions estimates
-- **Headless browser mode** — Use Playwright for JS-rendered content analysis
+- **Country-specific CO2 estimate (v2)** — Use CO2.js's bundled per-country grid intensity data (Ember/UNFCCC) with an optional country selector or server IP geo-detection for a more accurate carbon estimate than the global SWD average
+- **Headless browser mode** — Use Playwright for JS-rendered content analysis and actual transfer-size measurement
 - **Compare mode** — Compare two URLs or track improvements over time
 - **Badge/widget** — Embeddable sustainability score badge for websites
 - **API v2** — WebSocket support for real-time check progress
