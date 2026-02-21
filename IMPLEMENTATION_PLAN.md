@@ -244,11 +244,11 @@ interface CheckResult {
 
 ### 4.3 Sustainability-Specific Checks
 
-- [ ] **3.5 Avoid redundancy** — Detect duplicate CSS rules, repeated inline styles
-- [ ] **3.6 Third-party assessment** — Count and assess third-party scripts/resources
-- [ ] **3.12 Preference media queries** — Check for `prefers-color-scheme`, `prefers-reduced-motion`, `prefers-reduced-data`; include in recommendation text that dark mode reduces energy consumption on OLED screens by up to 47% ([Google research](https://support.google.com/pixelphone/answer/7158589)), in addition to accessibility benefits
-- [ ] **3.13 Responsive design** — Check viewport meta, responsive images (`srcset`), media queries
-- [ ] **3.14 Sustainable JavaScript** — Detect unnecessary JS, check for API efficiency
+- [x] **3.5 Avoid redundancy** — Detect duplicate CSS rules, repeated inline styles; implemented in `src/checks/redundancy.ts`
+- [x] **3.6 Third-party assessment** — Count and assess third-party scripts/resources; implemented in `src/checks/third-party.ts`
+- [x] **3.12 Preference media queries** — Check for `prefers-color-scheme`, `prefers-reduced-motion`, `prefers-reduced-data`; include in recommendation text that dark mode reduces energy consumption on OLED screens by up to 47% ([Google research](https://support.google.com/pixelphone/answer/7158589)), in addition to accessibility benefits; implemented in `src/checks/preference-media-queries.ts`
+- [x] **3.13 Responsive design** — Check viewport meta, responsive images (`srcset`), media queries; implemented in `src/checks/responsive-design.ts`
+- [x] **3.14 Sustainable JavaScript** — Detect unnecessary JS, check for API efficiency; implemented in `src/checks/sustainable-js.ts`
 
 ### 4.4 Security & Maintenance Checks
 
