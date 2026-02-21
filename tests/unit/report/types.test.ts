@@ -230,6 +230,7 @@ describe('fromRunResult', () => {
     it('includes resources when present on the check result', () => {
       const results = [
         makeCheckResult({
+          guidelineId: '4.2', // non-CWV guideline so no PageSpeed link is appended
           status: 'fail',
           recommendation: 'Fix this',
           resources: ['https://www.w3.org/TR/web-sustainability-guidelines/'],

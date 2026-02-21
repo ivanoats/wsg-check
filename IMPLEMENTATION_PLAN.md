@@ -347,12 +347,12 @@ interface SustainabilityReport {
 
 ### 6.3 Recommendations Engine
 
-- [ ] Create `src/report/recommendations.ts`
-- [ ] Map each failed/warned check to actionable improvement steps
-- [ ] Prioritize recommendations by impact level
-- [ ] Include links to relevant WSG resources and success criteria
-- [ ] For WSG 3.1 (performance goals) and 3.8 (deferred resources): include a note that static analysis cannot measure Core Web Vitals and link to Google PageSpeed Insights (`https://pagespeed.web.dev/report?url=<encoded-url>`) for live CWV data
-- [ ] Reference complementary tools in the report for dimensions WSG-Check does not cover: **GreenFrame** (scenario-based energy monitoring), **Sitespeed.io** (performance + sustainability with real browser), **Google PageSpeed Insights / Lighthouse** (Core Web Vitals), **WebPageTest** (detailed waterfall + carbon estimates)
+- [x] Create `src/report/recommendations.ts`
+- [x] Map each failed/warned check to actionable improvement steps
+- [x] Prioritize recommendations by impact level
+- [x] Include links to relevant WSG resources and success criteria
+- [x] For WSG 3.1 (performance goals) and 3.8 (deferred resources): include a note that static analysis cannot measure Core Web Vitals and link to Google PageSpeed Insights (`https://pagespeed.web.dev/report?url=<encoded-url>`) for live CWV data
+- [x] Reference complementary tools in the report for dimensions WSG-Check does not cover: **GreenFrame** (scenario-based energy monitoring), **Sitespeed.io** (performance + sustainability with real browser), **Google PageSpeed Insights / Lighthouse** (Core Web Vitals), **WebPageTest** (detailed waterfall + carbon estimates)
 
 ### 6.4 Score Visualization
 
