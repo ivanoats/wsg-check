@@ -1,8 +1,8 @@
 /**
- * Checks module – Phase 4.1, Phase 4.2, Phase 4.3, Phase 4.4 & Phase 5.1
+ * Checks module – Phase 4.1, Phase 4.2, Phase 4.3, Phase 4.4, Phase 5.1 & Phase 5.2
  *
  * Exports all automated check functions that correspond to WSG web-development
- * guidelines (Phases 4.1–4.4 and Phase 5.1 of the implementation plan).
+ * guidelines (Phases 4.1–4.4, Phase 5.1, and Phase 5.2 of the implementation plan).
  *
  * Each check is a pure `CheckFn` — a function that accepts a `PageData`
  * bundle and returns a `CheckResult` (or a `Promise<CheckResult>`).  Checks
@@ -11,9 +11,9 @@
  * Usage:
  * ```ts
  * import { WsgChecker } from '@/core'
- * import { performanceChecks, semanticChecks, sustainabilityChecks, securityChecks, uxDesignChecks } from '@/checks'
+ * import { performanceChecks, semanticChecks, sustainabilityChecks, securityChecks, uxDesignChecks, hostingChecks } from '@/checks'
  *
- * const checker = new WsgChecker({}, [...performanceChecks, ...semanticChecks, ...sustainabilityChecks, ...securityChecks, ...uxDesignChecks])
+ * const checker = new WsgChecker({}, [...performanceChecks, ...semanticChecks, ...sustainabilityChecks, ...securityChecks, ...uxDesignChecks, ...hostingChecks])
  * const result  = await checker.check('https://example.com')
  * ```
  */
@@ -55,6 +55,16 @@ export { checkFontStackFallbacks } from './font-stack-fallbacks.js'
 export { checkMinimalForms } from './minimal-forms.js'
 export { checkDownloadableDocuments } from './downloadable-documents.js'
 
+// ─── Phase 5.2 — Hosting & Infrastructure (Section 4) ────────────────────────
+export { checkSustainableHosting } from './sustainable-hosting.js'
+export { checkCaching } from './caching.js'
+export { checkOfflineAccess } from './offline-access.js'
+export { checkCompression } from './compression.js'
+export { checkErrorPages } from './error-pages.js'
+export { checkRedirects } from './redirects.js'
+export { checkCdnUsage } from './cdn-usage.js'
+export { checkDataRefresh } from './data-refresh.js'
+
 import { checkMinification } from './minification.js'
 import { checkRenderBlocking } from './render-blocking.js'
 import { checkPageWeight } from './page-weight.js'
@@ -82,6 +92,14 @@ import { checkAltText } from './alt-text.js'
 import { checkFontStackFallbacks } from './font-stack-fallbacks.js'
 import { checkMinimalForms } from './minimal-forms.js'
 import { checkDownloadableDocuments } from './downloadable-documents.js'
+import { checkSustainableHosting } from './sustainable-hosting.js'
+import { checkCaching } from './caching.js'
+import { checkOfflineAccess } from './offline-access.js'
+import { checkCompression } from './compression.js'
+import { checkErrorPages } from './error-pages.js'
+import { checkRedirects } from './redirects.js'
+import { checkCdnUsage } from './cdn-usage.js'
+import { checkDataRefresh } from './data-refresh.js'
 
 /**
  * All Phase 4.1 Performance & Efficiency checks bundled for convenience.
@@ -180,4 +198,29 @@ export const uxDesignChecks = [
   checkFontStackFallbacks,
   checkMinimalForms,
   checkDownloadableDocuments,
+] as const
+
+/**
+ * All Phase 5.2 Hosting & Infrastructure checks bundled for convenience.
+ *
+ * | Check                      | WSG Guideline | Testability     |
+ * | -------------------------- | ------------- | --------------- |
+ * | `checkSustainableHosting`  | 4.1           | automated       |
+ * | `checkCaching`             | 4.2           | automated       |
+ * | `checkOfflineAccess`       | 4.2           | automated       |
+ * | `checkCompression`         | 4.3           | automated       |
+ * | `checkErrorPages`          | 4.4           | semi-automated  |
+ * | `checkRedirects`           | 4.4           | automated       |
+ * | `checkCdnUsage`            | 4.10          | automated       |
+ * | `checkDataRefresh`         | 4.7           | automated       |
+ */
+export const hostingChecks = [
+  checkSustainableHosting,
+  checkCaching,
+  checkOfflineAccess,
+  checkCompression,
+  checkErrorPages,
+  checkRedirects,
+  checkCdnUsage,
+  checkDataRefresh,
 ] as const
