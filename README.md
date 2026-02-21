@@ -56,17 +56,17 @@ All source-code dependencies point **inward**:
 
 ### Ports and Adapters
 
-| Port (interface)      | Adapter (implementation)                            |
-| --------------------- | --------------------------------------------------- |
-| HTTP fetch            | `HttpClient` via Axios                              |
-| HTML parsing          | `parseHtml` via Cheerio                             |
-| Resource analysis     | `analyzePageWeight`                                 |
-| Carbon estimation     | `estimateCO2` / `checkGreenHosting` via `@tgwf/co2` |
-| Configuration loading | `resolveConfig` (file + env + CLI)                  |
-| Logging               | `createLogger` (terminal or JSON)                   |
-| Check execution       | `CheckRunner.run` (parallel execution)              |
-| Scoring               | `scoreResults`                                      |
-| Report formatting     | (Phase 6) JSON / Markdown / HTML / CLI              |
+| Port (interface)      | Adapter (implementation)                                                         |
+| --------------------- | -------------------------------------------------------------------------------- |
+| HTTP fetch            | `HttpClient` via Axios                                                           |
+| HTML parsing          | `parseHtml` via Cheerio                                                          |
+| Resource analysis     | `analyzePageWeight`                                                              |
+| Carbon estimation     | `estimateCO2` / `checkGreenHosting` via `@tgwf/co2`                              |
+| Configuration loading | `resolveConfig` (file + env + CLI)                                               |
+| Logging               | `createLogger` (terminal or JSON)                                                |
+| Check execution       | `CheckRunner.run` (parallel execution)                                           |
+| Scoring               | `scoreResults`                                                                   |
+| Report formatting     | `fromRunResult` → `SustainabilityReport` (Phase 6.1 ✅); formatters in Phase 6.2 |
 
 ### Data Flow Pipeline
 
@@ -498,28 +498,297 @@ Checks that the document uses the HTML5 standard and avoids deprecated elements:
 1. **DOCTYPE** — must be `<!DOCTYPE html>` (HTML5 short form). Legacy or XHTML doctypes trigger `warn`.
 2. **Deprecated elements** — detects `<font>`, `<center>`, `<marquee>`, `<blink>`, `<frameset>`, `<frame>`, `<noframes>`, `<applet>`, `<dir>`, `<basefont>`.
 
+### Phase 5.1 — UX Design Checks (Section 2)
+
+| Check                        | File                        | WSG Guideline                                             | Impact |
+| ---------------------------- | --------------------------- | --------------------------------------------------------- | ------ |
+| `checkNonEssentialContent`   | `non-essential-content.ts`  | 2.9 Respect the Visitor's Attention                       | medium |
+| `checkNavigationStructure`   | `navigation-structure.ts`   | 2.8 Ensure Navigation and Way-Finding Are Well-Structured | medium |
+| `checkDeceptivePatterns`     | `deceptive-patterns.ts`     | 2.10 Avoid Manipulative Patterns                          | medium |
+| `checkOptimizedMedia`        | `optimized-media.ts`        | 2.7 Avoid Unnecessary or an Overabundance of Assets       | high   |
+| `checkLazyLoading`           | `lazy-loading.ts`           | 2.11 Avoid Bloated or Unnecessary Content                 | medium |
+| `checkAnimationControl`      | `animation-control.ts`      | 2.15 Use Animations Responsibly                           | medium |
+| `checkWebTypography`         | `web-typography.ts`         | 2.16 Ensure Content Is Readable Without Custom Fonts      | medium |
+| `checkAltText`               | `alt-text.ts`               | 2.17 Provide Suitable Alternatives to Web Assets          | high   |
+| `checkFontStackFallbacks`    | `font-stack-fallbacks.ts`   | 2.16 Ensure Content Is Readable Without Custom Fonts      | low    |
+| `checkMinimalForms`          | `minimal-forms.ts`          | 2.19 Support Native User Interface Features               | low    |
+| `checkDownloadableDocuments` | `downloadable-documents.ts` | 2.17 Provide Suitable Alternatives to Web Assets          | low    |
+
+#### `checkNonEssentialContent` — WSG 2.9
+
+Detects two non-essential content patterns that waste bandwidth and consume user attention:
+
+1. **Auto-playing media** — `<video autoplay>` or `<audio autoplay>` elements start consuming bandwidth and CPU without user consent.
+2. **Modals and popups** — intrusive overlay patterns (detected via common class names: `modal`, `popup`, `lightbox`, `dialog`, etc.) disrupt the user journey.
+
+Auto-playing media is scored as `fail`; modals/popups alone as `warn`. JavaScript-injected overlays are not detectable from static HTML.
+
+#### `checkNavigationStructure` — WSG 2.8
+
+Validates that the page has clear navigation structure to help visitors find content quickly:
+
+1. **Navigation landmark** — a `<nav>` element (or `role="navigation"`) must be present.
+2. **Breadcrumbs** — detected via `aria-label="breadcrumb"` on any element or a `BreadcrumbList` JSON-LD block in structured data.
+
+Missing nav landmark → `fail`; nav present but no breadcrumbs → `warn`.
+
+#### `checkDeceptivePatterns` — WSG 2.10
+
+Uses heuristic pattern matching to detect common dark-pattern indicators:
+
+1. **Hidden close buttons** — modal or dialog close controls with `display:none` or `visibility:hidden` inline styles.
+2. **Countdown timers** — elements with class names like `countdown`, `count-down`, or `timer`.
+
+Both conditions return `warn` (50) with a note that manual review is recommended.
+
+#### `checkOptimizedMedia` — WSG 2.7
+
+Checks that images use modern, efficient formats and include explicit dimensions:
+
+1. **Modern image formats** — at least one image should use WebP or AVIF; none using modern formats → `fail`.
+2. **Explicit `width` / `height` attributes** — prevents Cumulative Layout Shift (CLS) during image load.
+
+| Condition                                    | Status           | Score |
+| -------------------------------------------- | ---------------- | ----- |
+| No images                                    | `not-applicable` | —     |
+| No images use WebP/AVIF                      | `fail`           | 0     |
+| Modern formats used, some lack dimensions    | `warn`           | 50    |
+| All images in modern formats with dimensions | `pass`           | 100   |
+
+#### `checkLazyLoading` — WSG 2.11
+
+Verifies that below-the-fold images use `loading="lazy"` to defer downloading. Allows the first image (likely the LCP/hero image) to remain eagerly loaded.
+
+| Condition                                         | Status           | Score |
+| ------------------------------------------------- | ---------------- | ----- |
+| No images                                         | `not-applicable` | —     |
+| 1 image (likely LCP — eager loading appropriate)  | `pass`           | 100   |
+| 2+ images, none lazy-loaded                       | `fail`           | 0     |
+| 2+ images, some lazy but not all non-first images | `warn`           | 50    |
+| All non-first images use `loading="lazy"`         | `pass`           | 100   |
+
+#### `checkAnimationControl` — WSG 2.15
+
+Scans inline `<style>` blocks for CSS animation declarations (`@keyframes`, `animation:`, `transition:`) and checks whether a `prefers-reduced-motion` media query is also present to guard them.
+
+| Condition                                          | Status           | Score |
+| -------------------------------------------------- | ---------------- | ----- |
+| No CSS animations in inline styles                 | `not-applicable` | —     |
+| Animations present, `prefers-reduced-motion` guard | `pass`           | 100   |
+| Animations present, no motion guard                | `fail`           | 0     |
+
+> **Note:** External stylesheets are not analysed; a guard in a linked stylesheet will not be detected.
+
+#### `checkWebTypography` — WSG 2.16
+
+Checks font delivery for efficiency and readability:
+
+1. **WOFF2 format** — at least one font file should use `.woff2` (30% smaller than WOFF).
+2. **`font-display` descriptor** — prevents invisible text during font load (FOIT).
+3. **Font file count** — warns if more than 4 font files are referenced (each requires a separate download).
+
+Not using WOFF2 at all → `fail`; other issues → `warn`.
+
+#### `checkAltText` — WSG 2.17
+
+Verifies that all `<img>` elements have an `alt` attribute. Empty `alt=""` is accepted for decorative images (screen readers skip them). Missing `alt` → `fail`.
+
+#### `checkFontStackFallbacks` — WSG 2.16
+
+Scans inline `<style>` blocks for `font-family` declarations and checks that each includes a generic family keyword (`serif`, `sans-serif`, `monospace`, etc.) or a known system font as a fallback.
+
+Any declaration without a fallback → `warn`. External stylesheets are not analysed.
+
+#### `checkMinimalForms` — WSG 2.19
+
+Audits form design for sustainability and accessibility:
+
+1. **Field count** — warns if > 7 fields; fails if > 12 fields.
+2. **`autocomplete`** — at least one input must have an `autocomplete` attribute.
+3. **`inputmode`** — at least one input should use `inputmode` for mobile-optimised keyboards.
+
+| Condition                              | Status           | Score |
+| -------------------------------------- | ---------------- | ----- |
+| No form inputs                         | `not-applicable` | —     |
+| > 12 fields or no `autocomplete`       | `fail`           | 0     |
+| Some issues (field count, `inputmode`) | `warn`           | 50    |
+| All signals present                    | `pass`           | 100   |
+
+#### `checkDownloadableDocuments` — WSG 2.17
+
+Detects `<a href>` links pointing to downloadable document formats: `.pdf`, `.docx`, `.doc`, `.pptx`, `.ppt`, `.xlsx`, `.xls`, `.zip`, `.rar`, `.tar`, `.gz`. Each document link found → `warn`, with recommendations to provide HTML alternatives and disclose file format and size in link text.
+
+### Phase 5.2 — Hosting & Infrastructure Checks (Section 4)
+
+| Check                     | File                     | WSG Guideline                                | Impact |
+| ------------------------- | ------------------------ | -------------------------------------------- | ------ |
+| `checkSustainableHosting` | `sustainable-hosting.ts` | 4.1 Choose a Sustainable Hosting Provider    | high   |
+| `checkCaching`            | `caching.ts`             | 4.2 Optimise Browser Caching                 | high   |
+| `checkOfflineAccess`      | `offline-access.ts`      | 4.2 Optimise Browser Caching (Offline / PWA) | medium |
+| `checkCompression`        | `compression.ts`         | 4.3 Compress Your Files                      | high   |
+| `checkErrorPages`         | `error-pages.ts`         | 4.4 Create a Performant 404 Page             | medium |
+| `checkRedirects`          | `redirects.ts`           | 4.4 Avoid Unnecessary or Excessive Redirects | medium |
+| `checkCdnUsage`           | `cdn-usage.ts`           | 4.10 Use a Content Delivery Network          | medium |
+| `checkDataRefresh`        | `data-refresh.ts`        | 4.7 Ensure Appropriate Data Refresh Rates    | medium |
+
+#### `checkSustainableHosting` — WSG 4.1
+
+Queries the [Green Web Foundation](https://www.thegreenwebfoundation.org/) dataset via `CO2.js` `hosting.check(domain)` to determine whether the target domain is served from verified renewable-energy infrastructure.
+
+| Condition                              | Status | Score |
+| -------------------------------------- | ------ | ----- |
+| Domain in Green Web Foundation dataset | `pass` | 100   |
+| Domain NOT in dataset                  | `fail` | 0     |
+
+#### `checkCaching` — WSG 4.2
+
+Verifies the page response includes effective HTTP caching directives:
+
+| Condition                                                            | Status | Score |
+| -------------------------------------------------------------------- | ------ | ----- |
+| `Cache-Control` with `max-age` / `s-maxage`                          | `pass` | 100   |
+| `Cache-Control` present but no `max-age`, or only `ETag` / `Expires` | `warn` | 50    |
+| No caching headers at all                                            | `fail` | 0     |
+
+#### `checkOfflineAccess` — WSG 4.2
+
+Checks for offline/PWA support via two standard mechanisms:
+
+1. **Web App Manifest** — `<link rel="manifest">` in the document `<head>`.
+2. **Service Worker** — `navigator.serviceWorker.register(...)` call in the page source.
+
+Both present → `pass`; one present → `warn`; neither → `fail`.
+
+#### `checkCompression` — WSG 4.3
+
+Inspects the `Content-Encoding` response header for gzip, Brotli (`br`), zstd, or deflate encoding. Missing or unrecognised encoding → `fail`. Brotli is highlighted in the pass message as the most efficient option.
+
+#### `checkErrorPages` — WSG 4.4 (static analysis)
+
+Checks the HTTP status of the fetched URL. A non-200 response → `fail`. A 200 response → `info` (manual verification recommended: request a non-existent path to confirm a custom 404 page is served).
+
+#### `checkRedirects` — WSG 4.4 (redirects)
+
+Analyses the redirect chain recorded during the page fetch:
+
+| Condition                                           | Status | Score |
+| --------------------------------------------------- | ------ | ----- |
+| 0 redirects                                         | `pass` | 100   |
+| 1–2 redirects, all 301/308 (permanent)              | `pass` | 100   |
+| 1–2 redirects with at least one 302/307 (temporary) | `warn` | 50    |
+| 3+ redirects (chain)                                | `fail` | 0     |
+
+#### `checkCdnUsage` — WSG 4.10
+
+Detects CDN delivery by inspecting well-known CDN response headers: `cf-ray` (Cloudflare), `x-amz-cf-id` (CloudFront), `x-fastly-request-id` (Fastly), `x-cache`, `x-served-by`, `via`, `age`, and others. CDN detected → `pass`; no CDN headers found → `warn` (self-hosted edge deployments may not set these headers).
+
+#### `checkDataRefresh` — WSG 4.7
+
+Inspects `Cache-Control` to assess the cache TTL's sustainability:
+
+| Condition                                | Status | Score |
+| ---------------------------------------- | ------ | ----- |
+| `no-store` directive present             | `fail` | 0     |
+| max-age / s-maxage < 60 s                | `fail` | 0     |
+| max-age / s-maxage 60–299 s              | `warn` | 50    |
+| max-age / s-maxage ≥ 300 s               | `pass` | 100   |
+| No Cache-Control or no max-age directive | `warn` | 50    |
+
 ### Using the Checks Module
 
 ```typescript
 import { WsgChecker } from '@/core'
-import { performanceChecks, semanticChecks, sustainabilityChecks, securityChecks } from '@/checks'
+import {
+  performanceChecks,
+  semanticChecks,
+  sustainabilityChecks,
+  securityChecks,
+  uxDesignChecks,
+  hostingChecks,
+} from '@/checks'
 
-// Register all Phase 4.1–4.4 checks at once
+// Register all Phase 4–5 checks at once
 const checker = new WsgChecker({ timeout: 15_000 }, [
   ...performanceChecks,
   ...semanticChecks,
   ...sustainabilityChecks,
   ...securityChecks,
+  ...uxDesignChecks,
+  ...hostingChecks,
 ])
 const result = await checker.check('https://example.com')
 
 // Or register individual checks for more granular control
-import { checkSemanticHtml, checkSecurityHeaders, checkHtmlVersion } from '@/checks'
+import { checkSemanticHtml, checkSecurityHeaders, checkSustainableHosting } from '@/checks'
 
 const checker2 = new WsgChecker()
 checker2.runner.register(checkSemanticHtml)
 checker2.runner.register(checkSecurityHeaders)
-checker2.runner.register(checkHtmlVersion)
+checker2.runner.register(checkSustainableHosting)
+```
+
+## Report Module (`src/report/`)
+
+The Report Module — introduced in **Phase 6** — converts a `RunResult` into a fully enriched `SustainabilityReport` and (in later sub-phases) formats it for different output targets.
+
+### Phase 6.1 — Report Data Model
+
+#### Types
+
+| Type / Interface       | Purpose                                                                          |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| `Grade`                | Letter grade (`'A'`, `'B'`, `'C'`, `'D'`, `'F'`) derived from the overall score  |
+| `Recommendation`       | Single actionable improvement from a `fail`/`warn` check result                  |
+| `ReportMetadata`       | Page metrics: weight, resource count, CO₂, green hosting                         |
+| `ReportMethodology`    | Notes on analysis type, limitations, and complementary tools                     |
+| `ReportSummary`        | Aggregate pass/fail/warn/not-applicable counts                                   |
+| `SustainabilityReport` | Full enriched report: grade + summary + recommendations + metadata + methodology |
+
+#### `scoreToGrade(score)` — Grade Calculator
+
+Maps an overall score (0–100) to a letter grade:
+
+| Score  | Grade |
+| ------ | ----- |
+| 90–100 | A     |
+| 75–89  | B     |
+| 60–74  | C     |
+| 45–59  | D     |
+| 0–44   | F     |
+
+#### `fromRunResult(runResult, pageWeight?, requestCount?, thirdPartyCount?)` — Report Factory
+
+Converts a `RunResult` (the raw output of `WsgChecker.check()`) into a `SustainabilityReport`:
+
+1. Derives the letter **grade** from `overallScore`.
+2. Computes **summary** counts (passed / failed / warnings / not-applicable).
+3. Builds the **recommendations** list from all `fail` and `warn` results that carry a `recommendation` string, sorted by impact (`high` first) then status (`fail` before `warn`).
+4. Populates **metadata** with page-weight metrics and CO₂/green-hosting data.
+5. Attaches standard static-analysis **methodology** notes, including a PageSpeed Insights link for live Core Web Vitals data.
+
+#### `STATIC_ANALYSIS_DISCLAIMER`
+
+Exported string constant included in every report's `methodology.disclaimer` field. Explains the inherent constraints of HTML/HTTP-only static analysis and points readers to complementary tools: Google PageSpeed Insights, GreenFrame, and Sitespeed.io.
+
+#### Usage
+
+```typescript
+import { fromRunResult, scoreToGrade, STATIC_ANALYSIS_DISCLAIMER } from '@/report'
+import type { SustainabilityReport } from '@/report'
+
+// Convert a WsgChecker run result into a SustainabilityReport
+const report: SustainabilityReport = fromRunResult(
+  runResult,
+  pageData.pageWeight.htmlSize, // page weight in bytes
+  pageData.pageWeight.resourceCount, // total resource count
+  pageData.pageWeight.thirdPartyCount // third-party resource count
+)
+
+console.log(`Grade: ${report.grade}`) // e.g. "B"
+console.log(`Score: ${report.overallScore}`) // e.g. 82
+console.log(`Passed: ${report.summary.passed}`)
+console.log(`Top recommendation: ${report.recommendations[0]?.recommendation}`)
+console.log(`CO₂ per view: ${report.metadata.co2PerPageView}g`)
 ```
 
 ## Technologies Used
