@@ -213,9 +213,9 @@ interface CheckResult {
 
 ### 3.5 Carbon Estimation (CO2.js Integration)
 
-- [ ] Add `@tgwf/co2` as a dependency (Apache 2.0, ESM-native, ~15 KB)
-- [ ] After `analyzePageWeight()` returns total transfer bytes, pass the byte count to `co2.perByte()` using the Sustainable Web Design v4 model to compute `co2PerPageView` in grams
-- [ ] Expose `co2PerPageView`, `co2Model: 'swd-v4'`, and `isGreenHosted` as top-level fields in `SustainabilityReport` metadata
+- [x] Add `@tgwf/co2` as a dependency (Apache 2.0, ESM-native, ~15 KB)
+- [x] After `analyzePageWeight()` returns total transfer bytes, pass the byte count to `co2.perByte()` using the Sustainable Web Design v4 model to compute `co2PerPageView` in grams
+- [x] Expose `co2PerPageView`, `co2Model: 'swd-v4'`, and `isGreenHosted` as top-level fields in `SustainabilityReport` metadata
 
 **Deliverable:** Core module that can fetch a URL, run registered checks, and return scored results. ✅
 

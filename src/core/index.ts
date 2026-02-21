@@ -20,6 +20,7 @@
 import type { ResolvedConfig } from '../config/loader.js'
 import { FetchError, ParseError, type Result, ok } from '../utils/errors.js'
 import { defaultLogger, type Logger } from '../utils/logger.js'
+import { estimateCO2, checkGreenHosting, CO2_MODEL } from '../utils/carbon-estimator.js'
 import { PageFetcher } from './fetcher.js'
 import { CheckRunner } from './runner.js'
 import { scoreResults } from './scorer.js'
@@ -87,6 +88,11 @@ export class WsgChecker {
 
     const checkResults = await this.runner.run(pageResult.value)
     const { overallScore, categoryScores } = scoreResults(checkResults)
+
+    const domain = new URL(url).hostname
+    const isGreenHosted = await checkGreenHosting(domain)
+    const co2PerPageView = estimateCO2(pageResult.value.pageWeight.htmlSize, isGreenHosted)
+
     const duration = Date.now() - start
 
     this.logger.info('WSG check complete', { url, overallScore, duration })
@@ -98,6 +104,9 @@ export class WsgChecker {
       overallScore,
       categoryScores,
       results: checkResults,
+      co2PerPageView,
+      co2Model: CO2_MODEL,
+      isGreenHosted,
     })
   }
 }

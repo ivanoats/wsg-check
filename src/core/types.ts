@@ -10,6 +10,7 @@ import type { WSGCategory } from '../config/types.js'
 import type { FetchResult } from '../utils/http-client.js'
 import type { ParsedPage } from '../utils/html-parser.js'
 import type { PageWeightAnalysis } from '../utils/resource-analyzer.js'
+import type { CO2Model } from '../utils/carbon-estimator.js'
 
 // ─── Check result ─────────────────────────────────────────────────────────────
 
@@ -119,4 +120,10 @@ export interface RunResult {
   categoryScores: CategoryScore[]
   /** Individual results for every check that was run. */
   results: CheckResult[]
+  /** Estimated CO2 emissions per page view in grams (Sustainable Web Design v4). */
+  co2PerPageView: number
+  /** The CO2 estimation model used. */
+  co2Model: CO2Model
+  /** Whether the hosting provider is recognised as running on renewable energy. */
+  isGreenHosted: boolean
 }
