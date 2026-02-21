@@ -81,7 +81,7 @@ export const checkMinimalForms: CheckFn = (page) => {
   // ── 2. autocomplete ───────────────────────────────────────────────────────
   const withAutocomplete = formInputs.filter((i) => i.hasAutocomplete).length
   if (withAutocomplete === 0) {
-    if (status === 'pass') {
+    if (status !== 'fail') {
       status = 'fail'
       score = 0
     }
