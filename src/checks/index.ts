@@ -1,8 +1,8 @@
 /**
- * Checks module – Phase 4.1, Phase 4.2 & Phase 4.3
+ * Checks module – Phase 4.1, Phase 4.2, Phase 4.3 & Phase 4.4
  *
  * Exports all automated check functions that correspond to WSG web-development
- * guidelines (Phases 4.1, 4.2 and 4.3 of the implementation plan).
+ * guidelines (Phases 4.1–4.4 of the implementation plan).
  *
  * Each check is a pure `CheckFn` — a function that accepts a `PageData`
  * bundle and returns a `CheckResult` (or a `Promise<CheckResult>`).  Checks
@@ -11,9 +11,9 @@
  * Usage:
  * ```ts
  * import { WsgChecker } from '@/core'
- * import { performanceChecks, semanticChecks, sustainabilityChecks } from '@/checks'
+ * import { performanceChecks, semanticChecks, sustainabilityChecks, securityChecks } from '@/checks'
  *
- * const checker = new WsgChecker({}, [...performanceChecks, ...semanticChecks, ...sustainabilityChecks])
+ * const checker = new WsgChecker({}, [...performanceChecks, ...semanticChecks, ...sustainabilityChecks, ...securityChecks])
  * const result  = await checker.check('https://example.com')
  * ```
  */
@@ -36,6 +36,12 @@ export { checkPreferenceMediaQueries } from './preference-media-queries.js'
 export { checkResponsiveDesign } from './responsive-design.js'
 export { checkSustainableJs } from './sustainable-js.js'
 
+// ─── Phase 4.4 — Security & Maintenance ──────────────────────────────────────
+export { checkSecurityHeaders } from './security-headers.js'
+export { checkDependencyCount } from './dependency-count.js'
+export { checkExpectedFiles, checkBeneficialFiles } from './expected-files.js'
+export { checkHtmlVersion } from './html-version.js'
+
 import { checkMinification } from './minification.js'
 import { checkRenderBlocking } from './render-blocking.js'
 import { checkPageWeight } from './page-weight.js'
@@ -48,6 +54,10 @@ import { checkThirdParty } from './third-party.js'
 import { checkPreferenceMediaQueries } from './preference-media-queries.js'
 import { checkResponsiveDesign } from './responsive-design.js'
 import { checkSustainableJs } from './sustainable-js.js'
+import { checkSecurityHeaders } from './security-headers.js'
+import { checkDependencyCount } from './dependency-count.js'
+import { checkExpectedFiles, checkBeneficialFiles } from './expected-files.js'
+import { checkHtmlVersion } from './html-version.js'
 
 /**
  * All Phase 4.1 Performance & Efficiency checks bundled for convenience.
@@ -96,4 +106,23 @@ export const sustainabilityChecks = [
   checkPreferenceMediaQueries,
   checkResponsiveDesign,
   checkSustainableJs,
+] as const
+
+/**
+ * All Phase 4.4 Security & Maintenance checks bundled for convenience.
+ *
+ * | Check                   | WSG Guideline | Testability |
+ * | ----------------------- | ------------- | ----------- |
+ * | `checkSecurityHeaders`  | 3.15          | automated   |
+ * | `checkDependencyCount`  | 3.16          | automated   |
+ * | `checkExpectedFiles`    | 3.17          | automated   |
+ * | `checkBeneficialFiles`  | 3.17          | automated   |
+ * | `checkHtmlVersion`      | 3.19          | automated   |
+ */
+export const securityChecks = [
+  checkSecurityHeaders,
+  checkDependencyCount,
+  checkExpectedFiles,
+  checkBeneficialFiles,
+  checkHtmlVersion,
 ] as const
