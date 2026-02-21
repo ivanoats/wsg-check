@@ -227,11 +227,11 @@ interface CheckResult {
 
 ### 4.1 Performance & Efficiency Checks
 
-- [ ] **3.1 Performance goals** — Check total page weight against budgets, count requests
-- [ ] **3.2 Minified code** — Detect unminified CSS/JS in production
-- [ ] **3.3 Code splitting** — Check for large monolithic JS bundles (>250KB)
-- [ ] **3.4 Remove unnecessary code** — Detect unused CSS (compare selectors to DOM)
-- [ ] **3.8 Defer non-critical resources** — Check for `async`/`defer` on scripts, lazy-loaded images
+- [x] **WSG 3.3 — Minify Your HTML, CSS, and JavaScript** — Detect unminified HTML (blank-line ratio, HTML comment count); implemented in `src/checks/minification.ts`
+- [x] **WSG 3.9 — Resolve Render Blocking Content** — Check for `async`/`defer` on scripts and `loading="lazy"` on images; implemented in `src/checks/render-blocking.ts`
+- [ ] **3.1 Performance goals** — Check total page weight against budgets, count requests (static analysis only; external resource sizes not available without fetching each asset)
+- [ ] **3.3 Code splitting** — Check for large monolithic JS bundles (>250KB; requires fetching individual JS files — deferred to a future phase)
+- [ ] **3.4 Remove unnecessary code** — Detect unused CSS (compare selectors to DOM; requires headless browser execution — deferred to a future phase)
 
 ### 4.2 Semantic & Standards Checks
 
@@ -324,13 +324,13 @@ interface SustainabilityReport {
     requestCount: number
     thirdPartyCount: number
     loadTime?: number
-    co2PerPageView?: number   // grams of CO2 per page view (SWD model)
-    co2Model?: 'swd-v4'       // CO2 estimation model used
-    isGreenHosted?: boolean   // Green Web Foundation hosting check result
+    co2PerPageView?: number // grams of CO2 per page view (SWD model)
+    co2Model?: 'swd-v4' // CO2 estimation model used
+    isGreenHosted?: boolean // Green Web Foundation hosting check result
   }
   methodology: {
     analysisType: 'static' | 'browser' // 'static' = HTML/HTTP analysis; 'browser' = future headless mode
-    disclaimer: string        // notes on static-analysis limitations
+    disclaimer: string // notes on static-analysis limitations
     co2EstimationModel?: string
     coreWebVitalsNote?: string // link to PageSpeed Insights for real CWV data
   }
@@ -633,20 +633,20 @@ wsg-check --version
 
 ### Manual/Advisory (Reported as guidelines, not checked — future phases)
 
-| Guideline                                    | ID   | Notes                                                          |
-| -------------------------------------------- | ---- | -------------------------------------------------------------- |
-| External factors                             | 2.1  | Manual review required                                         |
-| User requirements                            | 2.2  | Manual review required                                         |
-| Sustainability in ideation                   | 2.3  | Process-oriented                                               |
-| Design to assist                             | 2.6  | Manual UX review                                               |
-| Deceptive patterns                           | 2.7  | Partially automatable                                          |
-| Deliverables reuse                           | 2.8  | Process-oriented                                               |
-| Design systems                               | 2.9  | Manual review                                                  |
-| Clear content                                | 2.10 | NLP analysis potential (future)                                |
-| Database queries                             | 3.20 | Requires server access; `semi-automated` tag in registry       |
-| Section 5 (Business) — all 27 guidelines     | 5.x  | Organizational; registry entries marked `manual-only`          |
-| ↳ Calculate the environmental impact         | 5.5  | Automation candidate (future phase) — ties to CO2 estimation   |
-| ↳ Performance and environmental budgets      | 5.25 | Automation candidate (future phase) — ties to `failThreshold`  |
+| Guideline                                | ID   | Notes                                                         |
+| ---------------------------------------- | ---- | ------------------------------------------------------------- |
+| External factors                         | 2.1  | Manual review required                                        |
+| User requirements                        | 2.2  | Manual review required                                        |
+| Sustainability in ideation               | 2.3  | Process-oriented                                              |
+| Design to assist                         | 2.6  | Manual UX review                                              |
+| Deceptive patterns                       | 2.7  | Partially automatable                                         |
+| Deliverables reuse                       | 2.8  | Process-oriented                                              |
+| Design systems                           | 2.9  | Manual review                                                 |
+| Clear content                            | 2.10 | NLP analysis potential (future)                               |
+| Database queries                         | 3.20 | Requires server access; `semi-automated` tag in registry      |
+| Section 5 (Business) — all 27 guidelines | 5.x  | Organizational; registry entries marked `manual-only`         |
+| ↳ Calculate the environmental impact     | 5.5  | Automation candidate (future phase) — ties to CO2 estimation  |
+| ↳ Performance and environmental budgets  | 5.25 | Automation candidate (future phase) — ties to `failThreshold` |
 
 ---
 

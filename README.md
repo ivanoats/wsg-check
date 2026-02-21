@@ -56,17 +56,17 @@ All source-code dependencies point **inward**:
 
 ### Ports and Adapters
 
-| Port (interface)      | Adapter (implementation)               |
-| --------------------- | -------------------------------------- |
-| HTTP fetch            | `HttpClient` via Axios                 |
-| HTML parsing          | `parseHtml` via Cheerio                |
-| Resource analysis     | `analyzePageWeight`                    |
+| Port (interface)      | Adapter (implementation)                            |
+| --------------------- | --------------------------------------------------- |
+| HTTP fetch            | `HttpClient` via Axios                              |
+| HTML parsing          | `parseHtml` via Cheerio                             |
+| Resource analysis     | `analyzePageWeight`                                 |
 | Carbon estimation     | `estimateCO2` / `checkGreenHosting` via `@tgwf/co2` |
-| Configuration loading | `resolveConfig` (file + env + CLI)     |
-| Logging               | `createLogger` (terminal or JSON)      |
-| Check execution       | `CheckRunner.run` (parallel execution) |
-| Scoring               | `scoreResults`                         |
-| Report formatting     | (Phase 6) JSON / Markdown / HTML / CLI |
+| Configuration loading | `resolveConfig` (file + env + CLI)                  |
+| Logging               | `createLogger` (terminal or JSON)                   |
+| Check execution       | `CheckRunner.run` (parallel execution)              |
+| Scoring               | `scoreResults`                                      |
+| Report formatting     | (Phase 6) JSON / Markdown / HTML / CLI              |
 
 ### Data Flow Pipeline
 
@@ -148,9 +148,9 @@ interface RunResult {
   overallScore: number
   categoryScores: CategoryScore[]
   results: CheckResult[]
-  co2PerPageView: number  // grams of CO2 per page view (SWD v4 model)
+  co2PerPageView: number // grams of CO2 per page view (SWD v4 model)
   co2Model: 'swd-v4'
-  isGreenHosted: boolean  // from Green Web Foundation API
+  isGreenHosted: boolean // from Green Web Foundation API
 }
 ```
 
@@ -249,7 +249,7 @@ Estimates CO2 emissions per page view using the [CO2.js](https://www.thegreenweb
 import { estimateCO2, checkGreenHosting, CO2_MODEL } from '@/utils'
 
 const isGreen = await checkGreenHosting('example.com')
-const grams   = estimateCO2(pageWeight.htmlSize, isGreen)
+const grams = estimateCO2(pageWeight.htmlSize, isGreen)
 // grams: e.g. 0.0012 (rounded to 4 d.p.)
 // CO2_MODEL: 'swd-v4'
 ```
@@ -279,6 +279,60 @@ import { createLogger } from '@/utils'
 
 const log = createLogger({ level: 'debug', structured: false })
 log.info('Fetching URL', { url: 'https://example.com' })
+```
+
+## Checks Module (`src/checks/`)
+
+The Checks Module contains the individual WSG guideline check functions introduced in **Phase 4**. Each check is a pure `CheckFn` — a function that accepts the pre-assembled `PageData` bundle and returns a `CheckResult`. Checks depend only on `core/types.ts` (the domain layer) and never on frameworks, HTTP clients, or other I/O adapters.
+
+### Phase 4.1 — Performance & Efficiency Checks
+
+| Check                 | File                 | WSG Guideline                             | Impact |
+| --------------------- | -------------------- | ----------------------------------------- | ------ |
+| `checkMinification`   | `minification.ts`    | 3.3 Minify Your HTML, CSS, and JavaScript | medium |
+| `checkRenderBlocking` | `render-blocking.ts` | 3.9 Resolve Render Blocking Content       | high   |
+
+#### `checkMinification` — WSG 3.3
+
+Detects signals of unminified HTML in the served response using two heuristics applied to the raw HTML body:
+
+1. **Blank-line ratio**: if more than 10% of lines are whitespace-only, the HTML is likely not minified.
+2. **HTML comment count**: more than 2 non-conditional HTML comments suggest developer source (conditional `<!--[if …]>` comments are excluded).
+
+> **Note:** External CSS and JS file content is not fetched during static analysis, so minification of those assets cannot be verified in this phase.
+
+#### `checkRenderBlocking` — WSG 3.9
+
+Checks for two common sources of render-blocking behaviour:
+
+1. **Scripts without `async` or `defer`** — blocks the HTML parser until the script downloads and executes.
+2. **Images without `loading="lazy"`** — forces eager-loading of all images regardless of viewport position.
+
+Scoring:
+
+| Condition                              | Status           | Score |
+| -------------------------------------- | ---------------- | ----- |
+| Render-blocking scripts present        | `fail`           | 0     |
+| Scripts OK, some images lack lazy-load | `warn`           | 50    |
+| All scripts deferred, all images lazy  | `pass`           | 100   |
+| No scripts or images on the page       | `not-applicable` | —     |
+
+### Using the Checks Module
+
+```typescript
+import { WsgChecker } from '@/core'
+import { performanceChecks } from '@/checks'
+
+// Register all Phase 4.1 checks at once
+const checker = new WsgChecker({ timeout: 15_000 }, performanceChecks)
+const result = await checker.check('https://example.com')
+
+// Or register individual checks for more granular control
+import { checkMinification, checkRenderBlocking } from '@/checks'
+
+const checker2 = new WsgChecker()
+checker2.runner.register(checkMinification)
+checker2.runner.register(checkRenderBlocking)
 ```
 
 ## Technologies Used
