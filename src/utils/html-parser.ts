@@ -52,6 +52,19 @@ export interface StructuredData {
 }
 
 /**
+ * Summary of a single form input (or select / textarea) found in the document.
+ * Used by the form-validation check (WSG 3.12).
+ */
+export interface FormInputInfo {
+  /** The effective input type (e.g. `"text"`, `"email"`, `"select"`, `"textarea"`). */
+  type: string
+  /** `true` when the input has an associated `<label>` element. */
+  hasLabel: boolean
+  /** `true` when the input carries an `autocomplete` attribute. */
+  hasAutocomplete: boolean
+}
+
+/**
  * The fully parsed representation of a web page, ready for sustainability
  * checks.
  */
@@ -81,6 +94,12 @@ export interface ParsedPage {
   structuredData: StructuredData[]
   /** Raw `<!DOCTYPE …>` declaration string, or `null` if absent. */
   doctype: string | null
+  /**
+   * Summary of each interactive form input (`<input>` excluding hidden,
+   * `<select>`, `<textarea>`) found in the document.
+   * Used by the form-validation check (WSG 3.12).
+   */
+  formInputs: FormInputInfo[]
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -322,6 +341,34 @@ export function parseHtml(html: string, baseUrl?: string): ParsedPage {
     }
   })
 
+  // ── Form inputs ───────────────────────────────────────────────────────────
+  // Build a set of input IDs that are targeted by a <label for="..."> element.
+  const labelledByFor = new Set<string>()
+  $('label[for]').each((_, el) => {
+    const forAttr = (el as DomElement).attribs?.for
+    if (forAttr) labelledByFor.add(forAttr)
+  })
+
+  const formInputs: FormInputInfo[] = []
+  $('input:not([type="hidden"]), select, textarea').each((_, el) => {
+    const attrs = attrsOf(el as DomElement)
+    const tagName = (el as DomElement).name
+    const type = attrs.type ?? (tagName === 'select' ? 'select' : 'textarea')
+    const id = attrs.id
+
+    // An input is labelled when:
+    //   (a) it has an id and a matching <label for="[id]"> exists, or
+    //   (b) it is a descendant of a <label> element.
+    const hasLabel =
+      (id !== undefined && labelledByFor.has(id)) || $(el).closest('label').length > 0
+
+    formInputs.push({
+      type,
+      hasLabel,
+      hasAutocomplete: 'autocomplete' in attrs,
+    })
+  })
+
   return {
     title,
     lang,
@@ -334,5 +381,6 @@ export function parseHtml(html: string, baseUrl?: string): ParsedPage {
     ariaAttributes,
     structuredData,
     doctype,
+    formInputs,
   }
 }

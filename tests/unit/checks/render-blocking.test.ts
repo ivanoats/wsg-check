@@ -38,6 +38,7 @@ function makePageData(resources: ResourceReference[]): PageData {
       ariaAttributes: [],
       structuredData: [],
       doctype: '<!DOCTYPE html>',
+      formInputs: [],
     },
     pageWeight: {
       htmlSize: 40,
