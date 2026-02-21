@@ -1,5 +1,6 @@
 ---
 name: architecture-patterns
+applyTo: '**/*.{ts,tsx}'
 description: Implement proven backend architecture patterns including Clean Architecture, Hexagonal Architecture, and Domain-Driven Design. Use when architecting complex backend systems or refactoring existing applications for better maintainability.
 ---
 
