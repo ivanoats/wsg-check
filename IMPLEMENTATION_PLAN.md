@@ -252,11 +252,11 @@ interface CheckResult {
 
 ### 4.4 Security & Maintenance Checks
 
-- [ ] **3.15 Code security** — Check security headers (CSP, HSTS, X-Frame-Options, etc.)
-- [ ] **3.16 Dependencies** — Analyze third-party dependency count and size
-- [ ] **3.17 Expected files** — Check for `favicon.ico`, `robots.txt`, `sitemap.xml`, `site.webmanifest`
-- [ ] **3.17 Beneficial files** — Check for `security.txt`, `humans.txt`, `carbon.txt`
-- [ ] **3.19 Latest language version** — Check for outdated HTML doctype, deprecated elements
+- [x] **3.15 Code security** — Check security headers (CSP, HSTS, X-Frame-Options, etc.); implemented in `src/checks/security-headers.ts`
+- [x] **3.16 Dependencies** — Analyze third-party dependency count and size; implemented in `src/checks/dependency-count.ts`
+- [x] **3.17 Expected files** — Check for `favicon.ico`, `robots.txt`, `sitemap.xml`, `site.webmanifest`; implemented in `src/checks/expected-files.ts`
+- [x] **3.17 Beneficial files** — Check for `security.txt`, `humans.txt`, `carbon.txt`; implemented in `src/checks/expected-files.ts`
+- [x] **3.19 Latest language version** — Check for outdated HTML doctype, deprecated elements; implemented in `src/checks/html-version.ts`
 
 **Deliverable:** ~20 automated checks covering WSG Section 3, each with unit tests.
 

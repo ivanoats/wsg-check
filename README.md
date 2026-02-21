@@ -392,23 +392,134 @@ Checks for Schema.org JSON-LD structured data that enables rich search results, 
 - No JSON-LD blocks found → `warn` (50)
 - One or more valid JSON-LD blocks → `pass` (100)
 
+### Phase 4.3 — Sustainability-Specific Checks
+
+| Check                         | File                          | WSG Guideline                                | Impact |
+| ----------------------------- | ----------------------------- | -------------------------------------------- | ------ |
+| `checkCssRedundancy`          | `redundancy.ts`               | 3.5 Avoid Redundancy and Duplication in Code | medium |
+| `checkThirdParty`             | `third-party.ts`              | 3.6 Third-Party Assessment                   | high   |
+| `checkPreferenceMediaQueries` | `preference-media-queries.ts` | 3.12 Preference Media Queries                | medium |
+| `checkResponsiveDesign`       | `responsive-design.ts`        | 3.13 Responsive Web Design                   | medium |
+| `checkSustainableJs`          | `sustainable-js.ts`           | 3.14 Standards-Based JavaScript              | medium |
+
+#### `checkCssRedundancy` — WSG 3.5
+
+Detects CSS redundancy signals observable from the HTML document:
+
+1. **Repeated inline `style` attribute values** — when the same `style="…"` value appears 3+ times it should be extracted into a reusable CSS class.
+2. **Multiple inline `<style>` blocks** — more than one `<style>` element should be consolidated into a single external stylesheet for caching.
+
+#### `checkThirdParty` — WSG 3.6
+
+Counts third-party scripts loaded by the page. Each third-party script adds a network round-trip, may set tracking cookies, and can load additional sub-resources beyond the author's control.
+
+| Condition               | Status | Score |
+| ----------------------- | ------ | ----- |
+| 0 third-party scripts   | `pass` | 100   |
+| 1–5 third-party scripts | `warn` | 50    |
+| 6+ third-party scripts  | `fail` | 0     |
+
+#### `checkPreferenceMediaQueries` — WSG 3.12
+
+Checks for `prefers-color-scheme`, `prefers-reduced-motion`, and `prefers-reduced-data` CSS media queries. Dark mode reduces energy consumption on OLED screens by up to 47% ([Google research](https://support.google.com/pixelphone/answer/7158589)) and improves accessibility.
+
+#### `checkResponsiveDesign` — WSG 3.13
+
+Checks for a `<meta name="viewport">` tag, responsive images (any `<img>` with `srcset`), and at least one CSS media query in inline styles or style blocks.
+
+#### `checkSustainableJs` — WSG 3.14
+
+Detects signals of unnecessary JavaScript: external script count, `document.write()` usage, and large inline script blocks.
+
+| Condition                            | Status           | Score |
+| ------------------------------------ | ---------------- | ----- |
+| `document.write()` detected          | `fail`           | 0     |
+| > 14 external scripts                | `fail`           | 0     |
+| > 9 external scripts or large inline | `warn`           | 50    |
+| All checks pass                      | `pass`           | 100   |
+| No scripts on the page               | `not-applicable` | —     |
+
+### Phase 4.4 — Security & Maintenance Checks
+
+| Check                  | File                  | WSG Guideline                               | Impact |
+| ---------------------- | --------------------- | ------------------------------------------- | ------ |
+| `checkSecurityHeaders` | `security-headers.ts` | 3.15 Code Security                          | high   |
+| `checkDependencyCount` | `dependency-count.ts` | 3.16 Reducing Third-Party Dependencies      | high   |
+| `checkExpectedFiles`   | `expected-files.ts`   | 3.17 Expected Files Present                 | medium |
+| `checkBeneficialFiles` | `expected-files.ts`   | 3.17 Beneficial Files Present               | low    |
+| `checkHtmlVersion`     | `html-version.ts`     | 3.19 Use the Latest Stable Language Version | medium |
+
+#### `checkSecurityHeaders` — WSG 3.15
+
+Checks that the page is served with five recommended HTTP security headers. From a sustainability perspective, compromised pages cause unnecessary traffic (spam, malware distribution) and erode user trust.
+
+Headers checked: `Content-Security-Policy`, `Strict-Transport-Security`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`.
+
+| Condition             | Status | Score |
+| --------------------- | ------ | ----- |
+| All 5 headers present | `pass` | 100   |
+| 1–2 headers missing   | `warn` | 50    |
+| 3+ headers missing    | `fail` | 0     |
+
+#### `checkDependencyCount` — WSG 3.16
+
+Counts the total number of third-party resources (scripts, stylesheets, images, fonts, media) loaded by the page. Each external dependency adds network round-trips and attack surface.
+
+| Condition                 | Status | Score |
+| ------------------------- | ------ | ----- |
+| 0 third-party resources   | `pass` | 100   |
+| 1–9 third-party resources | `warn` | 50    |
+| 10+ third-party resources | `fail` | 0     |
+
+#### `checkExpectedFiles` — WSG 3.17 (Expected)
+
+Checks that the page's HTML `<head>` links to three standard files that browsers and search engines rely on:
+
+- **Favicon** — `<link rel="icon">` (or `rel="shortcut icon"`, `rel="apple-touch-icon"`)
+- **Web App Manifest** — `<link rel="manifest">`
+- **Sitemap** — `<link rel="sitemap">`
+
+Missing all three → `fail`; partially missing → `warn`.
+
+#### `checkBeneficialFiles` — WSG 3.17 (Beneficial)
+
+Encourages voluntary disclosure files that improve transparency:
+
+- **`security.txt`** — vulnerability disclosure contact info (RFC 9116)
+- **`humans.txt`** — credits the people who built the site
+- **`carbon.txt`** — discloses sustainable hosting details
+
+All missing → `warn` (these are nice-to-have, not required, so the maximum severity is `warn`).
+
+#### `checkHtmlVersion` — WSG 3.19
+
+Checks that the document uses the HTML5 standard and avoids deprecated elements:
+
+1. **DOCTYPE** — must be `<!DOCTYPE html>` (HTML5 short form). Legacy or XHTML doctypes trigger `warn`.
+2. **Deprecated elements** — detects `<font>`, `<center>`, `<marquee>`, `<blink>`, `<frameset>`, `<frame>`, `<noframes>`, `<applet>`, `<dir>`, `<basefont>`.
+
 ### Using the Checks Module
 
 ```typescript
 import { WsgChecker } from '@/core'
-import { performanceChecks, semanticChecks } from '@/checks'
+import { performanceChecks, semanticChecks, sustainabilityChecks, securityChecks } from '@/checks'
 
-// Register all Phase 4.1 + 4.2 checks at once
-const checker = new WsgChecker({ timeout: 15_000 }, [...performanceChecks, ...semanticChecks])
+// Register all Phase 4.1–4.4 checks at once
+const checker = new WsgChecker({ timeout: 15_000 }, [
+  ...performanceChecks,
+  ...semanticChecks,
+  ...sustainabilityChecks,
+  ...securityChecks,
+])
 const result = await checker.check('https://example.com')
 
 // Or register individual checks for more granular control
-import { checkSemanticHtml, checkMetadata, checkStructuredData } from '@/checks'
+import { checkSemanticHtml, checkSecurityHeaders, checkHtmlVersion } from '@/checks'
 
 const checker2 = new WsgChecker()
 checker2.runner.register(checkSemanticHtml)
-checker2.runner.register(checkMetadata)
-checker2.runner.register(checkStructuredData)
+checker2.runner.register(checkSecurityHeaders)
+checker2.runner.register(checkHtmlVersion)
 ```
 
 ## Technologies Used
