@@ -28,6 +28,15 @@ Based on the current trajectory of the W3C guidelines (which are moving toward "
 - Impact API: Integrating with the W3C Measurability Task Force's scoring consensus (slated for late 2026) to provide verified carbon estimates.
 - Regulatory Export: Generating reports that satisfy emerging ESG (Environmental, Social, and Governance) reporting requirements.
 
+### Phase 4: AI Integration
+
+This phase transforms wsg-check from a passive auditing tool into an active AI-powered sustainability co-pilot embedded directly in the developer's workflow.
+
+- **MCP Server:** Expose wsg-check as a [Model Context Protocol (MCP)](https://github.com/modelcontextprotocol/specification) server so that AI assistants (Claude, ChatGPT, Copilot Chat, and others) can call the checker as a tool. Developers can ask their AI assistant "does my site meet WSG guidelines?" and receive structured check results, carbon estimates, and fix suggestions without leaving the chat interface.
+- **GitHub Copilot Skill / VS Code Extension:** Publish a Copilot skill (and companion VS Code extension) that surfaces WSG check results inline as the developer writes code. The skill can proactively flag guideline violations (e.g., oversized images, render-blocking scripts, missing green-hosting configuration) and suggest auto-fixes, mirroring the "shift-left" philosophy already applied to accessibility with axe-core.
+- **Intelligent Fix Suggestions:** Leverage an LLM to translate raw check failures into context-aware, project-specific remediation advice—going beyond static rule messages to generate concrete code changes (e.g., adding `loading="lazy"` to image tags, suggesting a `srcset`, or proposing a Service Worker caching strategy).
+- **Sustainability-Aware Code Generation:** Provide prompt templates and agent instructions (similar to the `.github/copilot-instructions.md` pattern already in this repo) that steer AI code generation toward WSG-compliant outputs by default, so new components are sustainable from the first keystroke.
+
 ## 3. Marketplace Positioning
 
 The market for "Green IT" tools is currently fragmented, placing wsg-check in a strategic spot:
