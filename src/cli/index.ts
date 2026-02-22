@@ -196,8 +196,16 @@ export const runCheck = async (url: string, opts: CliOptions): Promise<number> =
 
   // ── Write output ─────────────────────────────────────────────────────────
   if (config.outputPath) {
-    writeFileSync(config.outputPath, output, 'utf8')
-    process.stderr.write(`Report written to ${config.outputPath}\n`)
+    try {
+      writeFileSync(config.outputPath, output, 'utf8')
+      process.stderr.write(`Report written to ${config.outputPath}\n`)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      process.stderr.write(
+        `\n✗ Failed to write report to ${config.outputPath}: ${message}\n`
+      )
+      return 1
+    }
   } else {
     process.stdout.write(output + '\n')
   }
