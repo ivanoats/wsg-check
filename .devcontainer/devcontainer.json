@@ -7,7 +7,7 @@
       "configureZshAsDefaultShell": true
     }
   },
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y ripgrep fzf && npm install",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y ripgrep fzf && npm install && cargo install eza",
   "customizations": {
     "vscode": {
       "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
