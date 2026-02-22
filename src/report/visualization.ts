@@ -17,6 +17,7 @@
  */
 
 import type { Grade, SustainabilityReport } from './types.js'
+import { scoreToGrade } from './types.js'
 
 // ─── Grade colours ────────────────────────────────────────────────────────────
 
@@ -107,19 +108,23 @@ export const scoreBadgeSvg = (grade: Grade, score: number): string => {
   const labelX = Math.round(labelW / 2)
   const valueX = labelW + Math.round(valueW / 2)
 
+  const idPrefix = `badge-${grade}-${score}`
+  const gradientId = `${idPrefix}-gradient`
+  const clipPathId = `${idPrefix}-clip`
+
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${totalW}" height="${height}" role="img" aria-label="${esc(grade + ' ' + score + '/100')}">
   <title>${esc(`Sustainability grade ${grade} — ${score}/100`)}</title>
-  <linearGradient id="s" x2="0" y2="100%">
+  <linearGradient id="${gradientId}" x2="0" y2="100%">
     <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
     <stop offset="1" stop-opacity=".1"/>
   </linearGradient>
-  <clipPath id="r">
+  <clipPath id="${clipPathId}">
     <rect width="${totalW}" height="${height}" rx="3" fill="#fff"/>
   </clipPath>
-  <g clip-path="url(#r)">
+  <g clip-path="url(#${clipPathId})">
     <rect width="${labelW}" height="${height}" fill="#555"/>
     <rect x="${labelW}" width="${valueW}" height="${height}" fill="${esc(color)}"/>
-    <rect width="${totalW}" height="${height}" fill="url(#s)"/>
+    <rect width="${totalW}" height="${height}" fill="url(#${gradientId})"/>
   </g>
   <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
     <text x="${labelX}" y="15" fill="#010101" fill-opacity=".3" aria-hidden="true">${esc(label)}</text>
@@ -140,24 +145,18 @@ export interface CategoryChartBar {
   readonly category: string
   /** Weighted score for this category (0–100). */
   readonly score: number
-  /** Hex colour derived from the equivalent grade for this score. */
+  /** Hex color derived from the grade-equivalent for this score (via `scoreToGrade` + `getGradeColor`). */
   readonly color: string
   /** Bar fill percentage (equal to `score` since the scale is 0–100). */
   readonly fillPercent: number
 }
 
 /**
- * Derives the grade-equivalent colour for a numeric score.
- * Re-uses the same thresholds as `scoreToGrade` so bar colours are consistent
- * with the score badge.
+ * Derives the grade-equivalent color for a numeric score by composing
+ * `scoreToGrade` and `getGradeColor`, ensuring bar colors always stay
+ * in sync with the grade thresholds used throughout the report module.
  */
-const scoreColor = (score: number): string => {
-  if (score >= 90) return GRADE_COLORS.A
-  if (score >= 75) return GRADE_COLORS.B
-  if (score >= 60) return GRADE_COLORS.C
-  if (score >= 45) return GRADE_COLORS.D
-  return GRADE_COLORS.F
-}
+const scoreColor = (score: number): string => getGradeColor(scoreToGrade(score))
 
 /**
  * Returns an array of bar-chart data objects, one per WSG category.
