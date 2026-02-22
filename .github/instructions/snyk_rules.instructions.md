@@ -1,8 +1,5 @@
 ---
-alwaysApply: true
-always_on: true
-trigger: always_on
-applyTo: '**'
+applyTo: "**"
 description: Snyk Security At Inception
 ---
 
