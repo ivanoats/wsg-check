@@ -784,7 +784,7 @@ Converts a `RunResult` (the raw output of `WsgChecker.check()`) into a `Sustaina
 
 Exported string constant included in every report's `methodology.disclaimer` field. Explains the inherent constraints of HTML/HTTP-only static analysis and points readers to complementary tools: Google PageSpeed Insights, GreenFrame, and Sitespeed.io.
 
-#### Usage
+#### Usage in JavaScript/TypeScript
 
 ```typescript
 import { fromRunResult, scoreToGrade, STATIC_ANALYSIS_DISCLAIMER } from '@/report'

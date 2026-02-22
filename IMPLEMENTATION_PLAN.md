@@ -681,7 +681,7 @@ wsg-check --version
 
 ## Directory Structure
 
-```
+```text
 wsg-check/
 ├── .github/
 │   ├── workflows/
