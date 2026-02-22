@@ -1,6 +1,6 @@
-import { isDisallowedHost, dnsResolvesToPrivateAddress } from '../utils/ssrf.js'
-import { ok, err, type Result } from '../utils/errors.js'
-import type { CheckRequestBody } from './types.js'
+import { isDisallowedHost, dnsResolvesToPrivateAddress } from '../utils/ssrf'
+import { ok, err, type Result } from '../utils/errors'
+import type { CheckRequestBody } from './types'
 
 const ALLOWED_PROTOCOLS = new Set(['http:', 'https:'])
 

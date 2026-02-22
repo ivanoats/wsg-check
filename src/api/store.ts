@@ -1,4 +1,4 @@
-import type { SustainabilityReport } from '../report/index.js'
+import type { SustainabilityReport } from '../report/index'
 
 interface StoredCheckResult {
   readonly id: string

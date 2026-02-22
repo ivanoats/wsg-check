@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server'
-import { RateLimiterMemory } from 'rate-limiter-flexible'
-import { errorJson } from './response.js'
+import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible'
+import { errorJson } from './response'
 
 const RATE_LIMIT_POINTS = Number.parseInt(process.env.WSG_API_RATE_LIMIT_POINTS ?? '30', 10)
 const RATE_LIMIT_DURATION = Number.parseInt(
@@ -19,7 +19,6 @@ const limiter = new RateLimiterMemory({
  * Trusted sources, in order of preference:
  * - `x-forwarded-for` (left-most IP, set by upstream proxies)
  * - `x-real-ip` (single IP, set by some reverse proxies)
- * - `request.ip` (Next.js / Vercel-provided client IP when available)
  *
  * Falls back to "anonymous" only when no trusted IP information is present.
  */
@@ -39,10 +38,6 @@ const getClientIp = (request: NextRequest): string => {
     return realIp.trim()
   }
 
-  if (typeof request.ip === 'string' && request.ip.trim().length > 0) {
-    return request.ip.trim()
-  }
-
   return 'anonymous'
 }
 
@@ -53,12 +48,7 @@ export const enforceRateLimit = async (request: NextRequest): Promise<Response |
     return null
   } catch (error_) {
     const remainingSeconds =
-      typeof error_ === 'object' &&
-      error_ !== null &&
-      'msBeforeNext' in error_ &&
-      typeof (error_ as { msBeforeNext: unknown }).msBeforeNext === 'number'
-        ? Math.ceil((error_ as { msBeforeNext: number }).msBeforeNext / 1000)
-        : RATE_LIMIT_DURATION
+      error_ instanceof RateLimiterRes ? Math.ceil(error_.msBeforeNext / 1000) : RATE_LIMIT_DURATION
 
     const response = errorJson(429, 'RATE_LIMITED', 'Rate limit exceeded. Please retry later.', {
       retryAfterSeconds: remainingSeconds,

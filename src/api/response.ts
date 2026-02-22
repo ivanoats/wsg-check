@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { withCors } from './cors.js'
-import type { ApiErrorBody, ApiErrorCode } from './types.js'
+import { withCors } from './cors'
+import type { ApiErrorBody, ApiErrorCode } from './types'
 
 export const okJson = <T>(body: T, status = 200): NextResponse<T> =>
   withCors(NextResponse.json(body, { status }))
