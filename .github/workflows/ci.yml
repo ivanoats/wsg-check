@@ -94,6 +94,13 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: false
 
+      - name: Upload coverage to DeepSource
+        uses: deepsourcelabs/test-coverage-action@master
+        with:
+          key: javascript
+          coverage-file: ./coverage/lcov.info
+          dsn: ${{ secrets.DEEPSOURCE_DSN }}
+
   build:
     name: Build
     runs-on: ubuntu-latest

@@ -51,7 +51,7 @@ export class WsgChecker {
 
   constructor(
     config: Partial<ResolvedConfig> = {},
-    checks: CheckFn[] = [],
+    checks: ReadonlyArray<CheckFn> = [],
     logger: Logger = defaultLogger
   ) {
     this.fetcher = new PageFetcher({
