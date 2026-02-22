@@ -88,18 +88,18 @@ describe('validateTargetUrl', () => {
   })
 
   it('rejects private IPv4 hosts', async () => {
-    const result = await validateTargetUrl('http://192.168.0.5')
+    const result = await validateTargetUrl('https://192.168.0.5')
     expect(result.ok).toBe(false)
   })
 
   it('rejects hostnames resolving to private addresses', async () => {
-    lookupMock.mockResolvedValueOnce([{ address: '10.0.0.5', family: 4 }])
+    lookupMock.mockResolvedValueOnce([{ address: '10.0.0.5', family: 4 }]) // NOSONAR - intentional private IP for SSRF test
     const result = await validateTargetUrl('https://example.com')
     expect(result.ok).toBe(false)
   })
 
   it('accepts public hostnames with public DNS resolution', async () => {
-    lookupMock.mockResolvedValueOnce([{ address: '93.184.216.34', family: 4 }])
+    lookupMock.mockResolvedValueOnce([{ address: '93.184.216.34', family: 4 }]) // NOSONAR - intentional public IP for SSRF test
     const result = await validateTargetUrl('https://example.com')
     expect(result.ok).toBe(true)
     if (result.ok) {
