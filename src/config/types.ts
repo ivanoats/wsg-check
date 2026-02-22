@@ -52,4 +52,11 @@ export interface GuidelineEntry {
   category: WSGCategory
   testability: Testability
   description: string
+  /**
+   * Canonical URL to the guideline's section in the W3C specification.
+   * Populated when guidelines are loaded from the W3C JSON API.
+   *
+   * @see https://w3c.github.io/sustainableweb-wsg/guidelines.json
+   */
+  specUrl?: string
 }
