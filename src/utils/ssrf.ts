@@ -30,8 +30,22 @@ export const isPrivateIpv4 = (address: string): boolean => {
 
 export const isPrivateIpv6 = (address: string): boolean => {
   const lower = address.toLowerCase()
-  if (lower === '::1') return true
+  // Unspecified and loopback
+  if (lower === '::' || lower === '::1') return true
+
+  // IPv4-mapped IPv6 (e.g. ::ffff:127.0.0.1).
+  // We only need to block cases where the mapped IPv4 is private/loopback.
+  if (lower.startsWith('::ffff:')) {
+    const ipv4Candidate = lower.substring(lower.lastIndexOf(':') + 1)
+    if (isIP(ipv4Candidate) === 4 && isPrivateIpv4(ipv4Candidate)) {
+      return true
+    }
+  }
+
+  // Link-local fe80::/10
   if (lower.startsWith('fe80:')) return true
+
+  // Unique local fc00::/7 (fc00::/8 and fd00::/8)
   return lower.startsWith('fc') || lower.startsWith('fd')
 }
 
