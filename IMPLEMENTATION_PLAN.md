@@ -356,9 +356,9 @@ interface SustainabilityReport {
 
 ### 6.4 Score Visualization
 
-- [ ] Overall score badge (A–F grading with color)
-- [ ] Per-category radar/bar chart data
-- [ ] Trend comparison (if previous reports are available)
+- [x] Overall score badge (A–F grading with color) — `scoreBadgeSvg` in `src/report/visualization.ts`
+- [x] Per-category radar/bar chart data — `categoryBarChartData` / `categoryBarChartSvg` in `src/report/visualization.ts`; SVG bar chart embedded in HTML formatter
+- [x] Trend comparison (if previous reports are available) — `compareTrend` in `src/report/visualization.ts`
 
 **Deliverable:** Report module that outputs structured reports in 4 formats.
 
