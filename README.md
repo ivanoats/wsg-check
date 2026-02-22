@@ -855,6 +855,62 @@ process.stdout.write(formatTerminal(report))
 process.stdout.write(formatTerminal(report, { colors: false }))
 ```
 
+## CLI Usage
+
+WSG-Check ships with a command-line tool that lets you check any website directly from your terminal or integrate checks into CI pipelines.
+
+### Basic usage
+
+```bash
+# Check a website with default (terminal) output
+npx wsg-check https://example.com
+
+# Output as JSON
+npx wsg-check https://example.com --format json
+
+# Save the report to a file
+npx wsg-check https://example.com --format markdown --output report.md
+
+# Fail the process (exit 1) if the score is below 70
+npx wsg-check https://example.com --fail-threshold 70
+```
+
+### Options
+
+| Option                 | Alias | Description                                               | Default           |
+| ---------------------- | ----- | --------------------------------------------------------- | ----------------- |
+| `--format <format>`    | `-f`  | Output format: `terminal`, `json`, `markdown`, `html`     | `terminal`        |
+| `--output <path>`      | `-o`  | Write report to a file instead of stdout                  | _(stdout)_        |
+| `--categories <list>`  | `-c`  | Comma-separated categories: `ux,web-dev,hosting,business` | all               |
+| `--guidelines <list>`  | `-g`  | Comma-separated guideline IDs to run, e.g. `3.1,3.2`      | all               |
+| `--fail-threshold <n>` |       | Exit code 1 if overall score < _n_ (0–100)                | `0`               |
+| `--verbose`            | `-v`  | Enable verbose logging                                    | `false`           |
+| `--config <path>`      |       | Path to `wsg-check.config.json` or `.wsgcheckrc.json`     | _(auto-discover)_ |
+| `--version`            |       | Print version and exit                                    |                   |
+| `--help`               |       | Print help and exit                                       |                   |
+
+### CI integration
+
+Use `--fail-threshold` to fail your pipeline when a site's sustainability score drops:
+
+```yaml
+# .github/workflows/sustainability.yml
+- name: Check sustainability
+  run: npx wsg-check https://example.com --fail-threshold 60 --format json --output wsg-report.json
+- name: Upload report
+  uses: actions/upload-artifact@v4
+  with:
+    name: wsg-report
+    path: wsg-report.json
+```
+
+### Exit codes
+
+| Code | Meaning                                                     |
+| ---- | ----------------------------------------------------------- |
+| `0`  | Check completed and score is at or above `--fail-threshold` |
+| `1`  | Fetch/parse error, or score is below `--fail-threshold`     |
+
 ## Technologies Used
 
 - **Node.js**: The core runtime environment for the application, allowing us to run JavaScript on the server side.
@@ -876,4 +932,3 @@ process.stdout.write(formatTerminal(report, { colors: false }))
 - **GitHub Actions**: A CI/CD platform used for automating the testing and deployment of the application, ensuring that code changes are properly tested and deployed to production.
 - **ArkUI**: A component library used for building the user interface of the application, providing a set of pre-built components that can be easily customized and integrated into the frontend.
 - **Park UI**: A component library built on top of Ark UI and PandaCSS, providing beautifully styled, accessible components for the frontend of the application.
-
