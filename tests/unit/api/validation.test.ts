@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const lookupMock = vi.fn()
 vi.mock('node:dns/promises', () => ({
+  default: { lookup: lookupMock },
   lookup: lookupMock,
 }))
 
