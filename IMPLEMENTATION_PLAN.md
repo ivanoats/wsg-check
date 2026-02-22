@@ -109,6 +109,53 @@ interface WSGCheckConfig {
 - [ ] Add **WSG 4.1 "Use sustainable hosting"** to the registry as `automated` (machine-testable via Green Web Foundation dataset lookup using CO2.js)
 - [ ] Add all **27 Section 5 (Business Strategy and Product Management)** guidelines to the registry as `manual-only`, and flag **5.5** ("Calculate the environmental impact") and **5.25** ("Define performance and environmental budgets") as `semi-automated` candidates for a future phase
 
+### 1.4 W3C WSG JSON API Integration
+
+**Decision: Use the W3C JSON API as the authoritative source for guideline metadata.**
+
+The [W3C Sustainable Web Interest Group](https://github.com/w3c/sustainableweb-wsg) publishes two JSON APIs kept in sync with the specification (currently "Draft Note" edition, last modified 2026-01-16):
+
+- **Guidelines API**: `https://w3c.github.io/sustainableweb-wsg/guidelines.json`
+- **STAR (Tooling & Reporting) API**: `https://w3c.github.io/sustainableweb-wsg/star.json`
+
+**Why use the API:**
+
+- The spec is actively evolving (80 guidelines, updated titles, new criteria). Hand-coded registries drift out of sync.
+- The API provides rich per-guideline data our static registry lacks: canonical spec URLs, full success-criteria text, resource links (2,500+), GRI impact levels, and classification tags.
+- The `GET /api/guidelines` endpoint (Phase 8) should return authoritative data from the W3C source rather than a stale snapshot.
+
+**What the API does NOT provide (kept locally):**
+
+- `testability` levels (`automated` / `semi-automated` / `manual-only`) — these are wsg-check's own assessments of what can be machine-tested. Maintained in `TESTABILITY_OVERLAY` in `src/config/wsg-api-client.ts`.
+- Short category enum (`'ux'` / `'web-dev'` / `'hosting'` / `'business'`) — derived from the API's category IDs via a local mapping.
+
+**Implementation (completed):**
+
+- [x] Add TypeScript types for the W3C API JSON schema (`src/config/wsg-api-types.ts`)
+- [x] Add `specUrl?: string` to `GuidelineEntry` in `src/config/types.ts`
+- [x] Create `src/config/wsg-api-client.ts` with:
+  - `WSG_GUIDELINES_API_URL` constant
+  - `TESTABILITY_OVERLAY` — local map of guideline ID → testability level
+  - `fetchWsgGuidelines()` — fetches and parses the API (returns `Result<WsgApiResponse, WsgApiError>`)
+  - `mapApiToGuidelineEntries()` — maps API response + testability overlay → `GuidelineEntry[]`
+- [x] Export new types and functions from `src/config/index.ts`
+- [x] Unit tests for the API client (`tests/unit/config/wsg-api-client.test.ts`)
+
+**Usage pattern for Phase 8 (`GET /api/guidelines`):**
+
+```typescript
+import { fetchWsgGuidelines, mapApiToGuidelineEntries, TESTABILITY_OVERLAY } from '@/config'
+import { GUIDELINES_REGISTRY } from '@/config' // static fallback
+
+// Try the live API first; fall back to bundled static registry
+const apiResult = await fetchWsgGuidelines()
+const guidelines = apiResult.ok
+  ? mapApiToGuidelineEntries(apiResult.value, TESTABILITY_OVERLAY)
+  : GUIDELINES_REGISTRY
+```
+
+The static `GUIDELINES_REGISTRY` in `guidelines-registry.ts` is retained as an offline/test fallback and for use in check functions that need guideline names at import time.
+
 **Deliverable:** Config module that loads, validates, and merges configuration from all sources. ✅
 
 ---
@@ -415,7 +462,7 @@ wsg-check --version
 
 - [ ] `POST /api/check` — Submit a URL for analysis
 - [ ] `GET /api/check/:id` — Get results for a completed check
-- [ ] `GET /api/guidelines` — List all supported WSG guidelines
+- [ ] `GET /api/guidelines` — List all supported WSG guidelines (sourced from W3C JSON API with static fallback; see Phase 1.4)
 - [ ] `GET /api/guidelines/:id` — Get details for a specific guideline
 - [ ] `GET /api/health` — Health check endpoint
 
