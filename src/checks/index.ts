@@ -100,16 +100,19 @@ import { checkErrorPages } from './error-pages.js'
 import { checkRedirects } from './redirects.js'
 import { checkCdnUsage } from './cdn-usage.js'
 import { checkDataRefresh } from './data-refresh.js'
-import type { CheckFn, CheckFnWithId } from '../core/types.js'
+import type { CheckFn, CheckFnWithId, PageData } from '../core/types.js'
 
 /**
- * Attaches a `guidelineId` property to a check function, producing a
- * `CheckFnWithId`.  The original function is returned (with the property
- * merged in-place via `Object.assign`) so callers that only need `CheckFn`
- * continue to work without modification.
+ * Wraps a check function in a new function with the `guidelineId` property
+ * attached, producing a `CheckFnWithId`.
+ *
+ * A new wrapper function is created for each call so that the original `fn`
+ * is never mutated (avoids the no-param-reassign anti-pattern).
  */
-const withGuidelineId = (fn: CheckFn, guidelineId: string): CheckFnWithId =>
-  Object.assign(fn, { guidelineId })
+const withGuidelineId = (fn: CheckFn, guidelineId: string): CheckFnWithId => {
+  const wrapped = (page: PageData): ReturnType<CheckFn> => fn(page)
+  return Object.assign(wrapped, { guidelineId })
+}
 
 /**
  * All Phase 4.1 Performance & Efficiency checks bundled for convenience.

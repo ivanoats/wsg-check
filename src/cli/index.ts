@@ -107,6 +107,54 @@ const renderReport = (report: ReturnType<typeof fromRunResult>, format: OutputFo
   }
 }
 
+// ─── CLI flag builder ─────────────────────────────────────────────────────────
+
+/**
+ * Maps raw commander option strings to typed config properties.
+ * Extracted to keep `runCheck` below the cognitive-complexity threshold.
+ */
+const buildCliFlags = (url: string, opts: CliOptions) => ({
+  url,
+  ...(opts.format ? { format: opts.format as OutputFormat } : {}),
+  ...(opts.output ? { outputPath: opts.output } : {}),
+  ...(opts.categories
+    ? { categories: opts.categories.split(',').map((c) => c.trim() as WSGCategory) }
+    : {}),
+  ...(opts.guidelines ? { guidelines: opts.guidelines.split(',').map((g) => g.trim()) } : {}),
+  ...(opts.failThreshold ? { failThreshold: parseInt(opts.failThreshold, 10) } : {}),
+  ...(opts.verbose ? { verbose: true } : {}),
+})
+
+// ─── Check selector ───────────────────────────────────────────────────────────
+
+/**
+ * Selects and optionally filters check functions from the available check
+ * arrays based on category selection and requested guideline IDs.
+ * Extracted to keep `runCheck` below the cognitive-complexity threshold.
+ */
+const selectChecks = (
+  categories: ReadonlySet<WSGCategory>,
+  guidelines: readonly string[]
+): ReadonlyArray<CheckFnWithId> => {
+  if (categories.has('business')) {
+    process.stderr.write(
+      'Note: the "business" category has no automated checks in the current version.\n'
+    )
+  }
+
+  const categoryChecks: ReadonlyArray<CheckFnWithId> = [
+    ...(categories.has('web-dev')
+      ? [...performanceChecks, ...semanticChecks, ...sustainabilityChecks, ...securityChecks]
+      : []),
+    ...(categories.has('ux') ? [...uxDesignChecks] : []),
+    ...(categories.has('hosting') ? [...hostingChecks] : []),
+  ]
+
+  return guidelines.length > 0
+    ? categoryChecks.filter((c) => guidelines.includes(c.guidelineId))
+    : categoryChecks
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 /**
@@ -155,46 +203,14 @@ export const buildProgram = (): Command => {
  */
 export const runCheck = async (url: string, opts: CliOptions): Promise<number> => {
   // ── Resolve configuration ────────────────────────────────────────────────
-  const cliFlags = {
-    url,
-    ...(opts.format ? { format: opts.format as OutputFormat } : {}),
-    ...(opts.output ? { outputPath: opts.output } : {}),
-    ...(opts.categories
-      ? { categories: opts.categories.split(',').map((c) => c.trim() as WSGCategory) }
-      : {}),
-    ...(opts.guidelines ? { guidelines: opts.guidelines.split(',').map((g) => g.trim()) } : {}),
-    ...(opts.failThreshold ? { failThreshold: parseInt(opts.failThreshold, 10) } : {}),
-    ...(opts.verbose ? { verbose: true } : {}),
-  }
-
-  const config = resolveConfig(cliFlags, opts.config)
+  const config = resolveConfig(buildCliFlags(url, opts), opts.config)
 
   const format: OutputFormat = (config.format ?? 'terminal') as OutputFormat
   const failThreshold = config.failThreshold ?? 0
 
   // ── Select check functions ───────────────────────────────────────────────
   const selectedCategories = new Set(config.categories ?? ['ux', 'web-dev', 'hosting', 'business'])
-
-  if (selectedCategories.has('business')) {
-    process.stderr.write(
-      'Note: the "business" category has no automated checks in the current version.\n'
-    )
-  }
-
-  const categoryChecks: ReadonlyArray<CheckFnWithId> = [
-    ...(selectedCategories.has('web-dev')
-      ? [...performanceChecks, ...semanticChecks, ...sustainabilityChecks, ...securityChecks]
-      : []),
-    ...(selectedCategories.has('ux') ? [...uxDesignChecks] : []),
-    ...(selectedCategories.has('hosting') ? [...hostingChecks] : []),
-  ]
-
-  // Filter by specific guideline IDs when --guidelines is provided.
-  const requestedGuidelines = config.guidelines
-  const allChecks: ReadonlyArray<CheckFnWithId> =
-    requestedGuidelines.length > 0
-      ? categoryChecks.filter((c) => requestedGuidelines.includes(c.guidelineId))
-      : categoryChecks
+  const allChecks = selectChecks(selectedCategories, config.guidelines)
 
   // ── Run the check pipeline ───────────────────────────────────────────────
   const stopSpinner = startSpinner(`Analysing ${url} …`)
