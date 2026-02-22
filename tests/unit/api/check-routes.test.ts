@@ -38,7 +38,7 @@ describe('check routes', () => {
       ok: true,
       value: { url: 'https://example.com', categories: ['ux'], guidelines: ['2.8'] },
     })
-    validateTargetUrlMock.mockResolvedValue({ ok: true, url: new URL('https://example.com') })
+    validateTargetUrlMock.mockResolvedValue({ ok: true, value: new URL('https://example.com') })
     selectChecksMock.mockReturnValue([{ guidelineId: '2.8' }])
     checkerCheckMock.mockResolvedValue({ ok: true, value: { overallScore: 80 } })
     fromRunResultMock.mockReturnValue({ overallScore: 80, summary: { totalChecks: 1 } })
@@ -57,7 +57,7 @@ describe('check routes', () => {
   })
 
   it('POST /api/check returns 400 on invalid payload', async () => {
-    validateCheckPayloadMock.mockReturnValue({ ok: false, message: 'bad payload' })
+    validateCheckPayloadMock.mockReturnValue({ ok: false, error: new Error('bad payload') })
 
     const request = {
       json: async () => ({ bad: true }),

@@ -9,7 +9,7 @@ import {
 } from '../checks/index.js'
 import type { WSGCategory } from '../config/index.js'
 
-const DEFAULT_CATEGORIES: ReadonlyArray<WSGCategory> = ['ux', 'web-dev', 'hosting', 'business']
+const DEFAULT_CATEGORIES: ReadonlyArray<WSGCategory> = ['ux', 'web-dev', 'hosting']
 
 export const selectChecks = (
   categories: ReadonlyArray<WSGCategory> = DEFAULT_CATEGORIES,

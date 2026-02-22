@@ -11,6 +11,7 @@
 import axios, { AxiosError, type AxiosInstance, type AxiosResponse } from 'axios'
 import robotsParser from 'robots-parser'
 import { FetchError, type Result, ok, err } from './errors.js'
+import { isDisallowedHost, dnsResolvesToPrivateAddress } from './ssrf.js'
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
@@ -209,7 +210,25 @@ export class HttpClient {
         redirectChain.push({ url: currentUrl, statusCode: resp.status, location })
 
         // Resolve relative Location values against the current URL.
-        currentUrl = new URL(location, currentUrl).href
+        const nextUrl = new URL(location, currentUrl).href
+
+        // SSRF guard: validate the redirect target before following it.
+        const nextHostname = new URL(nextUrl).hostname
+        if (isDisallowedHost(nextHostname)) {
+          throw new FetchError(
+            `Redirect target host is not allowed for security reasons: ${nextHostname}`,
+            startUrl
+          )
+        }
+        const resolvesToPrivate = await dnsResolvesToPrivateAddress(nextHostname)
+        if (resolvesToPrivate) {
+          throw new FetchError(
+            `Redirect target resolves to a private or unreachable address: ${nextHostname}`,
+            startUrl
+          )
+        }
+
+        currentUrl = nextUrl
         continue
       }
 
@@ -260,6 +279,9 @@ export class HttpClient {
   }
 
   private isRetryable(err: unknown): boolean {
+    // FetchError represents a definitive failure (SSRF guard, robots.txt, too many
+    // redirects, etc.) that will not be resolved by retrying.
+    if (err instanceof FetchError) return false
     if (err instanceof AxiosError) {
       // Retry on network errors or 5xx responses
       return !err.response || err.response.status >= 500
