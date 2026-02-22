@@ -8,6 +8,19 @@ A Web Sustainability Guidelines checker for websites. It checks a website agains
 - **Detailed Reporting**: The application provides a detailed report that includes the results of each check, along with explanations and recommendations for improving the sustainability of the website. The report is designed to be user-friendly and easy to understand, making it accessible to users with varying levels of technical expertise.
 - **Command-Line Interface**: WSG-Check includes a command-line interface that allows users to run checks and generate reports directly from the terminal. This feature is particularly useful for developers and technical users who prefer working in a command-line environment.
 
+## REST API (Phase 8)
+
+WSG-Check exposes REST endpoints through Next.js Route Handlers.
+
+- `POST /api/check` — Run an on-demand sustainability check
+- `GET /api/check/:id` — Fetch a completed check result from in-memory store
+- `GET /api/guidelines` — List guidelines (W3C API first, static fallback)
+- `GET /api/guidelines/:id` — Get one guideline by ID
+- `GET /api/health` — Health endpoint
+- `GET /api/openapi` — OpenAPI 3.1 JSON specification
+
+All endpoints include CORS headers, shared error envelopes, and in-memory rate limiting.
+
 ## Executive Summary
 
 See [Executive-summary.md](./Executive-Summary.md)
@@ -119,16 +132,16 @@ flowchart TD
 
 ### Module Overview
 
-| Module       | Path          | Responsibility                                           |
-| ------------ | ------------- | -------------------------------------------------------- |
-| **Core**     | `src/core/`   | Orchestration: fetch → parse → check → score             |
-| **Checks**   | `src/checks/` | Individual WSG guideline checks (Phases 4–5)             |
-| **Report**   | `src/report/` | Format `RunResult` as JSON / Markdown / HTML / Terminal  |
-| **CLI**      | `src/cli/`    | Command-line interface (Phase 7)                         |
-| **API**      | `src/api/`    | REST endpoints (Phase 8)                                 |
-| **Utils**    | `src/utils/`  | Shared infrastructure: HTTP, HTML parser, logger, errors |
-| **Config**   | `src/config/` | Configuration schema, defaults, env/file loading         |
-| **Frontend** | `src/app/`    | Next.js App Router pages and UI components (Phase 9)     |
+| Module       | Path                        | Responsibility                                           |
+| ------------ | --------------------------- | -------------------------------------------------------- |
+| **Core**     | `src/core/`                 | Orchestration: fetch → parse → check → score             |
+| **Checks**   | `src/checks/`               | Individual WSG guideline checks (Phases 4–5)             |
+| **Report**   | `src/report/`               | Format `RunResult` as JSON / Markdown / HTML / Terminal  |
+| **CLI**      | `src/cli/`                  | Command-line interface (Phase 7)                         |
+| **API**      | `src/app/api/` + `src/api/` | Route handlers + API adapter utilities (Phase 8)         |
+| **Utils**    | `src/utils/`                | Shared infrastructure: HTTP, HTML parser, logger, errors |
+| **Config**   | `src/config/`               | Configuration schema, defaults, env/file loading         |
+| **Frontend** | `src/app/`                  | Next.js App Router pages and UI components (Phase 9)     |
 
 ### Core Module (`src/core/`)
 

@@ -465,11 +465,11 @@ wsg-check --version
 
 ### 8.1 API Routes (Next.js Route Handlers)
 
-- [ ] `POST /api/check` — Submit a URL for analysis
-- [ ] `GET /api/check/:id` — Get results for a completed check
-- [ ] `GET /api/guidelines` — List all supported WSG guidelines (sourced from W3C JSON API with static fallback; see Phase 1.4)
-- [ ] `GET /api/guidelines/:id` — Get details for a specific guideline
-- [ ] `GET /api/health` — Health check endpoint
+- [x] `POST /api/check` — Submit a URL for analysis
+- [x] `GET /api/check/:id` — Get results for a completed check
+- [x] `GET /api/guidelines` — List all supported WSG guidelines (sourced from W3C JSON API with static fallback; see Phase 1.4)
+- [x] `GET /api/guidelines/:id` — Get details for a specific guideline
+- [x] `GET /api/health` — Health check endpoint
 
 ### 8.2 API Design
 
@@ -493,13 +493,13 @@ wsg-check --version
 
 ### 8.3 API Features
 
-- [ ] Input validation and sanitization (prevent SSRF, validate URLs)
-- [ ] Rate limiting to prevent abuse
-- [ ] CORS configuration
-- [ ] Error responses with standard HTTP status codes
-- [ ] OpenAPI/Swagger documentation
+- [x] Input validation and sanitization (prevent SSRF, validate URLs)
+- [x] Rate limiting to prevent abuse
+- [x] CORS configuration
+- [x] Error responses with standard HTTP status codes
+- [x] OpenAPI/Swagger documentation
 
-**Deliverable:** REST API with documented endpoints, input validation, and rate limiting.
+**Deliverable:** REST API with documented endpoints, input validation, and rate limiting. ✅
 
 ---
 
