@@ -13,14 +13,15 @@
  *     report metadata, and methodology notes.
  *   - The `fromRunResult` factory converts a `RunResult` into a
  *     `SustainabilityReport`, deriving the grade, summary counts, and the
- *     stub recommendations list.  The full recommendations engine is
- *     implemented in Phase 6.3.
+ *     recommendations list via the Phase 6.3 recommendations engine
+ *     (`src/report/recommendations.ts`).
  *   - `STATIC_ANALYSIS_DISCLAIMER` is exported as a constant so that every
  *     formatter can include it without duplicating the text.
  */
 
 import type { CheckResult, CategoryScore, RunResult } from '../core/types.js'
 import type { CO2Model } from '../utils/carbon-estimator.js'
+import { buildRecommendations } from './recommendations.js'
 
 // ─── Grade ────────────────────────────────────────────────────────────────────
 
@@ -225,47 +226,6 @@ const summariseResults = (results: ReadonlyArray<CheckResult>): ReportSummary =>
 }
 
 /**
- * Derives the priority-ordered `Recommendation` list from check results.
- *
- * Only `'fail'` and `'warn'` results that carry a `recommendation` string
- * are included.  Results are ordered: `high` impact first, then `medium`,
- * then `low`.  Within the same impact tier, `fail` results precede `warn`.
- *
- * Note: the full recommendations engine (Phase 6.3) will enrich this list
- * with cross-check prioritisation, WSG resource links, and complementary
- * tool references.
- */
-const deriveRecommendations = (
-  results: ReadonlyArray<CheckResult>
-): ReadonlyArray<Recommendation> => {
-  const IMPACT_ORDER: Record<'high' | 'medium' | 'low', number> = {
-    high: 0,
-    medium: 1,
-    low: 2,
-  }
-  const STATUS_ORDER: Record<'fail' | 'warn', number> = { fail: 0, warn: 1 }
-
-  return results
-    .filter(
-      (r): r is CheckResult & { status: 'fail' | 'warn'; recommendation: string } =>
-        (r.status === 'fail' || r.status === 'warn') && typeof r.recommendation === 'string'
-    )
-    .sort((a, b) => {
-      const impactDiff = IMPACT_ORDER[a.impact] - IMPACT_ORDER[b.impact]
-      if (impactDiff !== 0) return impactDiff
-      return STATUS_ORDER[a.status] - STATUS_ORDER[b.status]
-    })
-    .map((r) => ({
-      guidelineId: r.guidelineId,
-      guidelineName: r.guidelineName,
-      status: r.status,
-      impact: r.impact,
-      recommendation: r.recommendation,
-      ...(r.resources && r.resources.length > 0 ? { resources: r.resources } : {}),
-    }))
-}
-
-/**
  * Converts a `RunResult` into a `SustainabilityReport`.
  *
  * The factory:
@@ -295,7 +255,7 @@ export const fromRunResult = (
   categories: runResult.categoryScores,
   checks: runResult.results,
   summary: summariseResults(runResult.results),
-  recommendations: deriveRecommendations(runResult.results),
+  recommendations: buildRecommendations(runResult.results, runResult.url),
   metadata: {
     pageWeight,
     requestCount,
