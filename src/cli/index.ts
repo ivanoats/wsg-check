@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * CLI Module — Phase 7
  *
