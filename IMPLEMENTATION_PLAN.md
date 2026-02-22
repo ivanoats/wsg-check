@@ -370,10 +370,10 @@ interface SustainabilityReport {
 
 ### 7.1 CLI Framework
 
-- [ ] Create `src/cli/index.ts` as the entry point
-- [ ] Use a lightweight CLI framework (e.g., `commander` or `yargs`)
-- [ ] Register `wsg-check` as a bin command in `package.json`
-- [ ] Support `npx wsg-check <url>` usage
+- [x] Create `src/cli/index.ts` as the entry point
+- [x] Use a lightweight CLI framework (e.g., `commander` or `yargs`)
+- [x] Register `wsg-check` as a bin command in `package.json`
+- [x] Support `npx wsg-check <url>` usage
 
 ### 7.2 CLI Commands
 
@@ -398,10 +398,15 @@ wsg-check --version
 
 ### 7.3 Terminal Output
 
-- [ ] Colorized pass/fail/warn indicators
-- [ ] Progress spinner during analysis
-- [ ] Summary table with scores
-- [ ] Exit code: `0` if above threshold, `1` if below (for CI integration)
+- [x] Colorized pass/fail/warn indicators
+- [x] Progress spinner during analysis
+- [x] Summary table with scores
+- [x] Exit code: `0` if above threshold, `1` if below (for CI integration)
+
+### 7.4 Future Enhancements
+
+- [x] Implement `--guidelines` check-level filtering (check functions tagged with `guidelineId` via `withGuidelineId` in `src/checks/index.ts`)
+- [ ] Implement `business` category checks (WSG Section 3 guidelines for business sustainability practices)
 
 **Deliverable:** Fully functional CLI tool that can be used standalone or in CI pipelines.
 

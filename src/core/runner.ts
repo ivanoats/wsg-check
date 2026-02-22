@@ -38,7 +38,7 @@ export class CheckRunner {
    * Register an array of check functions at once.
    * Returns `this` for fluent chaining.
    */
-  registerAll(checks: CheckFn[]): this {
+  registerAll(checks: ReadonlyArray<CheckFn>): this {
     for (const check of checks) {
       this.checks.push(check)
     }
