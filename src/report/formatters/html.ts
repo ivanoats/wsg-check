@@ -8,12 +8,10 @@
 
 import type { SustainabilityReport, Recommendation } from '../types.js'
 import type { CheckResult, CategoryScore } from '../../core/types.js'
+import { scoreBadgeSvg, categoryBarChartSvg } from '../visualization.js'
+import { esc } from './escape.js'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-/** Escape characters with special meaning in HTML to prevent XSS. */
-const esc = (text: string): string =>
-  text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 /**
  * Returns an HTML-escaped URL only when the protocol is `http:` or `https:`.
@@ -246,6 +244,7 @@ export const formatHtml = (report: SustainabilityReport): string => {
     <div class="score-details">
       <div class="score-number">${report.overallScore} <span class="score-label">/ 100</span></div>
       <div class="score-label">Overall sustainability score</div>
+      <div class="badge-wrap" style="margin-top:0.4rem">${scoreBadgeSvg(report.grade, report.overallScore)}</div>
     </div>
     <table style="width:auto;border:none;background:transparent;margin:0">
       <tr><td style="border:none;padding:0.2rem 0.5rem">✅ Passed</td><td class="num" style="border:none;padding:0.2rem 0.5rem">${report.summary.passed}</td></tr>
@@ -256,6 +255,7 @@ export const formatHtml = (report: SustainabilityReport): string => {
   </div>
 
   <h2>Category Scores</h2>
+  <div class="chart-wrap" style="margin-bottom:1rem;overflow-x:auto">${categoryBarChartSvg(report)}</div>
   <table>
     <thead><tr><th>Category</th><th>Score</th><th>Passed</th><th>Failed</th><th>Warned</th><th>N/A</th></tr></thead>
     <tbody>${buildCategoryRows(report.categories)}</tbody>

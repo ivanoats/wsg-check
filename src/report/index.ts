@@ -8,7 +8,7 @@
  * Phase 6.1: Report Data Model ✅
  * Phase 6.2: Report Formatters (JSON / Markdown / HTML / Terminal) ✅
  * Phase 6.3: Recommendations Engine ✅
- * Phase 6.4: Score Visualisation — planned
+ * Phase 6.4: Score Visualisation ✅
  *
  * Usage:
  * ```ts
@@ -36,3 +36,19 @@ export type { ComplementaryTool } from './recommendations.js'
 
 export { formatJson, formatMarkdown, formatHtml, formatTerminal } from './formatters/index.js'
 export type { TerminalFormatOptions } from './formatters/index.js'
+
+export {
+  GRADE_COLORS,
+  getGradeColor,
+  scoreBadgeData,
+  scoreBadgeSvg,
+  categoryBarChartData,
+  categoryBarChartSvg,
+  compareTrend,
+} from './visualization.js'
+export type {
+  ScoreBadgeData,
+  CategoryChartBar,
+  CategoryTrend,
+  TrendComparison,
+} from './visualization.js'
