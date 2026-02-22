@@ -18,6 +18,7 @@
 
 import type { Grade, SustainabilityReport } from './types.js'
 import { scoreToGrade } from './types.js'
+import { esc } from './formatters/escape.js'
 
 // ─── Grade colours ────────────────────────────────────────────────────────────
 
@@ -47,12 +48,6 @@ export const GRADE_COLORS: Readonly<Record<Grade, string>> = {
  * @returns A CSS hex colour string (e.g. `'#22c55e'`).
  */
 export const getGradeColor = (grade: Grade): string => GRADE_COLORS[grade]
-
-// ─── SVG escaping ─────────────────────────────────────────────────────────────
-
-/** Escapes characters with special meaning in SVG/HTML attributes. */
-const esc = (text: string): string =>
-  text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 // ─── Score badge ──────────────────────────────────────────────────────────────
 
@@ -112,7 +107,7 @@ export const scoreBadgeSvg = (grade: Grade, score: number): string => {
   const gradientId = `${idPrefix}-gradient`
   const clipPathId = `${idPrefix}-clip`
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${totalW}" height="${height}" role="img" aria-label="${esc(grade + ' ' + score + '/100')}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${totalW}" height="${height}" role="img" aria-label="${esc(`${grade} ${score}/100`)}">
   <title>${esc(`Sustainability grade ${grade} — ${score}/100`)}</title>
   <linearGradient id="${gradientId}" x2="0" y2="100%">
     <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
@@ -198,19 +193,23 @@ export const categoryBarChartSvg = (report: SustainabilityReport): string => {
   const scoreWidth = 40
   const chartWidth = 300
   const rowGap = 6
+  const svgPadding = 8
+  const barTextGap = 6
+  const barTopOffset = 4
   const rowHeight = barHeight + rowGap
-  const totalHeight = bars.length * rowHeight - rowGap + 8
-  const svgWidth = labelWidth + chartWidth + scoreWidth + 8
+  const totalHeight = bars.length * rowHeight - rowGap + svgPadding
+  const svgWidth = labelWidth + chartWidth + scoreWidth + svgPadding
+  const textY = barHeight / 2 + barTopOffset
 
   const barRows = bars
     .map((bar, i) => {
-      const y = 4 + i * rowHeight
+      const y = barTopOffset + i * rowHeight
       const barW = Math.round((bar.fillPercent / 100) * chartWidth)
       return `  <g transform="translate(0,${y})">
-    <text x="${labelWidth - 6}" y="${barHeight / 2 + 4}" text-anchor="end" font-size="12" fill="currentColor" font-family="system-ui,sans-serif">${esc(bar.category)}</text>
+    <text x="${labelWidth - barTextGap}" y="${textY}" text-anchor="end" font-size="12" fill="currentColor" font-family="system-ui,sans-serif">${esc(bar.category)}</text>
     <rect x="${labelWidth}" y="0" width="${chartWidth}" height="${barHeight}" rx="3" fill="#e2e8f0"/>
     <rect x="${labelWidth}" y="0" width="${barW}" height="${barHeight}" rx="3" fill="${esc(bar.color)}"/>
-    <text x="${labelWidth + chartWidth + 6}" y="${barHeight / 2 + 4}" font-size="12" font-weight="bold" fill="currentColor" font-family="system-ui,sans-serif">${esc(String(bar.score))}</text>
+    <text x="${labelWidth + chartWidth + barTextGap}" y="${textY}" font-size="12" font-weight="bold" fill="currentColor" font-family="system-ui,sans-serif">${esc(String(bar.score))}</text>
   </g>`
     })
     .join('\n')
@@ -321,9 +320,15 @@ export const compareTrend = (
     return { category, previousScore, currentScore, delta, direction: categoryDirection(delta) }
   })
 
-  const improved = categories.filter((c) => c.direction === 'improved').length
-  const declined = categories.filter((c) => c.direction === 'declined').length
-  const unchanged = categories.filter((c) => c.direction === 'unchanged').length
+  const summary = categories.reduce(
+    (acc, c) => {
+      if (c.direction === 'improved') acc.improved++
+      else if (c.direction === 'declined') acc.declined++
+      else acc.unchanged++
+      return acc
+    },
+    { improved: 0, declined: 0, unchanged: 0 }
+  )
 
   return {
     url: current.url,
@@ -336,6 +341,6 @@ export const compareTrend = (
     currentGrade: current.grade,
     gradeImproved: gradeDirection(previous.grade, current.grade),
     categories,
-    summary: { improved, declined, unchanged },
+    summary,
   }
 }

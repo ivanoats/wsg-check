@@ -9,12 +9,9 @@
 import type { SustainabilityReport, Recommendation } from '../types.js'
 import type { CheckResult, CategoryScore } from '../../core/types.js'
 import { scoreBadgeSvg, categoryBarChartSvg } from '../visualization.js'
+import { esc } from './escape.js'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-/** Escape characters with special meaning in HTML to prevent XSS. */
-const esc = (text: string): string =>
-  text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 /**
  * Returns an HTML-escaped URL only when the protocol is `http:` or `https:`.
