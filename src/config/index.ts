@@ -33,4 +33,3 @@ export {
   fetchWsgGuidelines,
   mapApiToGuidelineEntries,
 } from './wsg-api-client.js'
-export type { Ok, Err, Result } from './wsg-api-client.js'

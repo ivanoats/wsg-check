@@ -253,6 +253,42 @@ describe('fetchWsgGuidelines', () => {
     }
   })
 
+  it('returns err result when response data is malformed (no category array)', async () => {
+    mockGet.mockResolvedValueOnce({ data: { title: 'WSG', edition: 'Draft' } })
+
+    const result = await fetchWsgGuidelines()
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(WsgApiError)
+      expect(result.error.message).toContain('unexpected response format')
+    }
+  })
+
+  it('returns err result when response data is null', async () => {
+    mockGet.mockResolvedValueOnce({ data: null })
+
+    const result = await fetchWsgGuidelines()
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(WsgApiError)
+      expect(result.error.message).toContain('unexpected response format')
+    }
+  })
+
+  it('returns err result when response data is a non-object', async () => {
+    mockGet.mockResolvedValueOnce({ data: 'not an object' })
+
+    const result = await fetchWsgGuidelines()
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(WsgApiError)
+      expect(result.error.message).toContain('unexpected response format')
+    }
+  })
+
   it('preserves the original error as cause on failure', async () => {
     const originalError = new Error('timeout')
     mockGet.mockRejectedValueOnce(originalError)

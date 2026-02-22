@@ -36,6 +36,7 @@
 import axios from 'axios'
 import type { WsgApiCategory, WsgApiResponse } from './wsg-api-types.js'
 import type { GuidelineEntry, Testability, WSGCategory } from './types.js'
+import { type Result, ok, err } from '../utils/errors.js'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -69,18 +70,6 @@ export class WsgApiError extends Error {
     this.name = 'WsgApiError'
   }
 }
-
-// ─── Result type ─────────────────────────────────────────────────────────────
-
-/** A successful result. */
-export type Ok<T> = { readonly ok: true; readonly value: T }
-/** A failed result. */
-export type Err<E> = { readonly ok: false; readonly error: E }
-/** Discriminated union representing success or failure. */
-export type Result<T, E> = Ok<T> | Err<E>
-
-const ok = <T>(value: T): Ok<T> => ({ ok: true, value })
-const err = <E>(error: E): Err<E> => ({ ok: false, error })
 
 // ─── Testability overlay ──────────────────────────────────────────────────────
 
@@ -173,7 +162,19 @@ export const fetchWsgGuidelines = async (): Promise<Result<WsgApiResponse, WsgAp
       timeout: 10_000,
       headers: { Accept: 'application/json' },
     })
-    return ok(response.data)
+    const data = response.data
+    if (
+      data === null ||
+      typeof data !== 'object' ||
+      !Array.isArray((data as unknown as Record<string, unknown>).category)
+    ) {
+      return err(
+        new WsgApiError(
+          `WSG API returned unexpected response format from ${WSG_GUIDELINES_API_URL}`
+        )
+      )
+    }
+    return ok(data)
   } catch (cause) {
     return err(
       new WsgApiError(`Failed to fetch WSG guidelines from ${WSG_GUIDELINES_API_URL}`, cause)
