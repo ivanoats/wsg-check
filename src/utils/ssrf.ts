@@ -25,16 +25,14 @@ export const isPrivateIpv4 = (address: string): boolean => {
   if (a === 0) return true
   if (a === 169 && b === 254) return true
   if (a === 172 && b >= 16 && b <= 31) return true
-  if (a === 192 && b === 168) return true
-  return false
+  return a === 192 && b === 168
 }
 
 export const isPrivateIpv6 = (address: string): boolean => {
   const lower = address.toLowerCase()
   if (lower === '::1') return true
   if (lower.startsWith('fe80:')) return true
-  if (lower.startsWith('fc') || lower.startsWith('fd')) return true
-  return false
+  return lower.startsWith('fc') || lower.startsWith('fd')
 }
 
 /** Returns `true` when the hostname is a private/loopback address or name. */
