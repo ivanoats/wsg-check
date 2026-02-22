@@ -10,58 +10,14 @@ import {
 } from '@/report/visualization'
 import type { ScoreBadgeData, CategoryChartBar, TrendComparison } from '@/report/visualization'
 import type { SustainabilityReport } from '@/report/types'
-import type { RunResult, CheckResult, CategoryScore } from '@/core/types'
+import type { RunResult } from '@/core/types'
 import { fromRunResult } from '@/report/types'
+import { makeCategoryScore, makeRunResult } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
-function makeCheckResult(overrides: Partial<CheckResult> = {}): CheckResult {
-  return {
-    guidelineId: '3.1',
-    guidelineName: 'Test guideline',
-    successCriterion: 'Test criterion',
-    status: 'pass',
-    score: 100,
-    message: 'Passed',
-    impact: 'medium',
-    category: 'web-dev',
-    machineTestable: true,
-    ...overrides,
-  }
-}
-
-function makeCategoryScore(overrides: Partial<CategoryScore> = {}): CategoryScore {
-  return {
-    category: 'web-dev',
-    score: 80,
-    totalChecks: 2,
-    passed: 2,
-    failed: 0,
-    warned: 0,
-    notApplicable: 0,
-    scoredChecks: 2,
-    ...overrides,
-  }
-}
-
-function makeRunResult(overrides: Partial<RunResult> = {}): RunResult {
-  return {
-    url: 'https://example.com',
-    timestamp: '2024-01-01T00:00:00.000Z',
-    duration: 1500,
-    overallScore: 80,
-    categoryScores: [makeCategoryScore()],
-    results: [makeCheckResult()],
-    co2PerPageView: 0.0012,
-    co2Model: 'swd-v4',
-    isGreenHosted: false,
-    ...overrides,
-  }
-}
-
-function makeReport(overrides: Partial<RunResult> = {}): SustainabilityReport {
-  return fromRunResult(makeRunResult(overrides))
-}
+const makeReport = (overrides: Partial<RunResult> = {}): SustainabilityReport =>
+  fromRunResult(makeRunResult(overrides))
 
 // ─── GRADE_COLORS ─────────────────────────────────────────────────────────────
 

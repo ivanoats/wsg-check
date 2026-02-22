@@ -95,9 +95,11 @@ export const scoreBadgeSvg = (grade: Grade, score: number): string => {
   const color = getGradeColor(grade)
   const label = 'sustainability'
   const value = `${grade} · ${score}/100`
-  // Approximate character widths for the two text panels (6 px per char + padding)
-  const labelW = label.length * 6 + 16
-  const valueW = value.length * 6 + 16
+  // Approximate character width in pixels and per-panel horizontal padding
+  const charWidthPx = 6
+  const panelPaddingPx = 16
+  const labelW = label.length * charWidthPx + panelPaddingPx
+  const valueW = value.length * charWidthPx + panelPaddingPx
   const totalW = labelW + valueW
   const height = 20
   const labelX = Math.round(labelW / 2)
@@ -321,12 +323,11 @@ export const compareTrend = (
   })
 
   const summary = categories.reduce(
-    (acc, c) => {
-      if (c.direction === 'improved') acc.improved++
-      else if (c.direction === 'declined') acc.declined++
-      else acc.unchanged++
-      return acc
-    },
+    (acc, c) => ({
+      improved: acc.improved + (c.direction === 'improved' ? 1 : 0),
+      declined: acc.declined + (c.direction === 'declined' ? 1 : 0),
+      unchanged: acc.unchanged + (c.direction === 'unchanged' ? 1 : 0),
+    }),
     { improved: 0, declined: 0, unchanged: 0 }
   )
 
