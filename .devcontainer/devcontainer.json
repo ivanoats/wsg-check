@@ -7,7 +7,11 @@
       "configureZshAsDefaultShell": true
     }
   },
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y ripgrep fzf && npm install && cargo install eza",
+  "containerEnv": {
+    "DOTFILES_REPO": "https://github.com/ivanoats/dotfiles.git",
+    "DOTFILES_REF": "master"
+  },
+  "postCreateCommand": "bash -lc 'set -e; marker=\"$HOME/.dotfiles.installed\"; if [ -f \"$marker\" ]; then exit 0; fi; rm -rf \"$HOME/.dotfiles\"; git clone --depth=1 --branch \"$DOTFILES_REF\" \"$DOTFILES_REPO\" \"$HOME/.dotfiles\"; if [ -x \"$HOME/.dotfiles/install.sh\" ]; then \"$HOME/.dotfiles/install.sh\"; elif [ -f \"$HOME/.dotfiles/install.sh\" ]; then bash \"$HOME/.dotfiles/install.sh\"; fi; touch \"$marker\"'",
   "customizations": {
     "vscode": {
       "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
