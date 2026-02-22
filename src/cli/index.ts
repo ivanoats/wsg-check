@@ -16,9 +16,9 @@
  *   1 — check failed (fetch/parse error) or score is below threshold
  */
 
-import { writeFileSync, readFileSync } from 'fs'
-import { pathToFileURL, fileURLToPath } from 'url'
-import { dirname, join } from 'path'
+import { writeFileSync, readFileSync } from 'node:fs'
+import { pathToFileURL, fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
 import { Command } from 'commander'
 import { resolveConfig } from '../config/loader.js'
 import type { OutputFormat, WSGCategory } from '../config/types.js'
@@ -121,7 +121,7 @@ const buildCliFlags = (url: string, opts: CliOptions) => ({
     ? { categories: opts.categories.split(',').map((c) => c.trim() as WSGCategory) }
     : {}),
   ...(opts.guidelines ? { guidelines: opts.guidelines.split(',').map((g) => g.trim()) } : {}),
-  ...(opts.failThreshold ? { failThreshold: parseInt(opts.failThreshold, 10) } : {}),
+  ...(opts.failThreshold ? { failThreshold: Number.parseInt(opts.failThreshold, 10) } : {}),
   ...(opts.verbose ? { verbose: true } : {}),
 })
 
@@ -170,7 +170,7 @@ export const runCheck = async (url: string, opts: CliOptions): Promise<number> =
   // ── Resolve configuration ────────────────────────────────────────────────
   const config = resolveConfig(buildCliFlags(url, opts), opts.config)
 
-  const format: OutputFormat = (config.format ?? 'terminal') as OutputFormat
+  const format: OutputFormat = config.format ?? 'terminal'
   const failThreshold = config.failThreshold ?? 0
 
   // ── Select check functions ───────────────────────────────────────────────
@@ -265,12 +265,16 @@ export const buildProgram = (): Command => {
 
 // Only run when this file is the direct entry point (not when imported by tests).
 // In Node.js ESM we compare import.meta.url to the resolved argv[1] path.
-const _isMain = import.meta.url === pathToFileURL(process.argv[1] ?? '').href
+// Guard against undefined process.argv[1] (e.g. when Node.js starts with --eval).
+const _isMain =
+  process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href
 
 if (_isMain) {
   const program = buildProgram()
-  program.parseAsync(process.argv).catch((err: unknown) => {
+  try {
+    await program.parseAsync(process.argv)
+  } catch (err: unknown) {
     process.stderr.write(`Unexpected error: ${err instanceof Error ? err.message : String(err)}\n`)
     process.exitCode = 1
-  })
+  }
 }
