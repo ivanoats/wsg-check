@@ -30,7 +30,7 @@ export const OPENAPI_SPEC = {
                   url: { type: 'string', format: 'uri' },
                   categories: {
                     type: 'array',
-                    items: { type: 'string', enum: ['ux', 'web-dev', 'hosting', 'business'] },
+                    items: { type: 'string', enum: ['ux', 'web-dev', 'hosting'] },
                   },
                   guidelines: {
                     type: 'array',
