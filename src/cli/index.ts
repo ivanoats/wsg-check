@@ -158,41 +158,6 @@ const selectChecks = (
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 /**
- * Builds and configures the commander `Command` instance.
- * Exported for testing.
- */
-export const buildProgram = (): Command => {
-  const program = new Command()
-
-  program
-    .name('wsg-check')
-    .description('Check a website against the W3C Web Sustainability Guidelines')
-    .version(_pkg.version)
-    .argument('<url>', 'URL of the website to check')
-    .option('-f, --format <format>', 'output format: json | markdown | html | terminal', 'terminal')
-    .option('-o, --output <path>', 'write report to a file instead of stdout')
-    .option(
-      '-c, --categories <list>',
-      'comma-separated categories to run: ux,web-dev,hosting (business: planned, no checks yet)'
-    )
-    .option('-g, --guidelines <list>', 'comma-separated guideline IDs to run (e.g. 3.1,3.2)')
-    .option(
-      '--fail-threshold <score>',
-      'exit with code 1 if score is below this value (0-100)',
-      '0'
-    )
-    .option('--config <path>', 'path to wsg-check.config.json or .wsgcheckrc.json')
-    .option('-v, --verbose', 'enable verbose logging')
-
-  program.action(async (url: string, opts: CliOptions) => {
-    const exitCode = await runCheck(url, opts)
-    process.exitCode = exitCode
-  })
-
-  return program
-}
-
-/**
  * Core logic: fetch, run checks, format, write.
  *
  * Returns the intended process exit code:
@@ -247,7 +212,7 @@ export const runCheck = async (url: string, opts: CliOptions): Promise<number> =
       return 1
     }
   } else {
-    process.stdout.write(output + '\n')
+    process.stdout.write(`${output}\n`)
   }
 
   // ── Exit code ────────────────────────────────────────────────────────────
@@ -261,6 +226,41 @@ export const runCheck = async (url: string, opts: CliOptions): Promise<number> =
   return 0
 }
 
+/**
+ * Builds and configures the commander `Command` instance.
+ * Exported for testing.
+ */
+export const buildProgram = (): Command => {
+  const program = new Command()
+
+  program
+    .name('wsg-check')
+    .description('Check a website against the W3C Web Sustainability Guidelines')
+    .version(_pkg.version)
+    .argument('<url>', 'URL of the website to check')
+    .option('-f, --format <format>', 'output format: json | markdown | html | terminal', 'terminal')
+    .option('-o, --output <path>', 'write report to a file instead of stdout')
+    .option(
+      '-c, --categories <list>',
+      'comma-separated categories to run: ux,web-dev,hosting (business: planned, no checks yet)'
+    )
+    .option('-g, --guidelines <list>', 'comma-separated guideline IDs to run (e.g. 3.1,3.2)')
+    .option(
+      '--fail-threshold <score>',
+      'exit with code 1 if score is below this value (0-100)',
+      '0'
+    )
+    .option('--config <path>', 'path to wsg-check.config.json or .wsgcheckrc.json')
+    .option('-v, --verbose', 'enable verbose logging')
+
+  program.action(async (url: string, opts: CliOptions) => {
+    const exitCode = await runCheck(url, opts)
+    process.exitCode = exitCode
+  })
+
+  return program
+}
+
 // ─── Entry point ──────────────────────────────────────────────────────────────
 
 // Only run when this file is the direct entry point (not when imported by tests).
@@ -271,6 +271,6 @@ if (_isMain) {
   const program = buildProgram()
   program.parseAsync(process.argv).catch((err: unknown) => {
     process.stderr.write(`Unexpected error: ${err instanceof Error ? err.message : String(err)}\n`)
-    process.exit(1)
+    process.exitCode = 1
   })
 }
