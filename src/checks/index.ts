@@ -100,6 +100,19 @@ import { checkErrorPages } from './error-pages.js'
 import { checkRedirects } from './redirects.js'
 import { checkCdnUsage } from './cdn-usage.js'
 import { checkDataRefresh } from './data-refresh.js'
+import type { CheckFn, CheckFnWithId, PageData } from '../core/types.js'
+
+/**
+ * Wraps a check function in a new function with the `guidelineId` property
+ * attached, producing a `CheckFnWithId`.
+ *
+ * A new wrapper function is created for each call so that the original `fn`
+ * is never mutated (avoids the no-param-reassign anti-pattern).
+ */
+const withGuidelineId = (fn: CheckFn, guidelineId: string): CheckFnWithId => {
+  const wrapped = (page: PageData): ReturnType<CheckFn> => fn(page)
+  return Object.assign(wrapped, { guidelineId })
+}
 
 /**
  * All Phase 4.1 Performance & Efficiency checks bundled for convenience.
@@ -107,10 +120,14 @@ import { checkDataRefresh } from './data-refresh.js'
  * | Check                | WSG Guideline | Testability |
  * | -------------------- | ------------- | ----------- |
  * | `checkMinification`  | 3.3           | automated   |
- * | `checkRenderBlocking`| 3.9           | automated   |
+ * | `checkRenderBlocking`| 3.8           | automated   |
  * | `checkPageWeight`    | 3.1           | automated   |
  */
-export const performanceChecks = [checkMinification, checkRenderBlocking, checkPageWeight] as const
+export const performanceChecks: ReadonlyArray<CheckFnWithId> = [
+  withGuidelineId(checkMinification, '3.3'),
+  withGuidelineId(checkRenderBlocking, '3.8'),
+  withGuidelineId(checkPageWeight, '3.1'),
+]
 
 /**
  * All Phase 4.2 Semantic & Standards checks bundled for convenience.
@@ -123,13 +140,13 @@ export const performanceChecks = [checkMinification, checkRenderBlocking, checkP
  * | `checkMetadata`        | 3.4           | automated       |
  * | `checkStructuredData`  | 3.11          | automated       |
  */
-export const semanticChecks = [
-  checkSemanticHtml,
-  checkAccessibilityAids,
-  checkFormValidation,
-  checkMetadata,
-  checkStructuredData,
-] as const
+export const semanticChecks: ReadonlyArray<CheckFnWithId> = [
+  withGuidelineId(checkSemanticHtml, '3.7'),
+  withGuidelineId(checkAccessibilityAids, '3.9'),
+  withGuidelineId(checkFormValidation, '3.10'),
+  withGuidelineId(checkMetadata, '3.4'),
+  withGuidelineId(checkStructuredData, '3.11'),
+]
 
 /**
  * All Phase 4.3 Sustainability-Specific checks bundled for convenience.
@@ -142,13 +159,13 @@ export const semanticChecks = [
  * | `checkResponsiveDesign`      | 3.13          | automated   |
  * | `checkSustainableJs`         | 3.14          | automated   |
  */
-export const sustainabilityChecks = [
-  checkCssRedundancy,
-  checkThirdParty,
-  checkPreferenceMediaQueries,
-  checkResponsiveDesign,
-  checkSustainableJs,
-] as const
+export const sustainabilityChecks: ReadonlyArray<CheckFnWithId> = [
+  withGuidelineId(checkCssRedundancy, '3.5'),
+  withGuidelineId(checkThirdParty, '3.6'),
+  withGuidelineId(checkPreferenceMediaQueries, '3.12'),
+  withGuidelineId(checkResponsiveDesign, '3.13'),
+  withGuidelineId(checkSustainableJs, '3.14'),
+]
 
 /**
  * All Phase 4.4 Security & Maintenance checks bundled for convenience.
@@ -160,14 +177,17 @@ export const sustainabilityChecks = [
  * | `checkExpectedFiles`    | 3.17          | automated   |
  * | `checkBeneficialFiles`  | 3.17          | automated   |
  * | `checkHtmlVersion`      | 3.19          | automated   |
+ *
+ * `checkExpectedFiles` and `checkBeneficialFiles` both implement different
+ * aspects of WSG 3.17 (required files vs. beneficial optional files).
  */
-export const securityChecks = [
-  checkSecurityHeaders,
-  checkDependencyCount,
-  checkExpectedFiles,
-  checkBeneficialFiles,
-  checkHtmlVersion,
-] as const
+export const securityChecks: ReadonlyArray<CheckFnWithId> = [
+  withGuidelineId(checkSecurityHeaders, '3.15'),
+  withGuidelineId(checkDependencyCount, '3.16'),
+  withGuidelineId(checkExpectedFiles, '3.17'),
+  withGuidelineId(checkBeneficialFiles, '3.17'),
+  withGuidelineId(checkHtmlVersion, '3.19'),
+]
 
 /**
  * All Phase 5.1 UX Design checks bundled for convenience.
@@ -185,20 +205,25 @@ export const securityChecks = [
  * | `checkFontStackFallbacks`    | 2.16          | automated       |
  * | `checkMinimalForms`          | 2.19          | automated       |
  * | `checkDownloadableDocuments` | 2.17          | semi-automated  |
+ *
+ * `checkWebTypography` and `checkFontStackFallbacks` both implement WSG 2.16
+ * (typography-related aspects of sustainable design).
+ * `checkAltText` and `checkDownloadableDocuments` both implement WSG 2.17
+ * (providing text alternatives to non-text content).
  */
-export const uxDesignChecks = [
-  checkNonEssentialContent,
-  checkNavigationStructure,
-  checkDeceptivePatterns,
-  checkOptimizedMedia,
-  checkLazyLoading,
-  checkAnimationControl,
-  checkWebTypography,
-  checkAltText,
-  checkFontStackFallbacks,
-  checkMinimalForms,
-  checkDownloadableDocuments,
-] as const
+export const uxDesignChecks: ReadonlyArray<CheckFnWithId> = [
+  withGuidelineId(checkNonEssentialContent, '2.9'),
+  withGuidelineId(checkNavigationStructure, '2.8'),
+  withGuidelineId(checkDeceptivePatterns, '2.10'),
+  withGuidelineId(checkOptimizedMedia, '2.7'),
+  withGuidelineId(checkLazyLoading, '2.11'),
+  withGuidelineId(checkAnimationControl, '2.15'),
+  withGuidelineId(checkWebTypography, '2.16'),
+  withGuidelineId(checkAltText, '2.17'),
+  withGuidelineId(checkFontStackFallbacks, '2.16'),
+  withGuidelineId(checkMinimalForms, '2.19'),
+  withGuidelineId(checkDownloadableDocuments, '2.17'),
+]
 
 /**
  * All Phase 5.2 Hosting & Infrastructure checks bundled for convenience.
@@ -213,14 +238,19 @@ export const uxDesignChecks = [
  * | `checkRedirects`           | 4.4           | automated       |
  * | `checkCdnUsage`            | 4.10          | automated       |
  * | `checkDataRefresh`         | 4.7           | automated       |
+ *
+ * `checkCaching` and `checkOfflineAccess` both implement WSG 4.2
+ * (caching/offline strategies — two separate aspects of the same guideline).
+ * `checkErrorPages` and `checkRedirects` both implement WSG 4.4
+ * (error handling and redirect hygiene).
  */
-export const hostingChecks = [
-  checkSustainableHosting,
-  checkCaching,
-  checkOfflineAccess,
-  checkCompression,
-  checkErrorPages,
-  checkRedirects,
-  checkCdnUsage,
-  checkDataRefresh,
-] as const
+export const hostingChecks: ReadonlyArray<CheckFnWithId> = [
+  withGuidelineId(checkSustainableHosting, '4.1'),
+  withGuidelineId(checkCaching, '4.2'),
+  withGuidelineId(checkOfflineAccess, '4.2'),
+  withGuidelineId(checkCompression, '4.3'),
+  withGuidelineId(checkErrorPages, '4.4'),
+  withGuidelineId(checkRedirects, '4.4'),
+  withGuidelineId(checkCdnUsage, '4.10'),
+  withGuidelineId(checkDataRefresh, '4.7'),
+]
