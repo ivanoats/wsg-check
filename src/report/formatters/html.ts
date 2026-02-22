@@ -92,6 +92,12 @@ const buildCheckRows = (checks: ReadonlyArray<CheckResult>): string =>
     )
     .join('')
 
+const buildResourceLink = (resource: string): string =>
+  `<li><a href="${safeHref(resource)}" rel="noopener noreferrer">${esc(resource)}</a></li>`
+
+const buildResourceLinks = (resources: ReadonlyArray<string>): string =>
+  `<ul class="rec-links">${resources.map(buildResourceLink).join('')}</ul>`
+
 const buildRecommendationItems = (recommendations: ReadonlyArray<Recommendation>): string => {
   if (recommendations.length === 0)
     return '<p class="no-recs">No recommendations — great work! 🏆</p>'
@@ -106,11 +112,7 @@ const buildRecommendationItems = (recommendations: ReadonlyArray<Recommendation>
         <span class="badge badge-${rec.status}">${esc(rec.status)}</span>
       </div>
       <p class="rec-text">${esc(rec.recommendation)}</p>
-      ${
-        rec.resources && rec.resources.length > 0
-          ? `<ul class="rec-links">${rec.resources.map((r) => `<li><a href="${safeHref(r)}" rel="noopener noreferrer">${esc(r)}</a></li>`).join('')}</ul>`
-          : ''
-      }
+      ${rec.resources && rec.resources.length > 0 ? buildResourceLinks(rec.resources) : ''}
     </li>`
     )
     .join('')
