@@ -15,10 +15,13 @@ import { buildProgram, runCheck } from '@/cli/index'
 
 vi.mock('@/core/index', () => {
   const mockCheck = vi.fn()
-  function WsgChecker() {
+  // Track the checks array passed to the constructor so tests can inspect filtering.
+  let lastChecks: unknown[] = []
+  function WsgChecker(_config: unknown, checks: unknown[]) {
+    lastChecks = checks
     return { check: mockCheck }
   }
-  return { WsgChecker, _mockCheck: mockCheck }
+  return { WsgChecker, _mockCheck: mockCheck, _getLastChecks: () => lastChecks }
 })
 
 // Helper to retrieve the mocked `check` function from the WsgChecker mock.
@@ -26,6 +29,13 @@ const getMockCheck = async () => {
   const mod = await import('@/core/index')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (mod as any)._mockCheck as ReturnType<typeof vi.fn>
+}
+
+// Helper to retrieve the checks that were passed to the last WsgChecker construction.
+const getLastChecks = async (): Promise<Array<{ guidelineId?: string }>> => {
+  const mod = await import('@/core/index')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (mod as any)._getLastChecks()
 }
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
@@ -154,12 +164,16 @@ describe('runCheck', () => {
     expect(code).toBe(0)
   })
 
-  it('respects the --guidelines option', async () => {
+  it('filters checks to only those matching --guidelines', async () => {
     const mockCheck = await getMockCheck()
     mockCheck.mockResolvedValue({ ok: true, value: PASSING_RUN_RESULT })
 
-    const code = await runCheck('https://example.com', { guidelines: '3.1,3.2' })
+    const code = await runCheck('https://example.com', { guidelines: '3.1' })
+
     expect(code).toBe(0)
+    const checks = await getLastChecks()
+    expect(checks.length).toBeGreaterThan(0)
+    expect(checks.every((c) => c.guidelineId === '3.1')).toBe(true)
   })
 
   it('writes report to a file when --output is specified', async () => {

@@ -23,6 +23,7 @@ import { Command } from 'commander'
 import { resolveConfig } from '../config/loader.js'
 import type { OutputFormat, WSGCategory } from '../config/types.js'
 import { WsgChecker } from '../core/index.js'
+import type { CheckFnWithId } from '../core/types.js'
 import {
   performanceChecks,
   semanticChecks,
@@ -180,13 +181,20 @@ export const runCheck = async (url: string, opts: CliOptions): Promise<number> =
     )
   }
 
-  const allChecks = [
+  const categoryChecks: ReadonlyArray<CheckFnWithId> = [
     ...(selectedCategories.has('web-dev')
       ? [...performanceChecks, ...semanticChecks, ...sustainabilityChecks, ...securityChecks]
       : []),
     ...(selectedCategories.has('ux') ? [...uxDesignChecks] : []),
     ...(selectedCategories.has('hosting') ? [...hostingChecks] : []),
   ]
+
+  // Filter by specific guideline IDs when --guidelines is provided.
+  const requestedGuidelines = config.guidelines
+  const allChecks: ReadonlyArray<CheckFnWithId> =
+    requestedGuidelines.length > 0
+      ? categoryChecks.filter((c) => requestedGuidelines.includes(c.guidelineId))
+      : categoryChecks
 
   // ── Run the check pipeline ───────────────────────────────────────────────
   const stopSpinner = startSpinner(`Analysing ${url} …`)

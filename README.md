@@ -882,7 +882,7 @@ npx wsg-check https://example.com --fail-threshold 70
 | `--format <format>`    | `-f`  | Output format: `terminal`, `json`, `markdown`, `html`                                           | `terminal`        |
 | `--output <path>`      | `-o`  | Write report to a file instead of stdout                                                        | _(stdout)_        |
 | `--categories <list>`  | `-c`  | Comma-separated categories: `ux,web-dev,hosting` (`business` planned — no automated checks yet) | all               |
-| `--guidelines <list>`  | `-g`  | Comma-separated guideline IDs passed to config (e.g. `3.1,3.2`); check-level filtering planned  | all               |
+| `--guidelines <list>`  | `-g`  | Comma-separated guideline IDs to run, e.g. `3.1,3.2` (filters checks by WSG guideline ID)       | all               |
 | `--fail-threshold <n>` |       | Exit code 1 if overall score < _n_ (0–100)                                                      | `0`               |
 | `--verbose`            | `-v`  | Enable verbose logging                                                                          | `false`           |
 | `--config <path>`      |       | Path to `wsg-check.config.json` or `.wsgcheckrc.json`                                           | _(auto-discover)_ |

@@ -61,6 +61,15 @@ export interface CheckResult {
  */
 export type CheckFn = (page: PageData) => CheckResult | Promise<CheckResult>
 
+/**
+ * A `CheckFn` with its WSG guideline ID attached as a static property.
+ *
+ * Use `withGuidelineId` in `src/checks/index.ts` to create these.
+ * The `guidelineId` property enables pre-execution filtering by guideline
+ * (e.g. `--guidelines 3.1,4.2` in the CLI).
+ */
+export type CheckFnWithId = CheckFn & { readonly guidelineId: string }
+
 // ─── Page data ────────────────────────────────────────────────────────────────
 
 /**

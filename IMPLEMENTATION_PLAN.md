@@ -405,7 +405,7 @@ wsg-check --version
 
 ### 7.4 Future Enhancements
 
-- [ ] Implement `--guidelines` check-level filtering (requires check functions to expose their `guidelineId` as a static property)
+- [x] Implement `--guidelines` check-level filtering (check functions tagged with `guidelineId` via `withGuidelineId` in `src/checks/index.ts`)
 - [ ] Implement `business` category checks (WSG Section 3 guidelines for business sustainability practices)
 
 **Deliverable:** Fully functional CLI tool that can be used standalone or in CI pipelines.
