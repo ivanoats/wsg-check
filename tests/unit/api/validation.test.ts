@@ -27,6 +27,28 @@ describe('validateCheckPayload', () => {
     expect(result.ok).toBe(false)
   })
 
+  it('rejects categories containing non-string items', () => {
+    const result = validateCheckPayload({
+      url: 'https://example.com',
+      categories: [123],
+    })
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error.message).toContain('only string values')
+    }
+  })
+
+  it('rejects empty categories array', () => {
+    const result = validateCheckPayload({
+      url: 'https://example.com',
+      categories: [],
+    })
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error.message).toContain('at least one')
+    }
+  })
+
   it('accepts valid payload', () => {
     const result = validateCheckPayload({
       url: 'https://example.com',
@@ -81,7 +103,7 @@ describe('validateTargetUrl', () => {
     const result = await validateTargetUrl('https://example.com')
     expect(result.ok).toBe(true)
     if (result.ok) {
-      expect(result.url.hostname).toBe('example.com')
+      expect(result.value.hostname).toBe('example.com')
     }
   })
 })

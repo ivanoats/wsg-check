@@ -13,9 +13,37 @@ const limiter = new RateLimiterMemory({
   duration: Number.isNaN(RATE_LIMIT_DURATION) ? 60 : RATE_LIMIT_DURATION,
 })
 
+/**
+ * Derive a stable client identifier for rate limiting.
+ *
+ * Trusted sources, in order of preference:
+ * - `x-forwarded-for` (left-most IP, set by upstream proxies)
+ * - `x-real-ip` (single IP, set by some reverse proxies)
+ * - `request.ip` (Next.js / Vercel-provided client IP when available)
+ *
+ * Falls back to "anonymous" only when no trusted IP information is present.
+ */
 const getClientIp = (request: NextRequest): string => {
-  const forwarded = request.headers.get('x-forwarded-for')
-  return forwarded?.split(',')[0]?.trim() ?? 'anonymous'
+  const headers = request.headers
+
+  const forwarded = headers.get('x-forwarded-for')
+  if (forwarded && forwarded.trim().length > 0) {
+    const firstForwarded = forwarded.split(',')[0]?.trim()
+    if (firstForwarded) {
+      return firstForwarded
+    }
+  }
+
+  const realIp = headers.get('x-real-ip')
+  if (realIp && realIp.trim().length > 0) {
+    return realIp.trim()
+  }
+
+  if (typeof request.ip === 'string' && request.ip.trim().length > 0) {
+    return request.ip.trim()
+  }
+
+  return 'anonymous'
 }
 
 export const enforceRateLimit = async (request: NextRequest): Promise<Response | null> => {

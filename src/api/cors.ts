@@ -8,7 +8,9 @@ export const withCors = <T>(response: NextResponse<T>): NextResponse<T> => {
   response.headers.set('Access-Control-Allow-Origin', ALLOW_ORIGIN)
   response.headers.set('Access-Control-Allow-Methods', ALLOW_METHODS)
   response.headers.set('Access-Control-Allow-Headers', ALLOW_HEADERS)
-  response.headers.set('Vary', 'Origin')
+  if (ALLOW_ORIGIN !== '*') {
+    response.headers.set('Vary', 'Origin')
+  }
   return response
 }
 

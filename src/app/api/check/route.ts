@@ -27,12 +27,12 @@ export const POST = async (request: NextRequest): Promise<Response> => {
 
   const validatedPayload = validateCheckPayload(payload)
   if (!validatedPayload.ok) {
-    return errorJson(400, 'BAD_REQUEST', validatedPayload.message)
+    return errorJson(400, 'BAD_REQUEST', validatedPayload.error.message)
   }
 
   const validatedUrl = await validateTargetUrl(validatedPayload.value.url)
   if (!validatedUrl.ok) {
-    return errorJson(400, 'BAD_REQUEST', validatedUrl.message)
+    return errorJson(400, 'BAD_REQUEST', validatedUrl.error.message)
   }
 
   try {
@@ -41,7 +41,7 @@ export const POST = async (request: NextRequest): Promise<Response> => {
       validatedPayload.value.guidelines
     )
     const checker = new WsgChecker({}, checks)
-    const runResult = await checker.check(validatedUrl.url.toString())
+    const runResult = await checker.check(validatedUrl.value.toString())
 
     if (!runResult.ok) {
       return errorJson(400, 'BAD_REQUEST', runResult.error.message)
