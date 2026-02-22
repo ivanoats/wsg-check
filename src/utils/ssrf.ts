@@ -10,6 +10,13 @@
 import { isIP } from 'node:net'
 import { lookup } from 'node:dns/promises'
 
+/**
+ * Returns `true` when the IPv4 address is in a private/loopback range.
+ *
+ * Note: this function is only called after `isIP(hostname) === 4` confirms
+ * the input is a valid four-octet IPv4 address, so incomplete-octet strings
+ * like "10" will never reach here.
+ */
 export const isPrivateIpv4 = (address: string): boolean => {
   const [a, b] = address.split('.').map((part) => Number.parseInt(part, 10))
   if ([a, b].some((part) => Number.isNaN(part))) return true
@@ -46,6 +53,11 @@ export const isDisallowedHost = (hostname: string): boolean => {
 /**
  * Returns `true` when the hostname resolves exclusively to private/loopback
  * addresses, or when DNS resolution fails (treated as unsafe).
+ *
+ * Using `some` (any private address blocks the request) rather than `every`
+ * is intentional: if a hostname resolves to both a public and a private IP,
+ * the connection could still be routed to the private IP, so we block it to
+ * prevent SSRF attacks via dual-homed hosts or split-horizon DNS.
  */
 export const dnsResolvesToPrivateAddress = async (hostname: string): Promise<boolean> => {
   try {

@@ -78,10 +78,8 @@ export const validateCheckPayload = (payload: unknown): Result<CheckRequestBody,
     url: record.url.trim(),
     ...(Array.isArray(record.categories)
       ? {
-          categories: record.categories.filter(
-            (value): value is 'ux' | 'web-dev' | 'hosting' | 'business' =>
-              typeof value === 'string' && VALID_CATEGORIES.has(value)
-          ),
+          // All categories are already validated as strings in VALID_CATEGORIES above.
+          categories: record.categories as ReadonlyArray<'ux' | 'web-dev' | 'hosting' | 'business'>,
         }
       : {}),
     ...(Array.isArray(record.guidelines)
