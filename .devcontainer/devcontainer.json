@@ -6,7 +6,8 @@
       "installZsh": true,
       "configureZshAsDefaultShell": true,
       "upgradePackages": "true"
-    }
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
   },
   "containerEnv": {
     "DOTFILES_REPO": "https://github.com/ivanoats/dotfiles.git",
