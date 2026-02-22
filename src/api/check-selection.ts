@@ -1,4 +1,4 @@
-import type { CheckFnWithId } from '../core/types.js'
+import type { CheckFnWithId } from '../core/types'
 import {
   performanceChecks,
   semanticChecks,
@@ -6,8 +6,8 @@ import {
   securityChecks,
   uxDesignChecks,
   hostingChecks,
-} from '../checks/index.js'
-import type { WSGCategory } from '../config/index.js'
+} from '../checks/index'
+import type { WSGCategory } from '../config/index'
 
 const DEFAULT_CATEGORIES: ReadonlyArray<WSGCategory> = ['ux', 'web-dev', 'hosting']
 

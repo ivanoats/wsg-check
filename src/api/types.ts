@@ -1,5 +1,5 @@
-import type { SustainabilityReport } from '../report/index.js'
-import type { GuidelineEntry, WSGCategory } from '../config/index.js'
+import type { SustainabilityReport } from '../report/index'
+import type { GuidelineEntry, WSGCategory } from '../config/index'
 
 export type ApiErrorCode =
   | 'BAD_REQUEST'

@@ -4,8 +4,8 @@ import {
   TESTABILITY_OVERLAY,
   GUIDELINES_REGISTRY,
   getGuidelineById,
-} from '../config/index.js'
-import type { GuidelineEntry } from '../config/index.js'
+} from '../config/index'
+import type { GuidelineEntry } from '../config/index'
 
 interface GuidelineSourceResult {
   readonly source: 'w3c-api' | 'static-fallback'
