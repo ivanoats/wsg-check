@@ -1,10 +1,11 @@
 import { isDisallowedHost, dnsResolvesToPrivateAddress } from '../utils/ssrf'
 import { ok, err, type Result } from '../utils/errors'
 import type { CheckRequestBody } from './types'
+import type { WSGCategory } from '../config/index'
 
 const ALLOWED_PROTOCOLS = new Set(['http:', 'https:'])
 
-const VALID_CATEGORIES = new Set(['ux', 'web-dev', 'hosting', 'business'])
+const VALID_CATEGORIES = new Set(['ux', 'web-dev', 'hosting'])
 
 const hasInvalidCategories = (categories: ReadonlyArray<string>): boolean =>
   categories.some((category) => !VALID_CATEGORIES.has(category))
@@ -30,7 +31,7 @@ export const validateCheckPayload = (payload: unknown): Result<CheckRequestBody,
     if (stringCategories.length !== categories.length) {
       return err(
         new Error(
-          'Field "categories" must contain only string values. Allowed: ux, web-dev, hosting, business.'
+          'Field "categories" must contain only string values. Allowed: ux, web-dev, hosting.'
         )
       )
     }
@@ -38,16 +39,14 @@ export const validateCheckPayload = (payload: unknown): Result<CheckRequestBody,
     if (stringCategories.length === 0) {
       return err(
         new Error(
-          'Field "categories" must contain at least one supported category. Allowed: ux, web-dev, hosting, business.'
+          'Field "categories" must contain at least one supported category. Allowed: ux, web-dev, hosting.'
         )
       )
     }
 
     if (hasInvalidCategories(stringCategories)) {
       return err(
-        new Error(
-          'Field "categories" contains unsupported values. Allowed: ux, web-dev, hosting, business.'
-        )
+        new Error('Field "categories" contains unsupported values. Allowed: ux, web-dev, hosting.')
       )
     }
   }
@@ -79,7 +78,7 @@ export const validateCheckPayload = (payload: unknown): Result<CheckRequestBody,
     ...(Array.isArray(record.categories)
       ? {
           // All categories are already validated as strings in VALID_CATEGORIES above.
-          categories: record.categories as ReadonlyArray<'ux' | 'web-dev' | 'hosting' | 'business'>,
+          categories: record.categories as ReadonlyArray<WSGCategory>,
         }
       : {}),
     ...(Array.isArray(record.guidelines)

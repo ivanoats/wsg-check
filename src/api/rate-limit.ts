@@ -16,26 +16,37 @@ const limiter = new RateLimiterMemory({
 /**
  * Derive a stable client identifier for rate limiting.
  *
- * Trusted sources, in order of preference:
- * - `x-forwarded-for` (left-most IP, set by upstream proxies)
- * - `x-real-ip` (single IP, set by some reverse proxies)
+ * Trust chain (in order of preference):
+ * 1. `request.ip` – platform-provided IP (Vercel/Next.js runtime; cannot be
+ *    spoofed by the client).
+ * 2. `x-forwarded-for` / `x-real-ip` – only trusted when the
+ *    `WSG_API_TRUST_PROXY=true` environment variable is set, indicating that
+ *    the deployment is behind a trusted reverse-proxy that controls these
+ *    headers.  Without this flag, forwarded headers are ignored because they
+ *    can be trivially forged to bypass rate limiting.
  *
  * Falls back to "anonymous" only when no trusted IP information is present.
  */
-const getClientIp = (request: NextRequest): string => {
-  const headers = request.headers
+const TRUST_PROXY = process.env.WSG_API_TRUST_PROXY === 'true'
 
-  const forwarded = headers.get('x-forwarded-for')
-  if (forwarded && forwarded.trim().length > 0) {
-    const firstForwarded = forwarded.split(',')[0]?.trim()
-    if (firstForwarded) {
-      return firstForwarded
-    }
+const getClientIp = (request: NextRequest): string => {
+  if (typeof request.ip === 'string' && request.ip.trim().length > 0) {
+    return request.ip.trim()
   }
 
-  const realIp = headers.get('x-real-ip')
-  if (realIp && realIp.trim().length > 0) {
-    return realIp.trim()
+  if (TRUST_PROXY) {
+    const forwarded = request.headers.get('x-forwarded-for')
+    if (forwarded && forwarded.trim().length > 0) {
+      const firstForwarded = forwarded.split(',')[0]?.trim()
+      if (firstForwarded) {
+        return firstForwarded
+      }
+    }
+
+    const realIp = request.headers.get('x-real-ip')
+    if (realIp && realIp.trim().length > 0) {
+      return realIp.trim()
+    }
   }
 
   return 'anonymous'

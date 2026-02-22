@@ -63,13 +63,13 @@ export const isDisallowedHost = (hostname: string): boolean => {
 }
 
 /**
- * Returns `true` when the hostname resolves exclusively to private/loopback
- * addresses, or when DNS resolution fails (treated as unsafe).
+ * Returns `true` when the hostname resolves to any private/loopback address,
+ * or when DNS resolution fails (treated as unsafe).
  *
- * Using `some` (any private address blocks the request) rather than `every`
- * is intentional: if a hostname resolves to both a public and a private IP,
- * the connection could still be routed to the private IP, so we block it to
- * prevent SSRF attacks via dual-homed hosts or split-horizon DNS.
+ * Using `some` rather than `every` is intentional: if a hostname resolves to
+ * both a public and a private IP, the connection could still be routed to the
+ * private IP, so we block it to prevent SSRF attacks via dual-homed hosts or
+ * split-horizon DNS.
  */
 export const dnsResolvesToPrivateAddress = async (hostname: string): Promise<boolean> => {
   try {
