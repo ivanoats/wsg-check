@@ -1,5 +1,6 @@
 ---
 name: npm-package-comparison
+applyTo: "**"
 description: Compare Copilot's proposed implementation with popular npm packages that solve the same problem. Examine trade-offs and recommend the npm package when it is compatible with package.json and improves maintainability. Use whenever Copilot proposes custom utility code, helper functions, or any logic that a well-known npm package already handles.
 ---
 
