@@ -16,8 +16,9 @@
  *   1 — check failed (fetch/parse error) or score is below threshold
  */
 
-import { writeFileSync } from 'fs'
-import { pathToFileURL } from 'url'
+import { writeFileSync, readFileSync } from 'fs'
+import { pathToFileURL, fileURLToPath } from 'url'
+import { dirname, join } from 'path'
 import { Command } from 'commander'
 import { resolveConfig } from '../config/loader.js'
 import type { OutputFormat, WSGCategory } from '../config/types.js'
@@ -37,6 +38,14 @@ import {
   formatHtml,
   formatTerminal,
 } from '../report/formatters/index.js'
+
+// ─── Package version ──────────────────────────────────────────────────────────
+
+// Resolve package.json relative to this file's location. The compiled output
+// is placed at dist/cli/index.js, so ../../package.json always points to the
+// project root package.json (two levels up from dist/cli/).
+const _pkgPath = join(dirname(fileURLToPath(import.meta.url)), '../../package.json')
+const _pkg = JSON.parse(readFileSync(_pkgPath, 'utf8')) as { version: string }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -109,13 +118,13 @@ export const buildProgram = (): Command => {
   program
     .name('wsg-check')
     .description('Check a website against the W3C Web Sustainability Guidelines')
-    .version('0.0.1')
+    .version(_pkg.version)
     .argument('<url>', 'URL of the website to check')
     .option('-f, --format <format>', 'output format: json | markdown | html | terminal', 'terminal')
     .option('-o, --output <path>', 'write report to a file instead of stdout')
     .option(
       '-c, --categories <list>',
-      'comma-separated categories to run: ux,web-dev,hosting,business'
+      'comma-separated categories to run: ux,web-dev,hosting (business: planned, no checks yet)'
     )
     .option('-g, --guidelines <list>', 'comma-separated guideline IDs to run (e.g. 3.1,3.2)')
     .option(
@@ -165,6 +174,12 @@ export const runCheck = async (url: string, opts: CliOptions): Promise<number> =
   // ── Select check functions ───────────────────────────────────────────────
   const selectedCategories = new Set(config.categories ?? ['ux', 'web-dev', 'hosting', 'business'])
 
+  if (selectedCategories.has('business')) {
+    process.stderr.write(
+      'Note: the "business" category has no automated checks in the current version.\n'
+    )
+  }
+
   const allChecks = [
     ...(selectedCategories.has('web-dev')
       ? [...performanceChecks, ...semanticChecks, ...sustainabilityChecks, ...securityChecks]
@@ -189,8 +204,11 @@ export const runCheck = async (url: string, opts: CliOptions): Promise<number> =
   const runResult = result.value
 
   // ── Build and format the report ──────────────────────────────────────────
-  // Page-weight metrics are embedded in individual check results; RunResult
-  // does not expose them directly, so we pass 0 here.
+  // `RunResult` is the output of `WsgChecker.check()` and does not expose the
+  // raw `PageData` (which holds detailed page-weight metrics). Those metrics
+  // are unavailable at this point, so we pass 0. They are populated when
+  // `fromRunResult` is called from layers that have direct access to `PageData`
+  // (e.g. the API or frontend).
   const report = fromRunResult(runResult, 0, 0, 0)
   const output = renderReport(report, format)
 
@@ -201,9 +219,7 @@ export const runCheck = async (url: string, opts: CliOptions): Promise<number> =
       process.stderr.write(`Report written to ${config.outputPath}\n`)
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
-      process.stderr.write(
-        `\n✗ Failed to write report to ${config.outputPath}: ${message}\n`
-      )
+      process.stderr.write(`\n✗ Failed to write report to ${config.outputPath}: ${message}\n`)
       return 1
     }
   } else {

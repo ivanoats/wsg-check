@@ -403,6 +403,11 @@ wsg-check --version
 - [x] Summary table with scores
 - [x] Exit code: `0` if above threshold, `1` if below (for CI integration)
 
+### 7.4 Future Enhancements
+
+- [ ] Implement `--guidelines` check-level filtering (requires check functions to expose their `guidelineId` as a static property)
+- [ ] Implement `business` category checks (WSG Section 3 guidelines for business sustainability practices)
+
 **Deliverable:** Fully functional CLI tool that can be used standalone or in CI pipelines.
 
 ---

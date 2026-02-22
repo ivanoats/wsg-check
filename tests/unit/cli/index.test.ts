@@ -6,6 +6,9 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { existsSync, readFileSync, unlinkSync } from 'fs'
+import { tmpdir } from 'os'
+import { join } from 'path'
 import { buildProgram, runCheck } from '@/cli/index'
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
@@ -157,6 +160,34 @@ describe('runCheck', () => {
 
     const code = await runCheck('https://example.com', { guidelines: '3.1,3.2' })
     expect(code).toBe(0)
+  })
+
+  it('writes report to a file when --output is specified', async () => {
+    const mockCheck = await getMockCheck()
+    mockCheck.mockResolvedValue({ ok: true, value: PASSING_RUN_RESULT })
+    const tmpFile = join(tmpdir(), 'wsg-test-report.json')
+
+    const code = await runCheck('https://example.com', { format: 'json', output: tmpFile })
+
+    expect(code).toBe(0)
+    expect(existsSync(tmpFile)).toBe(true)
+    expect(readFileSync(tmpFile, 'utf8')).toContain('overallScore')
+    unlinkSync(tmpFile)
+    const stderrOutput = stderrSpy.mock.calls.map((c: unknown[]) => c[0]).join('')
+    expect(stderrOutput).toContain(tmpFile)
+  })
+
+  it('returns exit code 1 and writes error to stderr when file write fails', async () => {
+    const mockCheck = await getMockCheck()
+    mockCheck.mockResolvedValue({ ok: true, value: PASSING_RUN_RESULT })
+
+    // Writing to a non-existent nested path triggers a real ENOENT error.
+    const badPath = join(tmpdir(), 'nonexistent-dir-wsg', 'report.json')
+    const code = await runCheck('https://example.com', { format: 'json', output: badPath })
+
+    expect(code).toBe(1)
+    const stderrOutput = stderrSpy.mock.calls.map((c: unknown[]) => c[0]).join('')
+    expect(stderrOutput).toContain(badPath)
   })
 
   it('outputs markdown format when --format markdown is specified', async () => {
