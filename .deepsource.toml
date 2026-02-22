@@ -1,0 +1,31 @@
+version = 1
+
+[[analyzers]]
+name = "javascript"
+enabled = true
+
+  [analyzers.meta]
+  plugins = ["react"]
+  dialect = "typescript"
+  environment = ["nodejs", "browser", "vitest"]
+
+[[analyzers]]
+name = "test-coverage"
+enabled = true
+
+exclude_patterns = [
+  ".next/**",
+  "out/**",
+  "node_modules/**",
+  "styled-system/**",
+  "public/**",
+  "**/*.config.{js,ts,mjs}",
+]
+
+test_patterns = [
+  "tests/**/*.test.{ts,tsx}",
+  "tests/**/*.spec.{ts,tsx}",
+  "src/**/*.test.{ts,tsx}",
+  "src/**/*.spec.{ts,tsx}",
+  "**/__tests__/**/*.{ts,tsx}",
+]
