@@ -270,17 +270,18 @@ describe('fetchWsgGuidelines', () => {
 
 describe('WsgApiError', () => {
   it('has the correct name', () => {
-    const e = new WsgApiError('test')
-    expect(e.name).toBe('WsgApiError')
+    const wsgError = new WsgApiError('test')
+    expect(wsgError.name).toBe('WsgApiError')
   })
 
   it('inherits from Error', () => {
-    expect(new WsgApiError('test')).toBeInstanceOf(Error)
+    const wsgError = new WsgApiError('test')
+    expect(wsgError).toBeInstanceOf(Error)
   })
 
   it('stores the cause', () => {
     const cause = new Error('root cause')
-    const e = new WsgApiError('wrapper', cause)
-    expect(e.cause).toBe(cause)
+    const wsgError = new WsgApiError('wrapper', cause)
+    expect(wsgError.cause).toBe(cause)
   })
 })
