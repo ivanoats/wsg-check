@@ -12,7 +12,7 @@
     "DOTFILES_REPO": "https://github.com/ivanoats/dotfiles.git",
     "DOTFILES_REF": "master"
   },
-  "postCreateCommand": "bash -lc 'set -e; marker=\"$HOME/.dotfiles.installed\"; if [ -f \"$marker\" ]; then exit 0; fi; rm -rf \"$HOME/.dotfiles\"; git clone --depth=1 --branch \"$DOTFILES_REF\" \"$DOTFILES_REPO\" \"$HOME/.dotfiles\"; if [ -x \"$HOME/.dotfiles/install.sh\" ]; then \"$HOME/.dotfiles/install.sh\"; elif [ -f \"$HOME/.dotfiles/install.sh\" ]; then bash \"$HOME/.dotfiles/install.sh\"; fi; touch \"$marker\"'",
+  "postCreateCommand": "bash -lc 'set -euo pipefail; if ! command -v eza >/dev/null 2>&1 || ! command -v fzf >/dev/null 2>&1 || ! command -v rg >/dev/null 2>&1; then if command -v sudo >/dev/null 2>&1; then sudo apt-get update && sudo apt-get install -y eza fzf ripgrep; else apt-get update && apt-get install -y eza fzf ripgrep; fi; fi; marker=\"$HOME/.dotfiles.installed\"; if [ -f \"$marker\" ]; then exit 0; fi; rm -rf \"$HOME/.dotfiles\"; git clone --depth=1 --branch \"$DOTFILES_REF\" \"$DOTFILES_REPO\" \"$HOME/.dotfiles\"; if [ -x \"$HOME/.dotfiles/install.sh\" ]; then \"$HOME/.dotfiles/install.sh\"; elif [ -f \"$HOME/.dotfiles/install.sh\" ]; then bash \"$HOME/.dotfiles/install.sh\"; fi; touch \"$marker\"'",
   "customizations": {
     "vscode": {
       "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
