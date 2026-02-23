@@ -1,4 +1,4 @@
-import type { WSGCheckConfig } from './types.js'
+import type { WSGCheckConfig } from './types'
 
 /**
  * Sensible default configuration values for wsg-check.

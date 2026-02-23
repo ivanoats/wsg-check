@@ -20,7 +20,7 @@
  * ```
  */
 
-export { scoreToGrade, fromRunResult, STATIC_ANALYSIS_DISCLAIMER } from './types.js'
+export { scoreToGrade, fromRunResult, STATIC_ANALYSIS_DISCLAIMER } from './types'
 
 export type {
   Grade,
@@ -29,13 +29,13 @@ export type {
   ReportMethodology,
   ReportSummary,
   SustainabilityReport,
-} from './types.js'
+} from './types'
 
-export { COMPLEMENTARY_TOOLS, CWV_GUIDELINE_IDS, buildRecommendations } from './recommendations.js'
-export type { ComplementaryTool } from './recommendations.js'
+export { COMPLEMENTARY_TOOLS, CWV_GUIDELINE_IDS, buildRecommendations } from './recommendations'
+export type { ComplementaryTool } from './recommendations'
 
-export { formatJson, formatMarkdown, formatHtml, formatTerminal } from './formatters/index.js'
-export type { TerminalFormatOptions } from './formatters/index.js'
+export { formatJson, formatMarkdown, formatHtml, formatTerminal } from './formatters/index'
+export type { TerminalFormatOptions } from './formatters/index'
 
 export {
   GRADE_COLORS,
@@ -45,10 +45,10 @@ export {
   categoryBarChartData,
   categoryBarChartSvg,
   compareTrend,
-} from './visualization.js'
+} from './visualization'
 export type {
   ScoreBadgeData,
   CategoryChartBar,
   CategoryTrend,
   TrendComparison,
-} from './visualization.js'
+} from './visualization'

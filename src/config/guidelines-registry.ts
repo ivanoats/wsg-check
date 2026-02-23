@@ -1,4 +1,4 @@
-import type { GuidelineEntry } from './types.js'
+import type { GuidelineEntry } from './types'
 
 /**
  * Registry of W3C Web Sustainability Guidelines (WSG).

@@ -19,7 +19,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#reducing-third-party-code
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '3.16'
 const GUIDELINE_NAME = 'Reducing Third-Party Dependencies'

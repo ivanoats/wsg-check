@@ -5,15 +5,15 @@
  * so that imports can be written as `import { ... } from '@/utils'`.
  */
 
-export { FetchError, ParseError, ConfigError, CheckError } from './errors.js'
-export type { Result } from './errors.js'
-export { ok, err } from './errors.js'
+export { FetchError, ParseError, ConfigError, CheckError } from './errors'
+export type { Result } from './errors'
+export { ok, err } from './errors'
 
-export type { LogLevel, LogEntry, LoggerOptions, Logger } from './logger.js'
-export { createLogger, defaultLogger } from './logger.js'
+export type { LogLevel, LogEntry, LoggerOptions, Logger } from './logger'
+export { createLogger, defaultLogger } from './logger'
 
-export type { RedirectEntry, FetchResult, HttpClientOptions } from './http-client.js'
-export { HttpClient } from './http-client.js'
+export type { RedirectEntry, FetchResult, HttpClientOptions } from './http-client'
+export { HttpClient } from './http-client'
 
 export type {
   MetaTag,
@@ -23,11 +23,11 @@ export type {
   HeadingNode,
   StructuredData,
   ParsedPage,
-} from './html-parser.js'
-export { parseHtml } from './html-parser.js'
+} from './html-parser'
+export { parseHtml } from './html-parser'
 
-export type { ResourceInfo, CompressionInfo, PageWeightAnalysis } from './resource-analyzer.js'
-export { classifyResources, analyzeCompression, analyzePageWeight } from './resource-analyzer.js'
+export type { ResourceInfo, CompressionInfo, PageWeightAnalysis } from './resource-analyzer'
+export { classifyResources, analyzeCompression, analyzePageWeight } from './resource-analyzer'
 
-export type { CO2Model } from './carbon-estimator.js'
-export { CO2_MODEL, estimateCO2, checkGreenHosting } from './carbon-estimator.js'
+export type { CO2Model } from './carbon-estimator'
+export { CO2_MODEL, estimateCO2, checkGreenHosting } from './carbon-estimator'

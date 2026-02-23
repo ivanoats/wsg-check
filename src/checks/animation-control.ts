@@ -23,7 +23,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#use-animations-responsibly
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '2.15'
 const GUIDELINE_NAME = 'Use Animations Responsibly'

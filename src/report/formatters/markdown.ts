@@ -5,8 +5,8 @@
  * suitable for PR comments, README badges, and static-site generators.
  */
 
-import type { SustainabilityReport, Recommendation } from '../types.js'
-import type { CheckResult, CategoryScore } from '../../core/types.js'
+import type { SustainabilityReport, Recommendation } from '../types'
+import type { CheckResult, CategoryScore } from '../../core/types'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

@@ -20,7 +20,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#navigation-structure
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '2.8'
 const GUIDELINE_NAME = 'Ensure Navigation and Way-Finding Are Well-Structured'

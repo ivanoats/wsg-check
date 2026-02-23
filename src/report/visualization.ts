@@ -16,9 +16,9 @@
  *     is accessible at a glance without relying solely on color.
  */
 
-import type { Grade, SustainabilityReport } from './types.js'
-import { scoreToGrade } from './types.js'
-import { esc } from './formatters/escape.js'
+import type { Grade, SustainabilityReport } from './types'
+import { scoreToGrade } from './types'
+import { esc } from './formatters/escape'
 
 // ─── Grade colours ────────────────────────────────────────────────────────────
 

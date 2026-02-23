@@ -1,7 +1,7 @@
 import path from 'path'
 import { existsSync, readFileSync } from 'fs'
-import type { WSGCheckConfig, PartialWSGCheckConfig, WSGCategory, OutputFormat } from './types.js'
-import { DEFAULT_CONFIG } from './defaults.js'
+import type { WSGCheckConfig, PartialWSGCheckConfig, WSGCategory, OutputFormat } from './types'
+import { DEFAULT_CONFIG } from './defaults'
 
 /**
  * Map environment variables to configuration fields.

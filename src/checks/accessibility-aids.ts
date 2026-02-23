@@ -20,7 +20,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#provide-code-based-way-finding
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '3.9'
 const GUIDELINE_NAME = 'Provide Code-Based Way-Finding Mechanisms'

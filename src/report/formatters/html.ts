@@ -6,10 +6,10 @@
  * browser without any external dependencies.
  */
 
-import type { SustainabilityReport, Recommendation } from '../types.js'
-import type { CheckResult, CategoryScore } from '../../core/types.js'
-import { scoreBadgeSvg, categoryBarChartSvg } from '../visualization.js'
-import { esc } from './escape.js'
+import type { SustainabilityReport, Recommendation } from '../types'
+import type { CheckResult, CategoryScore } from '../../core/types'
+import { scoreBadgeSvg, categoryBarChartSvg } from '../visualization'
+import { esc } from './escape'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

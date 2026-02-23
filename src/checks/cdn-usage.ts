@@ -30,7 +30,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#use-a-content-delivery-network
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '4.10'
 const GUIDELINE_NAME = 'Use a Content Delivery Network'

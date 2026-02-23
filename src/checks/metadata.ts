@@ -21,7 +21,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#use-metadata-microdata-and-schema-org
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 // ─── checkMetadata (WSG 3.4) ──────────────────────────────────────────────────
 

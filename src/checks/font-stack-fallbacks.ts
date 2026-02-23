@@ -20,7 +20,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#ensure-content-is-readable-without-custom-fonts
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '2.16'
 const GUIDELINE_NAME = 'Ensure Content Is Readable Without Custom Fonts'
@@ -66,7 +66,10 @@ function extractStyleBlocks(body: string): string {
 /** Returns true when the font-family value string contains a suitable fallback. */
 function normalizeFontToken(token: string): string {
   // Trim whitespace, remove surrounding single/double quotes, and lowercase for comparison.
-  return token.trim().replace(/^['"]+|['"]+$/g, '').toLowerCase()
+  return token
+    .trim()
+    .replace(/^['"]+|['"]+$/g, '')
+    .toLowerCase()
 }
 
 function hasFallback(value: string): boolean {

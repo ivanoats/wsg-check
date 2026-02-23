@@ -18,7 +18,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#ensure-content-is-readable-without-custom-fonts
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '2.16'
 const GUIDELINE_NAME = 'Ensure Content Is Readable Without Custom Fonts'

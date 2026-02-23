@@ -11,7 +11,7 @@
 
 import * as cheerio from 'cheerio'
 import type { Element as DomElement } from 'domhandler'
-import { ParseError } from './errors.js'
+import { ParseError } from './errors'
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
