@@ -104,6 +104,9 @@ describe('isPrivateIpv6', () => {
   it('returns true for fe80::/10 link-local addresses', () => {
     expect(isPrivateIpv6('fe80::1')).toBe(true)
     expect(isPrivateIpv6('fe80::abcd:ef01')).toBe(true)
+    expect(isPrivateIpv6('fe90::1')).toBe(true)
+    expect(isPrivateIpv6('fea0::1')).toBe(true)
+    expect(isPrivateIpv6('feb0::1')).toBe(true)
   })
 
   it('returns true for fc00::/8 unique-local addresses', () => {
