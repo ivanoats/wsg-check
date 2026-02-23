@@ -10,8 +10,8 @@
 
 import axios, { AxiosError, type AxiosInstance, type AxiosResponse } from 'axios'
 import robotsParser from 'robots-parser'
-import { FetchError, type Result, ok, err } from './errors.js'
-import { isDisallowedHost, dnsResolvesToPrivateAddress } from './ssrf.js'
+import { FetchError, type Result, ok, err } from './errors'
+import { isDisallowedHost, dnsResolvesToPrivateAddress } from './ssrf'
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
