@@ -21,7 +21,7 @@ const evictExpired = (now: number): void => {
 
 const evictOverflow = (): void => {
   if (checkStore.size <= MAX_STORED_RESULTS) return
-  const oldestKey = Array.from(checkStore.keys())[0]
+  const oldestKey = checkStore.keys().next().value as string | undefined
   if (oldestKey !== undefined) {
     checkStore.delete(oldestKey)
   }
