@@ -68,7 +68,7 @@ function normalizeFontToken(token: string): string {
   // Trim whitespace, remove surrounding single/double quotes, and lowercase for comparison.
   return token
     .trim()
-    .replace(/^['"]+|['"]+$/g, '')
+    .replaceAll(/(^['"]+|['"]+$)/g, '')
     .toLowerCase()
 }
 
