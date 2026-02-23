@@ -9,11 +9,11 @@
  * functions and scorer free of side-effects.
  */
 
-import { HttpClient, type HttpClientOptions } from '../utils/http-client.js'
-import { parseHtml } from '../utils/html-parser.js'
-import { analyzePageWeight } from '../utils/resource-analyzer.js'
-import { FetchError, ParseError, type Result, ok, err } from '../utils/errors.js'
-import type { PageData } from './types.js'
+import { HttpClient, type HttpClientOptions } from '../utils/http-client'
+import { parseHtml } from '../utils/html-parser'
+import { analyzePageWeight } from '../utils/resource-analyzer'
+import { FetchError, ParseError, type Result, ok, err } from '../utils/errors'
+import type { PageData } from './types'
 
 // ─── PageFetcher ──────────────────────────────────────────────────────────────
 

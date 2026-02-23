@@ -10,8 +10,8 @@
  */
 
 import { parse as parsePsl } from 'psl'
-import type { FetchResult } from './http-client.js'
-import type { ParsedPage, ResourceReference, ResourceType } from './html-parser.js'
+import type { FetchResult } from './http-client'
+import type { ParsedPage, ResourceReference, ResourceType } from './html-parser'
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 

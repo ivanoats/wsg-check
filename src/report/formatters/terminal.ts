@@ -9,8 +9,8 @@
  * (e.g. when `NO_COLOR` is set or when piping to a file).
  */
 
-import type { SustainabilityReport, Recommendation } from '../types.js'
-import type { CheckResult, CategoryScore } from '../../core/types.js'
+import type { SustainabilityReport, Recommendation } from '../types'
+import type { CheckResult, CategoryScore } from '../../core/types'
 
 // ─── ANSI helpers ─────────────────────────────────────────────────────────────
 

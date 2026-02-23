@@ -22,7 +22,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#optimise-browser-caching
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '4.2'
 const GUIDELINE_NAME = 'Optimize Browser Caching'

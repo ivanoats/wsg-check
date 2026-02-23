@@ -24,7 +24,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#preference-media-queries
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '3.12'
 const GUIDELINE_NAME = 'Preference Media Queries'

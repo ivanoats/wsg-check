@@ -21,7 +21,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#avoid-unnecessary-or-an-overabundance-of-assets
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '2.7'
 const GUIDELINE_NAME = 'Avoid Unnecessary or an Overabundance of Assets'

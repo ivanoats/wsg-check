@@ -19,9 +19,9 @@
  *     formatter can include it without duplicating the text.
  */
 
-import type { CheckResult, CategoryScore, RunResult } from '../core/types.js'
-import type { CO2Model } from '../utils/carbon-estimator.js'
-import { buildRecommendations } from './recommendations.js'
+import type { CheckResult, CategoryScore, RunResult } from '../core/types'
+import type { CO2Model } from '../utils/carbon-estimator'
+import { buildRecommendations } from './recommendations'
 
 // ─── Grade ────────────────────────────────────────────────────────────────────
 

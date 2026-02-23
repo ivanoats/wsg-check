@@ -17,8 +17,8 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#choose-a-sustainable-hosting-provider
  */
 
-import type { CheckFn } from '../core/types.js'
-import { checkGreenHosting } from '../utils/carbon-estimator.js'
+import type { CheckFn } from '../core/types'
+import { checkGreenHosting } from '../utils/carbon-estimator'
 
 const GUIDELINE_ID = '4.1'
 const GUIDELINE_NAME = 'Choose a Sustainable Hosting Provider'

@@ -19,7 +19,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#compress-your-files
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '4.3'
 const GUIDELINE_NAME = 'Compress Your Files'

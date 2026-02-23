@@ -30,6 +30,13 @@ vi.mock('axios', () => {
   }
 })
 
+// Mock DNS to return a public address so SSRF checks pass for test redirects
+const lookupMock = vi.fn().mockResolvedValue([{ address: '93.184.216.34', family: 4 }]) // NOSONAR - intentional public IP for SSRF test
+vi.mock('node:dns/promises', () => ({
+  default: { lookup: lookupMock },
+  lookup: lookupMock,
+}))
+
 // Import after vi.mock so the mock is in effect
 const { HttpClient } = await import('@/utils/http-client')
 
@@ -41,6 +48,8 @@ function axiosResp(status: number, data: string, headers: Record<string, string>
 describe('HttpClient', () => {
   beforeEach(() => {
     mockGet.mockReset()
+    lookupMock.mockReset()
+    lookupMock.mockResolvedValue([{ address: '93.184.216.34', family: 4 }]) // NOSONAR - intentional public IP for SSRF test
   })
 
   afterEach(() => {
@@ -120,6 +129,20 @@ describe('HttpClient', () => {
     expect(result.value.redirectChain).toHaveLength(1)
     expect(result.value.redirectChain[0].statusCode).toBe(301)
     expect(result.value.url).toBe('https://example.com/new')
+  })
+
+  it('returns err result when redirect targets a private address', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockResolvedValueOnce(axiosResp(301, '', { location: 'http://internal.example.com/' }))
+    lookupMock.mockResolvedValue([{ address: '10.0.0.5', family: 4 }]) // NOSONAR - intentional private IP for SSRF test
+
+    const client = new HttpClient()
+    const result = await client.fetch('https://example.com/redirect-to-internal')
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error).toBeInstanceOf(FetchError)
+    expect(result.error.message).toContain('private or unreachable')
   })
 
   it('does not follow redirects when followRedirects is false', async () => {

@@ -26,8 +26,8 @@
  * failure).
  */
 
-import type { WSGCategory } from '../config/types.js'
-import type { CategoryScore, CheckResult } from './types.js'
+import type { WSGCategory } from '../config/types'
+import type { CategoryScore, CheckResult } from './types'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 

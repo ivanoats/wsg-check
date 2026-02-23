@@ -34,9 +34,9 @@
  */
 
 import axios from 'axios'
-import type { WsgApiCategory, WsgApiResponse } from './wsg-api-types.js'
-import type { GuidelineEntry, Testability, WSGCategory } from './types.js'
-import { type Result, ok, err } from '../utils/errors.js'
+import type { WsgApiCategory, WsgApiResponse } from './wsg-api-types'
+import type { GuidelineEntry, Testability, WSGCategory } from './types'
+import { type Result, ok, err } from '../utils/errors'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 

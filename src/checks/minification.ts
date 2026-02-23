@@ -16,7 +16,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#minify-your-html-css-and-javascript
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 // Matches HTML comments that are NOT conditional IE comments (<!--[if ...]).
 const NON_CONDITIONAL_COMMENT = /<!--(?!\[if\s)[\s\S]*?-->/g

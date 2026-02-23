@@ -22,7 +22,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#ensure-appropriate-data-refresh-rates
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '4.7'
 const GUIDELINE_NAME = 'Ensure Appropriate Data Refresh Rates'

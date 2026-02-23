@@ -19,7 +19,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#avoid-redundancy-and-duplication-in-code
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '3.5'
 const GUIDELINE_NAME = 'Avoid Redundancy and Duplication in Code'

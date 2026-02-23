@@ -21,7 +21,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#resolve-render-blocking-content
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '3.8'
 const GUIDELINE_NAME = 'Resolve Render Blocking Content'
