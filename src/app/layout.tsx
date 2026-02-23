@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { Header } from './components/Header'
+import { BottomNav } from './components/BottomNav'
 
 export const metadata: Metadata = {
   title: 'WSG Check',
@@ -13,7 +15,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {/* Skip link — keyboard / screen-reader users can jump past navigation (WSG 3.9) */}
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
+
+        {/* Banner landmark */}
+        <Header />
+
+        {/* Main content landmark — padding-bottom clears the fixed bottom nav */}
+        <main id="main-content" style={{ paddingBottom: 'var(--bottom-nav-height)' }}>
+          {children}
+        </main>
+
+        {/* Contentinfo landmark wraps the bottom navigation */}
+        <footer role="contentinfo">
+          <BottomNav />
+        </footer>
+      </body>
     </html>
   )
 }

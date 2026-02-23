@@ -509,12 +509,12 @@ wsg-check --version
 
 ### 9.1 Layout & Navigation (Mobile-First)
 
-- [ ] Create responsive shell layout with Park UI components
-- [ ] Bottom navigation bar for core actions (thumb-friendly, WSG 2.5)
-- [ ] Minimal, distraction-free header (WSG 2.6)
-- [ ] Skip links and ARIA landmarks (WSG 3.9)
-- [ ] Support `prefers-color-scheme` (dark mode) (WSG 3.12)
-- [ ] Support `prefers-reduced-motion` (WSG 2.12, 3.12)
+- [x] Create responsive shell layout with Park UI components
+- [x] Bottom navigation bar for core actions (thumb-friendly, WSG 2.5)
+- [x] Minimal, distraction-free header (WSG 2.6)
+- [x] Skip links and ARIA landmarks (WSG 3.9)
+- [x] Support `prefers-color-scheme` (dark mode) (WSG 3.12)
+- [x] Support `prefers-reduced-motion` (WSG 2.12, 3.12)
 
 ### 9.2 Pages
 
