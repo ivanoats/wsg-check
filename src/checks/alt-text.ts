@@ -17,7 +17,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#provide-suitable-alternatives
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '2.17'
 const GUIDELINE_NAME = 'Provide Suitable Alternatives to Web Assets'

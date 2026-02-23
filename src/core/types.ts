@@ -6,11 +6,11 @@
  * no Cheerio — only plain TypeScript interfaces.
  */
 
-import type { WSGCategory } from '../config/types.js'
-import type { FetchResult } from '../utils/http-client.js'
-import type { ParsedPage } from '../utils/html-parser.js'
-import type { PageWeightAnalysis } from '../utils/resource-analyzer.js'
-import type { CO2Model } from '../utils/carbon-estimator.js'
+import type { WSGCategory } from '../config/types'
+import type { FetchResult } from '../utils/http-client'
+import type { ParsedPage } from '../utils/html-parser'
+import type { PageWeightAnalysis } from '../utils/resource-analyzer'
+import type { CO2Model } from '../utils/carbon-estimator'
 
 // ─── Check result ─────────────────────────────────────────────────────────────
 

@@ -6,7 +6,7 @@
  * data storage.
  */
 
-import type { SustainabilityReport } from '../types.js'
+import type { SustainabilityReport } from '../types'
 
 /**
  * Serialises a `SustainabilityReport` to a JSON string.

@@ -20,7 +20,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#avoid-manipulative-patterns
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '2.10'
 const GUIDELINE_NAME = 'Avoid Manipulative Patterns'

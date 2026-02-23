@@ -17,21 +17,21 @@
  * ```
  */
 
-import type { ResolvedConfig } from '../config/loader.js'
-import { FetchError, ParseError, type Result, ok } from '../utils/errors.js'
-import { defaultLogger, type Logger } from '../utils/logger.js'
-import { estimateCO2, checkGreenHosting, CO2_MODEL } from '../utils/carbon-estimator.js'
-import { PageFetcher } from './fetcher.js'
-import { CheckRunner } from './runner.js'
-import { scoreResults } from './scorer.js'
-import type { CheckFn, RunResult } from './types.js'
+import type { ResolvedConfig } from '../config/loader'
+import { FetchError, ParseError, type Result, ok } from '../utils/errors'
+import { defaultLogger, type Logger } from '../utils/logger'
+import { estimateCO2, checkGreenHosting, CO2_MODEL } from '../utils/carbon-estimator'
+import { PageFetcher } from './fetcher'
+import { CheckRunner } from './runner'
+import { scoreResults } from './scorer'
+import type { CheckFn, RunResult } from './types'
 
 // ─── Re-exports ───────────────────────────────────────────────────────────────
 
-export type { CheckResult, CheckFn, PageData, CategoryScore, RunResult } from './types.js'
-export { PageFetcher } from './fetcher.js'
-export { CheckRunner } from './runner.js'
-export { calculateCategoryScore, calculateOverallScore, scoreResults } from './scorer.js'
+export type { CheckResult, CheckFn, PageData, CategoryScore, RunResult } from './types'
+export { PageFetcher } from './fetcher'
+export { CheckRunner } from './runner'
+export { calculateCategoryScore, calculateOverallScore, scoreResults } from './scorer'
 
 // ─── WsgChecker ───────────────────────────────────────────────────────────────
 

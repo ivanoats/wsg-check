@@ -26,7 +26,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#responsive-layouts
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '3.13'
 const GUIDELINE_NAME = 'Responsive Layouts'

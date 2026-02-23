@@ -7,8 +7,8 @@
  * checks can always complete — graceful degradation as specified in Phase 3.
  */
 
-import { CheckError } from '../utils/errors.js'
-import type { CheckFn, CheckResult, PageData } from './types.js'
+import { CheckError } from '../utils/errors'
+import type { CheckFn, CheckResult, PageData } from './types'
 
 // ─── CheckRunner ──────────────────────────────────────────────────────────────
 

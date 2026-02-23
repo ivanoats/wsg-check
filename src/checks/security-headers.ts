@@ -23,7 +23,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#code-security
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '3.15'
 const GUIDELINE_NAME = 'Code Security'

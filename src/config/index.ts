@@ -5,26 +5,26 @@ export type {
   WSGCheckConfig,
   PartialWSGCheckConfig,
   GuidelineEntry,
-} from './types.js'
+} from './types'
 
-export { DEFAULT_CONFIG } from './defaults.js'
+export { DEFAULT_CONFIG } from './defaults'
 
 export {
   GUIDELINES_REGISTRY,
   getGuidelineById,
   getGuidelinesByCategory,
   getGuidelinesByTestability,
-} from './guidelines-registry.js'
+} from './guidelines-registry'
 
-export { loadFromEnv, loadFromFile, resolveConfig } from './loader.js'
-export type { ResolvedConfig } from './loader.js'
+export { loadFromEnv, loadFromFile, resolveConfig } from './loader'
+export type { ResolvedConfig } from './loader'
 
 export type {
   WsgApiCriterion,
   WsgApiGuideline,
   WsgApiCategory,
   WsgApiResponse,
-} from './wsg-api-types.js'
+} from './wsg-api-types'
 
 export {
   WSG_GUIDELINES_API_URL,
@@ -32,4 +32,4 @@ export {
   TESTABILITY_OVERLAY,
   fetchWsgGuidelines,
   mapApiToGuidelineEntries,
-} from './wsg-api-client.js'
+} from './wsg-api-client'

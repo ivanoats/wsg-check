@@ -20,7 +20,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#avoid-unnecessary-or-excessive-redirects
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '4.4'
 const GUIDELINE_NAME = 'Avoid Unnecessary or Excessive Redirects'

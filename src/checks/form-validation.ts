@@ -22,7 +22,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#validate-forms
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '3.10'
 const GUIDELINE_NAME = 'Validate Forms'

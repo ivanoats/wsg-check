@@ -18,8 +18,8 @@
  * @module
  */
 
-import type { CheckResult } from '../core/types.js'
-import type { Recommendation } from './types.js'
+import type { CheckResult } from '../core/types'
+import type { Recommendation } from './types'
 
 // ─── Complementary tools ──────────────────────────────────────────────────────
 

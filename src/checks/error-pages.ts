@@ -23,7 +23,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#create-a-performant-404-page
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '4.4'
 const GUIDELINE_NAME = 'Create a Performant 404 Page'

@@ -19,10 +19,10 @@ import { writeFileSync, readFileSync } from 'node:fs'
 import { pathToFileURL, fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { Command } from 'commander'
-import { resolveConfig } from '../config/loader.js'
-import type { OutputFormat, WSGCategory } from '../config/types.js'
-import { WsgChecker } from '../core/index.js'
-import type { CheckFnWithId } from '../core/types.js'
+import { resolveConfig } from '../config/loader'
+import type { OutputFormat, WSGCategory } from '../config/types'
+import { WsgChecker } from '../core/index'
+import type { CheckFnWithId } from '../core/types'
 import {
   performanceChecks,
   semanticChecks,
@@ -30,14 +30,9 @@ import {
   securityChecks,
   uxDesignChecks,
   hostingChecks,
-} from '../checks/index.js'
-import { fromRunResult } from '../report/types.js'
-import {
-  formatJson,
-  formatMarkdown,
-  formatHtml,
-  formatTerminal,
-} from '../report/formatters/index.js'
+} from '../checks/index'
+import { fromRunResult } from '../report/types'
+import { formatJson, formatMarkdown, formatHtml, formatTerminal } from '../report/formatters/index'
 
 // ─── Package version ──────────────────────────────────────────────────────────
 

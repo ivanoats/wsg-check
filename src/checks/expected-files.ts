@@ -33,7 +33,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#provide-information-about-file-provenance
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 // ─── checkExpectedFiles (WSG 3.17 — Expected) ─────────────────────────────────
 

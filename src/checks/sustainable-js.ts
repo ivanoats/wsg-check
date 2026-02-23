@@ -25,7 +25,7 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#use-the-latest-stable-language-version
  */
 
-import type { CheckFn } from '../core/types.js'
+import type { CheckFn } from '../core/types'
 
 const GUIDELINE_ID = '3.14'
 const GUIDELINE_NAME = 'Standards-Based JavaScript'

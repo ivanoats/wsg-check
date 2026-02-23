@@ -22,8 +22,8 @@
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#use-html-elements-correctly
  */
 
-import type { CheckFn } from '../core/types.js'
-import type { HeadingNode } from '../utils/html-parser.js'
+import type { CheckFn } from '../core/types'
+import type { HeadingNode } from '../utils/html-parser'
 
 const GUIDELINE_ID = '3.7'
 const GUIDELINE_NAME = 'Use HTML Elements Correctly'
