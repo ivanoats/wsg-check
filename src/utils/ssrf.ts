@@ -42,8 +42,8 @@ export const isPrivateIpv6 = (address: string): boolean => {
     }
   }
 
-  // Link-local fe80::/10
-  if (lower.startsWith('fe80:')) return true
+  // Link-local fe80::/10 — covers fe80, fe90, fea0, feb0 (second nibble 8–b)
+  if (/^fe[89ab][0-9a-f]:/.test(lower)) return true
 
   // Unique local fc00::/7 (fc00::/8 and fd00::/8)
   return lower.startsWith('fc') || lower.startsWith('fd')
