@@ -109,6 +109,10 @@ describe('isPrivateIpv6', () => {
     expect(isPrivateIpv6('feb0::1')).toBe(true)
   })
 
+  it('returns false for fec0::1 (outside fe80::/10 range)', () => {
+    expect(isPrivateIpv6('fec0::1')).toBe(false)
+  })
+
   it('returns true for fc00::/8 unique-local addresses', () => {
     expect(isPrivateIpv6('fc00::1')).toBe(true)
     expect(isPrivateIpv6('fc00:dead:beef::1')).toBe(true)

@@ -107,7 +107,7 @@ describe('checkCompression (WSG 4.3)', () => {
     const result = await checkCompression(makePageData({}))
     expect(result.recommendation).toBeDefined()
     expect(result.resources).toBeDefined()
-    expect(result.resources!.some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
+    expect((result.resources ?? []).some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
   })
 
   it('non-Brotli pass result includes a Brotli upgrade recommendation', async () => {

@@ -106,6 +106,6 @@ describe('checkCaching (WSG 4.2)', () => {
     const result = await checkCaching(makePageData({}))
     expect(result.recommendation).toBeDefined()
     expect(result.resources).toBeDefined()
-    expect(result.resources!.some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
+    expect((result.resources ?? []).some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
   })
 })

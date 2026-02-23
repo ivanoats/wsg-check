@@ -94,6 +94,6 @@ describe('checkErrorPages (WSG 4.4)', () => {
   it('includes resources link', async () => {
     const result = await checkErrorPages(makePageData(200))
     expect(result.resources).toBeDefined()
-    expect(result.resources!.some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
+    expect((result.resources ?? []).some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
   })
 })

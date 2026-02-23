@@ -117,7 +117,7 @@ describe('checkOfflineAccess (WSG 4.2)', () => {
     const result = await checkOfflineAccess(makePageData())
     expect(result.recommendation).toBeDefined()
     expect(result.resources).toBeDefined()
-    expect(result.resources!.some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
+    expect((result.resources ?? []).some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
   })
 
   it('detects service worker registration in inline script', async () => {

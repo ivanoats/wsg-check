@@ -113,7 +113,7 @@ describe('checkCdnUsage (WSG 4.10)', () => {
     const result = await checkCdnUsage(makePageData({}))
     expect(result.recommendation).toBeDefined()
     expect(result.resources).toBeDefined()
-    expect(result.resources!.some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
+    expect((result.resources ?? []).some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
   })
 
   it('reports all detected CDN headers in the message', async () => {

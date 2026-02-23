@@ -116,6 +116,6 @@ describe('checkAltText (WSG 2.17)', () => {
     const result = await checkAltText(makePageData(resources))
     expect(result.recommendation).toBeDefined()
     expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    expect(result.resources?.[0]).toContain('w3.org')
   })
 })

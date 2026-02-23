@@ -124,6 +124,6 @@ describe('checkDataRefresh (WSG 4.7)', () => {
     const result = await checkDataRefresh(makePageData({}))
     expect(result.recommendation).toBeDefined()
     expect(result.resources).toBeDefined()
-    expect(result.resources!.some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
+    expect((result.resources ?? []).some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
   })
 })
