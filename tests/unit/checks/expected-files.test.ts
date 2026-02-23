@@ -122,7 +122,7 @@ describe('checkExpectedFiles (WSG 3.17)', () => {
     const result = await checkExpectedFiles(makePageData({ links: [] }))
     expect(result.recommendation).toBeDefined()
     expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    expect(result.resources?.[0]).toContain('w3.org')
   })
 })
 
@@ -167,7 +167,7 @@ describe('checkBeneficialFiles (WSG 3.17)', () => {
     const result = await checkBeneficialFiles(makePageData({ links: [] }))
     expect(result.recommendation).toBeDefined()
     expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    expect(result.resources?.[0]).toContain('w3.org')
   })
 
   it('detects partial presence of beneficial files', async () => {

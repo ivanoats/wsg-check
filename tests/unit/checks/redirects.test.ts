@@ -120,6 +120,6 @@ describe('checkRedirects (WSG 4.4)', () => {
     const result = await checkRedirects(makePageData(chain))
     expect(result.recommendation).toBeDefined()
     expect(result.resources).toBeDefined()
-    expect(result.resources!.some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
+    expect((result.resources ?? []).some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
   })
 })

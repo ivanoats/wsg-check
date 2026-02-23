@@ -133,7 +133,7 @@ describe('checkFormValidation (WSG 3.10)', () => {
     const result = await checkFormValidation(makePageData([makeInput({ hasLabel: false })]))
     expect(result.recommendation).toBeDefined()
     expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    expect(result.resources?.[0]).toContain('w3.org')
   })
 
   it('pass message includes the total input count', async () => {

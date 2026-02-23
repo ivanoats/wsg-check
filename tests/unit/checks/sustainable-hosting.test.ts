@@ -104,7 +104,7 @@ describe('checkSustainableHosting (WSG 4.1)', () => {
     const result = await checkSustainableHosting(makePageData())
     expect(result.recommendation).toBeDefined()
     expect(result.resources).toBeDefined()
-    expect(result.resources!.some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
+    expect((result.resources ?? []).some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
   })
 
   it('extracts hostname correctly from the page url', async () => {
