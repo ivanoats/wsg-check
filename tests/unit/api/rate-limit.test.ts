@@ -110,6 +110,38 @@ describe('api/rate-limit', () => {
 
     const body = await second?.json()
     expect(body.error).toBe('RATE_LIMITED')
-    expect(second?.headers.get('Retry-After')).toBeDefined()
+    const retryAfter = second?.headers.get('Retry-After')
+    expect(retryAfter).toBeDefined()
+    expect(parseInt(retryAfter ?? '0', 10)).toBeGreaterThanOrEqual(1)
+  })
+
+  it('falls back to x-real-ip when x-forwarded-for first entry is empty', async () => {
+    process.env.WSG_API_TRUST_PROXY = 'true'
+    const { enforceRateLimit } = await import('@/api/rate-limit')
+
+    const first = await enforceRateLimit(
+      makeRequest({ pathname: '/api/check', forwarded: ', 10.0.0.1', realIp: '5.5.5.5' }) as never
+    )
+    const second = await enforceRateLimit(
+      makeRequest({ pathname: '/api/check', forwarded: ', 9.9.9.9', realIp: '5.5.5.5' }) as never
+    )
+
+    expect(first).toBeNull()
+    expect(second?.status).toBe(429)
+  })
+
+  it('falls back to x-real-ip when x-forwarded-for is only whitespace', async () => {
+    process.env.WSG_API_TRUST_PROXY = 'true'
+    const { enforceRateLimit } = await import('@/api/rate-limit')
+
+    const first = await enforceRateLimit(
+      makeRequest({ pathname: '/api/health', forwarded: '   ', realIp: '6.6.6.6' }) as never
+    )
+    const second = await enforceRateLimit(
+      makeRequest({ pathname: '/api/health', forwarded: '   ', realIp: '6.6.6.6' }) as never
+    )
+
+    expect(first).toBeNull()
+    expect(second?.status).toBe(429)
   })
 })
