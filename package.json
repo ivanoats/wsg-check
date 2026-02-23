@@ -10,7 +10,7 @@
     "wsg-check": "./dist/cli/index.js"
   },
   "scripts": {
-    "dev": "next dev --webpack",
+    "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",

@@ -30,8 +30,11 @@ const limiter = new RateLimiterMemory({
 const TRUST_PROXY = process.env.WSG_API_TRUST_PROXY === 'true'
 
 const getClientIp = (request: NextRequest): string => {
-  if (typeof request.ip === 'string' && request.ip.trim().length > 0) {
-    return request.ip.trim()
+  // request.ip is available on Vercel/edge runtime but is absent from the
+  // NextRequest TypeScript types in newer Next.js versions; access via cast.
+  const platformIp = (request as unknown as { readonly ip?: string }).ip
+  if (typeof platformIp === 'string' && platformIp.trim().length > 0) {
+    return platformIp.trim()
   }
 
   if (TRUST_PROXY) {
