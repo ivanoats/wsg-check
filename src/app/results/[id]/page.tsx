@@ -3,8 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { styled } from 'styled-system/jsx'
 import { css } from 'styled-system/css'
-import { button } from 'styled-system/recipes'
-import { card } from 'styled-system/recipes'
+import { button, card } from 'styled-system/recipes'
 import type { SustainabilityReport, Recommendation } from '@/report/types'
 import type { CategoryScore } from '@/core/types'
 import type { CheckResultLookupBody } from '@/api/types'
@@ -18,7 +17,7 @@ export const dynamic = 'force-dynamic'
 
 const fetchReport = async (id: string): Promise<SustainabilityReport | null> => {
   try {
-    const base = process.env['NEXT_PUBLIC_BASE_URL'] ?? 'http://localhost:3000'
+    const base = process.env['NEXT_PUBLIC_APP_URL'] ?? 'http://localhost:3000'
     const res = await fetch(`${base}/api/check/${id}`, { cache: 'no-store' })
     if (!res.ok) return null
     const body = (await res.json()) as CheckResultLookupBody

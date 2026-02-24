@@ -4,8 +4,7 @@ import { useState, useMemo, useCallback } from 'react'
 import { Field } from '@ark-ui/react/field'
 import { styled } from 'styled-system/jsx'
 import { css } from 'styled-system/css'
-import { field } from 'styled-system/recipes'
-import { link } from 'styled-system/recipes'
+import { field, link } from 'styled-system/recipes'
 import type { GuidelineEntry, WSGCategory, Testability } from '@/config/types'
 
 interface GuidelinesFilterProps {

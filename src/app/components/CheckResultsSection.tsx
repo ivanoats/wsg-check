@@ -3,9 +3,7 @@
 import { Collapsible } from '@ark-ui/react'
 import { styled } from 'styled-system/jsx'
 import { css } from 'styled-system/css'
-import { collapsible } from 'styled-system/recipes'
-import { badge } from 'styled-system/recipes'
-import { button } from 'styled-system/recipes'
+import { collapsible, badge, button } from 'styled-system/recipes'
 import type { CheckResult } from '@/core/types'
 
 interface CheckResultsSectionProps {

@@ -528,11 +528,11 @@ wsg-check --version
 #### Results Page (`/results/:id`)
 
 - [x] Overall sustainability score with grade badge
-- [x] Category breakdown (radar chart or bar chart)
+- [x] Category breakdown (progress bars)
 - [x] Expandable/collapsible check results grouped by category
 - [x] Pass/fail/warn visual indicators
 - [x] Recommendations section prioritized by impact
-- [x] Export options: JSON, Markdown, PDF
+- [x] Export options: JSON
 - [x] Share/link to results
 
 #### Guidelines Reference (`/guidelines`)

@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Field } from '@ark-ui/react/field'
 import { styled } from 'styled-system/jsx'
 import { css } from 'styled-system/css'
-import { field } from 'styled-system/recipes'
-import { button } from 'styled-system/recipes'
+import { field, button } from 'styled-system/recipes'
 
 const RECENT_CHECKS_KEY = 'wsg-check:recent-urls'
 const MAX_RECENT = 5

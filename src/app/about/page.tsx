@@ -2,9 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { styled } from 'styled-system/jsx'
 import { css } from 'styled-system/css'
-import { button } from 'styled-system/recipes'
-import { card } from 'styled-system/recipes'
-import { link } from 'styled-system/recipes'
+import { button, card, link } from 'styled-system/recipes'
 
 export const metadata: Metadata = {
   title: 'About — WSG Check',
