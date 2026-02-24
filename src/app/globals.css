@@ -1,3 +1,6 @@
+/* PandaCSS layer injection — must come first so panda styles layer correctly */
+@layer reset, base, tokens, recipes, utilities;
+
 *,
 *::before,
 *::after {

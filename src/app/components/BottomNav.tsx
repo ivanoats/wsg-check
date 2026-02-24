@@ -1,5 +1,8 @@
+'use client'
+
+import { usePathname } from 'next/navigation'
 import { styled } from 'styled-system/jsx'
-import { css } from 'styled-system/css'
+import { css, cx } from 'styled-system/css'
 import Link from 'next/link'
 
 /** Navigation item definition */
@@ -49,53 +52,75 @@ const navLinkClass = css({
   color: 'fg.muted',
   textDecoration: 'none',
   fontSize: 'xs',
+  fontWeight: 'medium',
   /* minimum 48 × 48 px touch target */
   minH: '12',
   minW: '12',
+  transition: 'color 0.15s',
+  _hover: { color: 'fg.default' },
+})
+
+const activeLinkClass = css({
+  color: 'accent.default',
+  _hover: { color: 'accent.default' },
 })
 
 /**
  * Thumb-friendly bottom navigation bar for mobile-first layout (WSG 2.5).
  * Placed at the bottom of the viewport so primary actions are within easy reach.
- * Uses Park UI design tokens for automatic light/dark mode support.
+ * Active route is highlighted with the accent colour.
  */
-export const BottomNav = () => (
-  <styled.nav
-    aria-label="Main navigation"
-    position="fixed"
-    bottom="0"
-    left="0"
-    right="0"
-    h="16"
-    bg="bg.default"
-    borderTopWidth="1px"
-    borderColor="border.default"
-    display="flex"
-    alignItems="stretch"
-    zIndex="sticky"
-  >
-    <styled.ul display="flex" w="full" listStyleType="none" m="0" p="0">
-      {NAV_ITEMS.map((item) => (
-        <styled.li key={item.href} flex="1">
-          <Link href={item.href} aria-label={item.ariaLabel} className={navLinkClass}>
-            <svg
-              aria-hidden="true"
-              focusable="false"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d={item.iconPath} />
-            </svg>
-            <span>{item.label}</span>
-          </Link>
-        </styled.li>
-      ))}
-    </styled.ul>
-  </styled.nav>
-)
+export const BottomNav = () => {
+  const pathname = usePathname()
+
+  return (
+    <styled.nav
+      aria-label="Main navigation"
+      position="fixed"
+      bottom="0"
+      left="0"
+      right="0"
+      h="16"
+      bg="bg.default"
+      borderTopWidth="1px"
+      borderColor="border.default"
+      display="flex"
+      alignItems="stretch"
+      zIndex="sticky"
+      shadow="sm"
+    >
+      <styled.ul display="flex" w="full" listStyleType="none" m="0" p="0">
+        {NAV_ITEMS.map((item) => {
+          const isActive = pathname === item.href
+          return (
+            <styled.li key={item.href} flex="1">
+              <Link
+                href={item.href}
+                aria-label={item.ariaLabel}
+                aria-current={isActive ? 'page' : undefined}
+                className={cx(navLinkClass, isActive ? activeLinkClass : undefined)}
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={isActive ? 2.5 : 1.75}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d={item.iconPath} />
+                </svg>
+                <span>{item.label}</span>
+              </Link>
+            </styled.li>
+          )
+        })}
+      </styled.ul>
+    </styled.nav>
+  )
+}
+
