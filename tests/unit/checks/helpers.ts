@@ -16,7 +16,7 @@ import { expect } from 'vitest'
 const assertNonEmptyStringArray: (value: unknown) => asserts value is string[] = (value) => {
   expect(value).toBeDefined()
   if (!Array.isArray(value)) {
-    throw new Error('Expected value to be an array')
+    throw new TypeError('Expected value to be an array')
   }
   expect(value.length).toBeGreaterThan(0)
 }
