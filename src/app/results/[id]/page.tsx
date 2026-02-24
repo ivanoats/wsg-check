@@ -35,12 +35,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-const gradeColors: Readonly<Record<string, string>> = {
-  A: '#166534',
-  B: '#1e40af',
-  C: '#92400e',
-  D: '#b45309',
-  F: '#991b1b',
+const gradeColors: Readonly<Record<string, { bg: string; fg: string }>> = {
+  A: { bg: 'green.9', fg: 'white' },
+  B: { bg: 'blue.9', fg: 'white' },
+  C: { bg: 'amber.10', fg: 'white' },
+  D: { bg: 'orange.9', fg: 'white' },
+  F: { bg: 'red.9', fg: 'white' },
 }
 
 const cardStyles = card()
@@ -65,24 +65,24 @@ const sectionHeadingClass = css({
   mb: '3',
 })
 
-const impactColors: Readonly<Record<string, string>> = {
-  high: '#ef4444',
-  medium: '#f59e0b',
-  low: '#6b7280',
+const impactColors: Readonly<Record<string, { bg: string }>> = {
+  high: { bg: 'red.9' },
+  medium: { bg: 'amber.9' },
+  low: { bg: 'gray.7' },
 }
 
-const impactDot = (impact: string): string => impactColors[impact] ?? '#6b7280'
+const impactDot = (impact: string): string => impactColors[impact]?.bg ?? 'gray.7'
 
 /** Static config for the summary count grid — counts are bound at render time. */
 const SUMMARY_CONFIG: ReadonlyArray<{
   readonly label: string
   readonly key: keyof ReportSummary
-  readonly color: string
+  readonly colorToken: string
 }> = [
-  { label: 'Passed', key: 'passed', color: '#166534' },
-  { label: 'Failed', key: 'failed', color: '#991b1b' },
-  { label: 'Warnings', key: 'warnings', color: '#92400e' },
-  { label: 'N/A', key: 'notApplicable', color: '#374151' },
+  { label: 'Passed', key: 'passed', colorToken: 'green.9' },
+  { label: 'Failed', key: 'failed', colorToken: 'red.9' },
+  { label: 'Warnings', key: 'warnings', colorToken: 'amber.10' },
+  { label: 'N/A', key: 'notApplicable', colorToken: 'gray.7' },
 ]
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -91,11 +91,11 @@ const SUMMARY_CONFIG: ReadonlyArray<{
 const SummaryCountCard = ({
   label,
   count,
-  color,
+  colorToken,
 }: {
   readonly label: string
   readonly count: number
-  readonly color: string
+  readonly colorToken: string
 }) => (
   <styled.div
     role="listitem"
@@ -106,48 +106,44 @@ const SummaryCountCard = ({
     bg="bg.subtle"
     textAlign="center"
   >
-    <styled.p fontWeight="bold" fontSize="xl" style={{ color }}>
+    <styled.p fontWeight="bold" fontSize="xl" color={colorToken}>
       {count}
     </styled.p>
-    <styled.p fontSize="xs" color="fg.muted">
+    <styled.p fontSize="xs" color="fg.subtle">
       {label}
     </styled.p>
   </styled.div>
 )
 
 /** Single category score row — extracted to limit JSX nesting depth. */
-const CategoryScoreBar = ({ cat }: { readonly cat: CategoryScore }) => (
-  <styled.div className={cardStyles.root}>
-    <styled.div display="flex" justifyContent="space-between" alignItems="center" mb="1">
-      <styled.span fontSize="sm" fontWeight="medium" color="fg.default">
-        {cat.category.toUpperCase()}
-      </styled.span>
-      <styled.span fontSize="sm" fontWeight="bold" color="fg.default">
-        {cat.score}/100
-      </styled.span>
-    </styled.div>
-    <styled.div
-      h="2"
-      borderRadius="full"
-      bg="border.default"
-      overflow="hidden"
-      role="progressbar"
-      aria-valuenow={cat.score}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-label={`${cat.category} score: ${cat.score} out of 100`}
-    >
+const CategoryScoreBar = ({ cat }: { readonly cat: CategoryScore }) => {
+  const barColor = cat.score >= 75 ? 'green.9' : cat.score >= 50 ? 'amber.9' : 'red.9'
+  return (
+    <styled.div className={cardStyles.root}>
+      <styled.div display="flex" justifyContent="space-between" alignItems="center" mb="1">
+        <styled.span fontSize="sm" fontWeight="medium" color="fg.default">
+          {cat.category.toUpperCase()}
+        </styled.span>
+        <styled.span fontSize="sm" fontWeight="bold" color="fg.default">
+          {cat.score}/100
+        </styled.span>
+      </styled.div>
       <styled.div
-        h="full"
+        h="2"
         borderRadius="full"
-        style={{
-          width: `${cat.score}%`,
-          backgroundColor: cat.score >= 75 ? '#166534' : cat.score >= 50 ? '#92400e' : '#991b1b',
-        }}
-      />
+        bg="border.default"
+        overflow="hidden"
+        role="progressbar"
+        aria-valuenow={cat.score}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`${cat.category} score: ${cat.score} out of 100`}
+      >
+        <styled.div h="full" borderRadius="full" bg={barColor} width={`${cat.score}%`} />
+      </styled.div>
     </styled.div>
-  </styled.div>
-)
+  )
+}
 
 /** Single recommendation card — extracted to limit JSX nesting depth. */
 const RecommendationItem = ({ rec }: { readonly rec: Recommendation }) => (
@@ -159,17 +155,17 @@ const RecommendationItem = ({ rec }: { readonly rec: Recommendation }) => (
         borderRadius="full"
         mt="1.5"
         flexShrink="0"
-        style={{ backgroundColor: impactDot(rec.impact) }}
+        bg={impactDot(rec.impact)}
         aria-label={`${rec.impact} impact`}
       />
       <styled.div flex="1">
         <styled.p fontWeight="semibold" fontSize="sm" color="fg.default" mb="0.5">
           {rec.guidelineName}{' '}
-          <styled.span color="fg.muted" fontSize="xs">
+          <styled.span color="fg.subtle" fontSize="xs">
             ({rec.guidelineId})
           </styled.span>
         </styled.p>
-        <styled.p fontSize="sm" color="fg.muted">
+        <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed">
           {rec.recommendation}
         </styled.p>
       </styled.div>
@@ -195,13 +191,14 @@ export default async function ResultsIdPage({ params }: PageProps) {
 
       {/* Header: score + grade */}
       <styled.div display="flex" gap="4" alignItems="center" mb="6">
-        <div
+        <styled.div
           className={gradeBadgeClass}
-          style={{ backgroundColor: gradeColors[report.grade] ?? '#374151' }}
+          bg={gradeColors[report.grade]?.bg ?? 'gray.7'}
+          color={gradeColors[report.grade]?.fg ?? 'white'}
           aria-label={`Grade ${report.grade}`}
         >
           {report.grade}
-        </div>
+        </styled.div>
         <styled.div>
           <styled.h1
             id="results-heading"
@@ -212,7 +209,7 @@ export default async function ResultsIdPage({ params }: PageProps) {
           >
             Score: {report.overallScore}/100
           </styled.h1>
-          <styled.p fontSize="sm" color="fg.muted" style={{ wordBreak: 'break-all' }}>
+          <styled.p fontSize="sm" color="fg.subtle" style={{ wordBreak: 'break-all' }}>
             {report.url}
           </styled.p>
         </styled.div>
@@ -227,8 +224,13 @@ export default async function ResultsIdPage({ params }: PageProps) {
         role="list"
         aria-label="Check summary"
       >
-        {SUMMARY_CONFIG.map(({ label, key, color }) => (
-          <SummaryCountCard key={label} label={label} count={report.summary[key]} color={color} />
+        {SUMMARY_CONFIG.map(({ label, key, colorToken }) => (
+          <SummaryCountCard
+            key={label}
+            label={label}
+            count={report.summary[key]}
+            colorToken={colorToken}
+          />
         ))}
       </styled.div>
 
@@ -286,7 +288,7 @@ export default async function ResultsIdPage({ params }: PageProps) {
             View JSON
           </a>
         </styled.div>
-        <styled.p fontSize="xs" color="fg.muted" mt="3">
+        <styled.p fontSize="xs" color="fg.subtle" mt="3">
           Share this result:{' '}
           <styled.code
             fontSize="xs"
@@ -294,6 +296,7 @@ export default async function ResultsIdPage({ params }: PageProps) {
             py="0.5"
             borderRadius="sm"
             bg="bg.subtle"
+            color="fg.default"
             style={{ wordBreak: 'break-all' }}
           >
             {`/results/${id}`}
@@ -306,11 +309,11 @@ export default async function ResultsIdPage({ params }: PageProps) {
         <h2 id="methodology-heading" className={sectionHeadingClass}>
           Methodology
         </h2>
-        <styled.p fontSize="sm" color="fg.muted">
+        <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed">
           {report.methodology.disclaimer}
         </styled.p>
         {report.methodology.coreWebVitalsNote && (
-          <styled.p fontSize="sm" color="fg.muted" mt="2">
+          <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed" mt="2">
             {report.methodology.coreWebVitalsNote}
           </styled.p>
         )}

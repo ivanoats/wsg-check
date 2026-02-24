@@ -24,11 +24,12 @@ const sectionHeadingClass = css({
 interface GradeScaleItemProps {
   readonly grade: string
   readonly range: string
-  readonly color: string
+  readonly bg: string
+  readonly fg: string
 }
 
 /** Single grade-scale card — extracted to limit JSX nesting depth. */
-const GradeScaleItem = ({ grade, range, color }: GradeScaleItemProps) => (
+const GradeScaleItem = ({ grade, range, bg, fg }: GradeScaleItemProps) => (
   <styled.div
     role="listitem"
     className={cardStyles.root}
@@ -45,9 +46,9 @@ const GradeScaleItem = ({ grade, range, color }: GradeScaleItemProps) => (
       borderRadius="full"
       fontWeight="bold"
       fontSize="lg"
-      color="white"
+      bg={bg}
+      color={fg}
       flexShrink="0"
-      style={{ backgroundColor: color }}
       aria-hidden="true"
     >
       {grade}
@@ -56,7 +57,7 @@ const GradeScaleItem = ({ grade, range, color }: GradeScaleItemProps) => (
       <styled.p fontWeight="semibold" fontSize="sm" color="fg.default">
         Grade {grade}
       </styled.p>
-      <styled.p fontSize="xs" color="fg.muted">
+      <styled.p fontSize="xs" color="fg.subtle">
         Score {range}
       </styled.p>
     </styled.div>
@@ -64,11 +65,11 @@ const GradeScaleItem = ({ grade, range, color }: GradeScaleItemProps) => (
 )
 
 const GRADE_SCALE = [
-  { grade: 'A', range: '90–100', color: '#166534' },
-  { grade: 'B', range: '75–89', color: '#1e40af' },
-  { grade: 'C', range: '60–74', color: '#92400e' },
-  { grade: 'D', range: '45–59', color: '#b45309' },
-  { grade: 'F', range: '0–44', color: '#991b1b' },
+  { grade: 'A', range: '90–100', bg: 'green.9', fg: 'white' },
+  { grade: 'B', range: '75–89', bg: 'blue.9', fg: 'white' },
+  { grade: 'C', range: '60–74', bg: 'amber.10', fg: 'white' },
+  { grade: 'D', range: '45–59', bg: 'orange.9', fg: 'white' },
+  { grade: 'F', range: '0–44', bg: 'red.9', fg: 'white' },
 ] as const
 
 export default function AboutPage() {
@@ -83,7 +84,7 @@ export default function AboutPage() {
       >
         About WSG Check
       </styled.h1>
-      <styled.p fontSize="md" color="fg.muted" mb="8">
+      <styled.p fontSize="md" color="fg.default" lineHeight="relaxed" mb="8">
         An open-source tool for evaluating websites against the{' '}
         <a
           href="https://www.w3.org/TR/web-sustainability-guidelines/"

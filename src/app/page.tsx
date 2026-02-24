@@ -39,7 +39,7 @@ const HowItWorksStep = ({ step, title, detail }: HowItWorksStepProps) => (
       <styled.p fontWeight="semibold" color="fg.default">
         {title}
       </styled.p>
-      <styled.p fontSize="sm" color="fg.muted">
+      <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed">
         {detail}
       </styled.p>
     </styled.div>
@@ -60,8 +60,7 @@ const HOW_IT_WORKS_STEPS = [
   {
     step: '3',
     title: 'Review results',
-    detail:
-      'See your sustainability score, category breakdown, and prioritised recommendations.',
+    detail: 'See your sustainability score, category breakdown, and prioritised recommendations.',
   },
 ] as const
 
@@ -77,7 +76,7 @@ export default function Home() {
       >
         WSG Check
       </styled.h1>
-      <styled.p fontSize="md" color="fg.muted" mb="6">
+      <styled.p fontSize="md" color="fg.default" lineHeight="relaxed" mb="6">
         Check any website against the{' '}
         <a
           href="https://www.w3.org/TR/web-sustainability-guidelines/"

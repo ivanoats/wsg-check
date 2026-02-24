@@ -10,12 +10,12 @@ interface CheckResultsSectionProps {
   readonly checks: ReadonlyArray<CheckResult>
 }
 
-const statusColor: Readonly<Record<string, string>> = {
-  pass: '#166534',
-  fail: '#991b1b',
-  warn: '#92400e',
-  info: '#1e40af',
-  'not-applicable': '#6b7280',
+const statusColor: Readonly<Record<string, { bg: string; fg: string }>> = {
+  pass: { bg: 'green.9', fg: 'white' },
+  fail: { bg: 'red.9', fg: 'white' },
+  warn: { bg: 'amber.9', fg: 'white' },
+  info: { bg: 'blue.9', fg: 'white' },
+  'not-applicable': { bg: 'gray.7', fg: 'white' },
 }
 
 const statusLabel: Readonly<Record<string, string>> = {
@@ -65,25 +65,27 @@ const collapsibleStyles = collapsible()
 const CheckRow = ({ check }: { readonly check: CheckResult }) => (
   <styled.li role="listitem" className={checkRowClass}>
     <styled.div display="flex" gap="3" alignItems="flex-start">
-      <span
+      <styled.span
         className={badge({ variant: 'solid', size: 'sm' })}
-        style={{ backgroundColor: statusColor[check.status] ?? '#6b7280', flexShrink: 0 }}
+        bg={statusColor[check.status]?.bg ?? 'gray.7'}
+        color={statusColor[check.status]?.fg ?? 'white'}
+        flexShrink="0"
         aria-label={`Status: ${statusLabel[check.status] ?? check.status}`}
       >
         {statusLabel[check.status] ?? check.status}
-      </span>
+      </styled.span>
       <styled.div flex="1">
         <styled.p fontSize="sm" fontWeight="medium" color="fg.default">
           {check.guidelineName}{' '}
-          <styled.span color="fg.muted" fontSize="xs">
+          <styled.span color="fg.subtle" fontSize="xs">
             ({check.guidelineId})
           </styled.span>
         </styled.p>
-        <styled.p fontSize="sm" color="fg.muted" mt="0.5">
+        <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed" mt="0.5">
           {check.message}
         </styled.p>
         {check.details && (
-          <styled.p fontSize="xs" color="fg.muted" mt="0.5" fontStyle="italic">
+          <styled.p fontSize="xs" color="fg.subtle" mt="0.5" fontStyle="italic">
             {check.details}
           </styled.p>
         )}
@@ -121,14 +123,10 @@ const CategoryGroup = ({
         <styled.span textTransform="uppercase" fontWeight="semibold">
           {category}
         </styled.span>
-        <styled.span display="flex" gap="2" alignItems="center" fontSize="xs" color="fg.muted">
-          <styled.span style={{ color: statusColor.pass }}>✓ {passCount}</styled.span>
-          {failCount > 0 && (
-            <styled.span style={{ color: statusColor.fail }}>✗ {failCount}</styled.span>
-          )}
-          {warnCount > 0 && (
-            <styled.span style={{ color: statusColor.warn }}>⚠ {warnCount}</styled.span>
-          )}
+        <styled.span display="flex" gap="2" alignItems="center" fontSize="xs" color="fg.subtle">
+          <styled.span color="green.9">✓ {passCount}</styled.span>
+          {failCount > 0 && <styled.span color="red.9">✗ {failCount}</styled.span>}
+          {warnCount > 0 && <styled.span color="amber.9">⚠ {warnCount}</styled.span>}
           <Collapsible.Indicator
             style={{ display: 'inline-block', transition: 'transform 0.2s' }}
             className={css({ '[data-state=open] &': { transform: 'rotate(180deg)' } })}

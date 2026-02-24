@@ -22,7 +22,7 @@ export default function GuidelinesPage() {
       >
         W3C Web Sustainability Guidelines
       </styled.h1>
-      <styled.p fontSize="md" color="fg.muted" mb="6">
+      <styled.p fontSize="md" color="fg.default" lineHeight="relaxed" mb="6">
         Browse all {GUIDELINES_REGISTRY.length} guidelines from the{' '}
         <a
           href="https://www.w3.org/TR/web-sustainability-guidelines/"

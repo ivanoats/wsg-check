@@ -1,7 +1,7 @@
 import { defineConfig } from '@pandacss/dev'
 import { createPreset } from '@park-ui/panda-preset'
 import green from '@park-ui/panda-preset/colors/green'
-import sand from '@park-ui/panda-preset/colors/sand'
+import slate from '@park-ui/panda-preset/colors/slate'
 
 export default defineConfig({
   preflight: true,
@@ -9,7 +9,7 @@ export default defineConfig({
     '@pandacss/dev/presets',
     createPreset({
       accentColor: green,
-      grayColor: sand,
+      grayColor: slate,
       radius: 'md',
     }),
   ],
