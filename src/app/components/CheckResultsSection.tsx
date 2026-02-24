@@ -45,15 +45,15 @@ const checkRowClass = css({
 const groupByCategory = (
   checks: ReadonlyArray<CheckResult>
 ): ReadonlyArray<{ category: string; items: ReadonlyArray<CheckResult> }> => {
-  const map = new Map<string, CheckResult[]>()
-  for (const check of checks) {
-    const existing = map.get(check.category)
+  const map = checks.reduce<Map<string, CheckResult[]>>((acc, check) => {
+    const existing = acc.get(check.category)
     if (existing) {
       existing.push(check)
     } else {
-      map.set(check.category, [check])
+      acc.set(check.category, [check])
     }
-  }
+    return acc
+  }, new Map<string, CheckResult[]>())
   return Array.from(map.entries()).map(([category, items]) => ({ category, items }))
 }
 

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { styled } from 'styled-system/jsx'
 import { css } from 'styled-system/css'
 import { button, card } from 'styled-system/recipes'
-import type { SustainabilityReport, Recommendation } from '@/report/types'
+import type { SustainabilityReport, Recommendation, ReportSummary } from '@/report/types'
 import type { CategoryScore } from '@/core/types'
 import type { CheckResultLookupBody } from '@/api/types'
 import { CheckResultsSection } from '@/app/components/CheckResultsSection'
@@ -65,10 +65,55 @@ const sectionHeadingClass = css({
   mb: '3',
 })
 
-const impactDot = (impact: string): string =>
-  impact === 'high' ? '#ef4444' : impact === 'medium' ? '#f59e0b' : '#6b7280'
+const impactColors: Readonly<Record<string, string>> = {
+  high: '#ef4444',
+  medium: '#f59e0b',
+  low: '#6b7280',
+}
+
+const impactDot = (impact: string): string => impactColors[impact] ?? '#6b7280'
+
+/** Static config for the summary count grid — counts are bound at render time. */
+const SUMMARY_CONFIG: ReadonlyArray<{
+  readonly label: string
+  readonly key: keyof ReportSummary
+  readonly color: string
+}> = [
+  { label: 'Passed', key: 'passed', color: '#166534' },
+  { label: 'Failed', key: 'failed', color: '#991b1b' },
+  { label: 'Warnings', key: 'warnings', color: '#92400e' },
+  { label: 'N/A', key: 'notApplicable', color: '#374151' },
+]
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
+
+/** Single summary count cell — extracted to limit inline array in JSX. */
+const SummaryCountCard = ({
+  label,
+  count,
+  color,
+}: {
+  readonly label: string
+  readonly count: number
+  readonly color: string
+}) => (
+  <styled.div
+    role="listitem"
+    p="3"
+    borderWidth="1px"
+    borderColor="border.default"
+    borderRadius="md"
+    bg="bg.subtle"
+    textAlign="center"
+  >
+    <styled.p fontWeight="bold" fontSize="xl" style={{ color }}>
+      {count}
+    </styled.p>
+    <styled.p fontSize="xs" color="fg.muted">
+      {label}
+    </styled.p>
+  </styled.div>
+)
 
 /** Single category score row — extracted to limit JSX nesting depth. */
 const CategoryScoreBar = ({ cat }: { readonly cat: CategoryScore }) => (
@@ -182,29 +227,8 @@ export default async function ResultsIdPage({ params }: PageProps) {
         role="list"
         aria-label="Check summary"
       >
-        {[
-          { label: 'Passed', count: report.summary.passed, color: '#166534' },
-          { label: 'Failed', count: report.summary.failed, color: '#991b1b' },
-          { label: 'Warnings', count: report.summary.warnings, color: '#92400e' },
-          { label: 'N/A', count: report.summary.notApplicable, color: '#374151' },
-        ].map(({ label, count, color }) => (
-          <styled.div
-            key={label}
-            role="listitem"
-            p="3"
-            borderWidth="1px"
-            borderColor="border.default"
-            borderRadius="md"
-            bg="bg.subtle"
-            textAlign="center"
-          >
-            <styled.p fontWeight="bold" fontSize="xl" style={{ color }}>
-              {count}
-            </styled.p>
-            <styled.p fontSize="xs" color="fg.muted">
-              {label}
-            </styled.p>
-          </styled.div>
+        {SUMMARY_CONFIG.map(({ label, key, color }) => (
+          <SummaryCountCard key={label} label={label} count={report.summary[key]} color={color} />
         ))}
       </styled.div>
 

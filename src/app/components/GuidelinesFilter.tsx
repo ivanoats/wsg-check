@@ -176,9 +176,9 @@ export const GuidelinesFilter = ({ guidelines }: GuidelinesFilterProps) => {
             aria-label="Filter by category"
           >
             <option value="">All categories</option>
-            {(['ux', 'web-dev', 'hosting', 'business'] as WSGCategory[]).map((c) => (
-              <option key={c} value={c}>
-                {categoryLabel[c]}
+            {(['ux', 'web-dev', 'hosting', 'business'] as WSGCategory[]).map((catValue) => (
+              <option key={catValue} value={catValue}>
+                {categoryLabel[catValue]}
               </option>
             ))}
           </Field.Select>
@@ -193,11 +193,13 @@ export const GuidelinesFilter = ({ guidelines }: GuidelinesFilterProps) => {
             aria-label="Filter by testability"
           >
             <option value="">All testability</option>
-            {(['automated', 'semi-automated', 'manual-only'] as Testability[]).map((t) => (
-              <option key={t} value={t}>
-                {testabilityLabel[t]}
-              </option>
-            ))}
+            {(['automated', 'semi-automated', 'manual-only'] as Testability[]).map(
+              (testabValue) => (
+                <option key={testabValue} value={testabValue}>
+                  {testabilityLabel[testabValue]}
+                </option>
+              )
+            )}
           </Field.Select>
         </Field.Root>
       </styled.div>
