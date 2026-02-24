@@ -1,3 +1,5 @@
+import { styled } from 'styled-system/jsx'
+import { css } from 'styled-system/css'
 import Link from 'next/link'
 
 /** Navigation item definition */
@@ -37,57 +39,45 @@ const NAV_ITEMS: ReadonlyArray<NavItem> = [
   },
 ]
 
+const navLinkClass = css({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: 'full',
+  gap: '1',
+  color: 'fg.muted',
+  textDecoration: 'none',
+  fontSize: 'xs',
+  /* minimum 48 × 48 px touch target */
+  minH: '12',
+  minW: '12',
+})
+
 /**
  * Thumb-friendly bottom navigation bar for mobile-first layout (WSG 2.5).
  * Placed at the bottom of the viewport so primary actions are within easy reach.
- * Uses a <nav> landmark with an accessible label so screen-reader users can skip to it.
+ * Uses Park UI design tokens for automatic light/dark mode support.
  */
 export const BottomNav = () => (
-  <nav
+  <styled.nav
     aria-label="Main navigation"
-    style={{
-      position: 'fixed',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      height: 'var(--bottom-nav-height)',
-      backgroundColor: 'var(--color-nav-bg)',
-      borderTop: '1px solid var(--color-nav-border)',
-      display: 'flex',
-      alignItems: 'stretch',
-      zIndex: 100,
-    }}
+    position="fixed"
+    bottom="0"
+    left="0"
+    right="0"
+    h="16"
+    bg="bg.default"
+    borderTopWidth="1px"
+    borderColor="border.default"
+    display="flex"
+    alignItems="stretch"
+    zIndex="sticky"
   >
-    <ul
-      role="list"
-      style={{
-        display: 'flex',
-        width: '100%',
-        listStyle: 'none',
-        margin: 0,
-        padding: 0,
-      }}
-    >
+    <styled.ul display="flex" w="full" listStyleType="none" m="0" p="0">
       {NAV_ITEMS.map((item) => (
-        <li key={item.href} style={{ flex: 1 }}>
-          <Link
-            href={item.href}
-            aria-label={item.ariaLabel}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100%',
-              gap: '0.25rem',
-              color: 'var(--color-text-muted)',
-              textDecoration: 'none',
-              fontSize: '0.75rem',
-              /* minimum 48 × 48 px touch target */
-              minHeight: '48px',
-              minWidth: '48px',
-            }}
-          >
+        <styled.li key={item.href} flex="1">
+          <Link href={item.href} aria-label={item.ariaLabel} className={navLinkClass}>
             <svg
               aria-hidden="true"
               focusable="false"
@@ -104,8 +94,8 @@ export const BottomNav = () => (
             </svg>
             <span>{item.label}</span>
           </Link>
-        </li>
+        </styled.li>
       ))}
-    </ul>
-  </nav>
+    </styled.ul>
+  </styled.nav>
 )

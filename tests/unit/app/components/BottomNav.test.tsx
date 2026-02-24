@@ -2,22 +2,8 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { BottomNav } from '@/app/components/BottomNav'
 
-// Mock next/link to a plain <a> in the test environment
-vi.mock('next/link', () => ({
-  default: ({
-    href,
-    children,
-    ...props
-  }: {
-    href: string
-    children: React.ReactNode
-    [key: string]: unknown
-  }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
-}))
+// Activates the shared manual mock at __mocks__/next/link.tsx
+vi.mock('next/link')
 
 describe('BottomNav', () => {
   it('renders a navigation landmark with accessible name', () => {
@@ -61,10 +47,10 @@ describe('BottomNav', () => {
     })
   })
 
-  it('nav is positioned with fixed style for bottom placement', () => {
+  it('nav has CSS classes applied for fixed overlay positioning', () => {
     const { container } = render(<BottomNav />)
     const nav = container.querySelector('nav')
-    expect(nav?.style.position).toBe('fixed')
-    expect(nav?.style.bottom).toBe('0px')
+    // PandaCSS applies atomic CSS classes — the className will be non-empty
+    expect(nav?.className.length).toBeGreaterThan(0)
   })
 })

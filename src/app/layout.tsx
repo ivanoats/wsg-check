@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { styled } from 'styled-system/jsx'
 import { Header } from './components/Header'
 import { BottomNav } from './components/BottomNav'
 
@@ -24,17 +25,14 @@ export default function RootLayout({
         {/* Banner landmark */}
         <Header />
 
-        {/* Main content landmark — padding-bottom clears the fixed bottom nav */}
-        <main
-          id="main-content"
-          tabIndex={-1}
-        {/* Main content container — padding-bottom clears the fixed bottom nav */}
-        <div id="main-content" style={{ paddingBottom: 'var(--bottom-nav-height)' }}>
+        {/* Main content landmark — pb="16" (4 rem) clears the fixed bottom nav.
+            tabIndex={-1} allows the skip link to reliably move focus here. */}
+        <styled.main id="main-content" tabIndex={-1} pb="16">
           {children}
-        </div>
+        </styled.main>
 
-        {/* Contentinfo landmark wraps the bottom navigation */}
-        <footer role="contentinfo">
+        {/* <footer> is implicitly role="contentinfo" when a direct child of <body> */}
+        <footer>
           <BottomNav />
         </footer>
       </body>

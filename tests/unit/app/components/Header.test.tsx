@@ -2,22 +2,8 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { Header } from '@/app/components/Header'
 
-// Mock next/link to a plain <a> in the test environment
-vi.mock('next/link', () => ({
-  default: ({
-    href,
-    children,
-    ...props
-  }: {
-    href: string
-    children: React.ReactNode
-    [key: string]: unknown
-  }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
-}))
+// Activates the shared manual mock at __mocks__/next/link.tsx
+vi.mock('next/link')
 
 describe('Header', () => {
   it('renders a banner landmark', () => {

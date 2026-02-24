@@ -24,6 +24,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      'styled-system/css': path.resolve(__dirname, './styled-system/css'),
+      'styled-system/jsx': path.resolve(__dirname, './styled-system/jsx'),
+      'styled-system/patterns': path.resolve(__dirname, './styled-system/patterns'),
+      'styled-system/recipes': path.resolve(__dirname, './styled-system/recipes'),
+      'styled-system/tokens': path.resolve(__dirname, './styled-system/tokens'),
+      'styled-system/types': path.resolve(__dirname, './styled-system/types'),
     },
   },
 })

@@ -1,34 +1,32 @@
+import { styled } from 'styled-system/jsx'
+import { css } from 'styled-system/css'
 import Link from 'next/link'
+
+const homeLinkClass = css({
+  color: 'fg.default',
+  textDecoration: 'none',
+  fontWeight: 'bold',
+  fontSize: 'lg',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '2',
+})
 
 /**
  * Minimal, distraction-free site header (WSG 2.6).
- * Rendered as a landmark <header> so screen readers can navigate directly to it.
+ * Uses Park UI design tokens for automatic light/dark mode support.
  */
 export const Header = () => (
-  <header
-    role="banner"
-    style={{
-      backgroundColor: 'var(--color-nav-bg)',
-      borderBottom: '1px solid var(--color-nav-border)',
-      padding: '0 1rem',
-      height: '3.5rem',
-      display: 'flex',
-      alignItems: 'center',
-    }}
+  <styled.header
+    bg="bg.default"
+    borderBottomWidth="1px"
+    borderColor="border.default"
+    px="4"
+    h="14"
+    display="flex"
+    alignItems="center"
   >
-    <Link
-      href="/"
-      aria-label="WSG Check — home"
-      style={{
-        color: 'var(--color-text)',
-        textDecoration: 'none',
-        fontWeight: 700,
-        fontSize: '1.125rem',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-      }}
-    >
+    <Link href="/" aria-label="WSG Check — home" className={homeLinkClass}>
       {/* inline SVG leaf icon — no external image request */}
       <svg
         aria-hidden="true"
@@ -37,7 +35,7 @@ export const Header = () => (
         height="24"
         viewBox="0 0 24 24"
         fill="none"
-        stroke="var(--color-accent)"
+        stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -47,5 +45,5 @@ export const Header = () => (
       </svg>
       WSG Check
     </Link>
-  </header>
+  </styled.header>
 )
