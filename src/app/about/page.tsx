@@ -141,8 +141,8 @@ export default function AboutPage() {
           role="list"
           aria-label="Grade scale"
         >
-          {GRADE_SCALE.map(({ grade, range, color }) => (
-            <GradeScaleItem key={grade} grade={grade} range={range} color={color} />
+          {GRADE_SCALE.map(({ grade, range, bg, fg }) => (
+            <GradeScaleItem key={grade} grade={grade} range={range} bg={bg} fg={fg} />
           ))}
         </styled.div>
       </styled.section>
