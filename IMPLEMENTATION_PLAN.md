@@ -520,34 +520,34 @@ wsg-check --version
 
 #### Home / Check Page (`/`)
 
-- [ ] URL input form with validation (WSG 2.15)
-- [ ] Quick-start guide / instructions
-- [ ] Recent checks history (stored in `localStorage`)
-- [ ] 48px+ touch targets, one-handed reachability
+- [x] URL input form with validation (WSG 2.15)
+- [x] Quick-start guide / instructions
+- [x] Recent checks history (stored in `localStorage`)
+- [x] 48px+ touch targets, one-handed reachability
 
 #### Results Page (`/results/:id`)
 
-- [ ] Overall sustainability score with grade badge
-- [ ] Category breakdown (radar chart or bar chart)
-- [ ] Expandable/collapsible check results grouped by category
-- [ ] Pass/fail/warn visual indicators
-- [ ] Recommendations section prioritized by impact
-- [ ] Export options: JSON, Markdown, PDF
-- [ ] Share/link to results
+- [x] Overall sustainability score with grade badge
+- [x] Category breakdown (progress bars)
+- [x] Expandable/collapsible check results grouped by category
+- [x] Pass/fail/warn visual indicators
+- [x] Recommendations section prioritized by impact
+- [x] Export options: JSON
+- [x] Share/link to results
 
 #### Guidelines Reference (`/guidelines`)
 
-- [ ] Browsable list of all WSG guidelines
-- [ ] Filter by category, machine-testability, impact
-- [ ] Each guideline shows: description, success criteria, check status
-- [ ] Link to official W3C WSG source
+- [x] Browsable list of all WSG guidelines
+- [x] Filter by category, machine-testability, impact
+- [x] Each guideline shows: description, success criteria, check status
+- [x] Link to official W3C WSG source
 
 #### About Page (`/about`)
 
-- [ ] Project purpose and methodology
-- [ ] How scoring works
-- [ ] Sustainability statement
-- [ ] Links to WSG specification
+- [x] Project purpose and methodology
+- [x] How scoring works
+- [x] Sustainability statement
+- [x] Links to WSG specification
 
 ### 9.3 Accessibility & Performance
 
