@@ -28,10 +28,10 @@ export default function RootLayout({
         <main
           id="main-content"
           tabIndex={-1}
-          style={{ paddingBottom: 'var(--bottom-nav-height)' }}
-        >
+        {/* Main content container — padding-bottom clears the fixed bottom nav */}
+        <div id="main-content" style={{ paddingBottom: 'var(--bottom-nav-height)' }}>
           {children}
-        </main>
+        </div>
 
         {/* Contentinfo landmark wraps the bottom navigation */}
         <footer role="contentinfo">
