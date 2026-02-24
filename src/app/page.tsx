@@ -66,7 +66,7 @@ const HOW_IT_WORKS_STEPS = [
 
 export default function Home() {
   return (
-    <styled.section aria-labelledby="home-heading" px="4" py="6" maxW="2xl" mx="auto">
+    <styled.section aria-labelledby="home-heading" px="6" py="8" maxW="2xl" mx="auto">
       <styled.h1
         id="home-heading"
         fontSize={{ base: '2xl', md: '3xl' }}
