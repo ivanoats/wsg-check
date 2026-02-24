@@ -65,6 +65,52 @@ const saveRecent = (url: string): void => {
   }
 }
 
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+interface UrlFieldInputProps {
+  readonly value: string
+  readonly error: string
+  readonly isLoading: boolean
+  readonly onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+}
+
+/** Field.Root + label + input + error text — extracted to limit JSX depth. */
+const UrlFieldInput = ({ value, error, isLoading, onChange }: UrlFieldInputProps) => (
+  <Field.Root invalid={Boolean(error)} className={css({ flex: '1' })}>
+    <Field.Label className={css({ srOnly: true })}>Website URL</Field.Label>
+    <Field.Input
+      type="url"
+      autoComplete="url"
+      placeholder="https://example.com"
+      value={value}
+      onChange={onChange}
+      disabled={isLoading}
+      className={styles.input}
+    />
+    <Field.ErrorText className={styles.errorText}>{error}</Field.ErrorText>
+  </Field.Root>
+)
+
+interface RecentCheckButtonProps {
+  readonly url: string
+  readonly onSelect: (url: string) => Promise<void>
+}
+
+/** Single recent-check button — extracted to avoid arrow functions and void in JSX. */
+const RecentCheckButton = ({ url, onSelect }: RecentCheckButtonProps) => {
+  const handleClick = useCallback(async () => {
+    await onSelect(url)
+  }, [url, onSelect])
+
+  return (
+    <button type="button" className={recentButtonClass} onClick={handleClick}>
+      {url}
+    </button>
+  )
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
 /**
  * URL input form for the Home / Check page (WSG 2.15).
  *
@@ -131,26 +177,27 @@ export const UrlInputForm = () => {
     [value, handleSubmit]
   )
 
+  const onUrlChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setValue(e.target.value)
+      if (error) setError('')
+    },
+    [error]
+  )
+
+  const handleRecentSelect = useCallback(
+    async (recentUrl: string) => {
+      setValue(recentUrl)
+      await handleSubmit(recentUrl)
+    },
+    [handleSubmit]
+  )
+
   return (
     <styled.div display="flex" flexDirection="column" gap="4">
       <form onSubmit={onFormSubmit} noValidate aria-label="Sustainability check form">
         <styled.div display="flex" gap="2" alignItems="flex-start">
-          <Field.Root invalid={!!error} className={css({ flex: '1' })}>
-            <Field.Label className={css({ srOnly: true })}>Website URL</Field.Label>
-            <Field.Input
-              type="url"
-              autoComplete="url"
-              placeholder="https://example.com"
-              value={value}
-              onChange={(e) => {
-                setValue(e.target.value)
-                if (error) setError('')
-              }}
-              disabled={isLoading}
-              className={styles.input}
-            />
-            <Field.ErrorText className={styles.errorText}>{error}</Field.ErrorText>
-          </Field.Root>
+          <UrlFieldInput value={value} error={error} isLoading={isLoading} onChange={onUrlChange} />
           <button
             type="submit"
             disabled={isLoading}
@@ -170,16 +217,7 @@ export const UrlInputForm = () => {
           <styled.ul listStyleType="none" m="0" p="0" display="flex" flexDirection="column" gap="1">
             {recent.map((url) => (
               <li key={url}>
-                <button
-                  type="button"
-                  className={recentButtonClass}
-                  onClick={() => {
-                    setValue(url)
-                    void handleSubmit(url)
-                  }}
-                >
-                  {url}
-                </button>
+                <RecentCheckButton url={url} onSelect={handleRecentSelect} />
               </li>
             ))}
           </styled.ul>

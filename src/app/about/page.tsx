@@ -21,6 +21,58 @@ const sectionHeadingClass = css({
   mb: '3',
 })
 
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+interface GradeScaleItemProps {
+  readonly grade: string
+  readonly range: string
+  readonly color: string
+}
+
+/** Single grade-scale card — extracted to limit JSX nesting depth. */
+const GradeScaleItem = ({ grade, range, color }: GradeScaleItemProps) => (
+  <styled.div
+    role="listitem"
+    className={cardStyles.root}
+    display="flex"
+    gap="3"
+    alignItems="center"
+  >
+    <styled.span
+      display="inline-flex"
+      alignItems="center"
+      justifyContent="center"
+      w="10"
+      h="10"
+      borderRadius="full"
+      fontWeight="bold"
+      fontSize="lg"
+      color="white"
+      flexShrink="0"
+      style={{ backgroundColor: color }}
+      aria-hidden="true"
+    >
+      {grade}
+    </styled.span>
+    <styled.div>
+      <styled.p fontWeight="semibold" fontSize="sm" color="fg.default">
+        Grade {grade}
+      </styled.p>
+      <styled.p fontSize="xs" color="fg.muted">
+        Score {range}
+      </styled.p>
+    </styled.div>
+  </styled.div>
+)
+
+const GRADE_SCALE = [
+  { grade: 'A', range: '90–100', color: '#166534' },
+  { grade: 'B', range: '75–89', color: '#1e40af' },
+  { grade: 'C', range: '60–74', color: '#92400e' },
+  { grade: 'D', range: '45–59', color: '#b45309' },
+  { grade: 'F', range: '0–44', color: '#991b1b' },
+] as const
+
 export default function AboutPage() {
   return (
     <styled.section aria-labelledby="about-heading" px="4" py="6" maxW="2xl" mx="auto">
@@ -90,46 +142,8 @@ export default function AboutPage() {
           role="list"
           aria-label="Grade scale"
         >
-          {[
-            { grade: 'A', range: '90–100', color: '#166534' },
-            { grade: 'B', range: '75–89', color: '#1e40af' },
-            { grade: 'C', range: '60–74', color: '#92400e' },
-            { grade: 'D', range: '45–59', color: '#b45309' },
-            { grade: 'F', range: '0–44', color: '#991b1b' },
-          ].map(({ grade, range, color }) => (
-            <styled.div
-              key={grade}
-              role="listitem"
-              className={cardStyles.root}
-              display="flex"
-              gap="3"
-              alignItems="center"
-            >
-              <styled.span
-                display="inline-flex"
-                alignItems="center"
-                justifyContent="center"
-                w="10"
-                h="10"
-                borderRadius="full"
-                fontWeight="bold"
-                fontSize="lg"
-                color="white"
-                flexShrink="0"
-                style={{ backgroundColor: color }}
-                aria-hidden="true"
-              >
-                {grade}
-              </styled.span>
-              <styled.div>
-                <styled.p fontWeight="semibold" fontSize="sm" color="fg.default">
-                  Grade {grade}
-                </styled.p>
-                <styled.p fontSize="xs" color="fg.muted">
-                  Score {range}
-                </styled.p>
-              </styled.div>
-            </styled.div>
+          {GRADE_SCALE.map(({ grade, range, color }) => (
+            <GradeScaleItem key={grade} grade={grade} range={range} color={color} />
           ))}
         </styled.div>
       </styled.section>

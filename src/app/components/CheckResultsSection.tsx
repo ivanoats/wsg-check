@@ -61,6 +61,39 @@ const groupByCategory = (
 
 const collapsibleStyles = collapsible()
 
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+/** Single check result row — extracted to limit JSX nesting depth. */
+const CheckRow = ({ check }: { readonly check: CheckResult }) => (
+  <styled.li role="listitem" className={checkRowClass}>
+    <styled.div display="flex" gap="3" alignItems="flex-start">
+      <span
+        className={badge({ variant: 'solid', size: 'sm' })}
+        style={{ backgroundColor: statusColor[check.status] ?? '#6b7280', flexShrink: 0 }}
+        aria-label={`Status: ${statusLabel[check.status] ?? check.status}`}
+      >
+        {statusLabel[check.status] ?? check.status}
+      </span>
+      <styled.div flex="1">
+        <styled.p fontSize="sm" fontWeight="medium" color="fg.default">
+          {check.guidelineName}{' '}
+          <styled.span color="fg.muted" fontSize="xs">
+            ({check.guidelineId})
+          </styled.span>
+        </styled.p>
+        <styled.p fontSize="sm" color="fg.muted" mt="0.5">
+          {check.message}
+        </styled.p>
+        {check.details && (
+          <styled.p fontSize="xs" color="fg.muted" mt="0.5" fontStyle="italic">
+            {check.details}
+          </styled.p>
+        )}
+      </styled.div>
+    </styled.div>
+  </styled.li>
+)
+
 const CategoryGroup = ({
   category,
   items,
@@ -99,10 +132,7 @@ const CategoryGroup = ({
             <styled.span style={{ color: statusColor.warn }}>⚠ {warnCount}</styled.span>
           )}
           <Collapsible.Indicator
-            style={{
-              display: 'inline-block',
-              transition: 'transform 0.2s',
-            }}
+            style={{ display: 'inline-block', transition: 'transform 0.2s' }}
             className={css({ '[data-state=open] &': { transform: 'rotate(180deg)' } })}
           >
             <span aria-hidden="true">▼</span>
@@ -118,40 +148,16 @@ const CategoryGroup = ({
           role="list"
           aria-label={`${category} check results`}
         >
-          {items.map((check, i) => (
-            <styled.li key={`${check.guidelineId}-${i}`} role="listitem" className={checkRowClass}>
-              <styled.div display="flex" gap="3" alignItems="flex-start">
-                <span
-                  className={badge({ variant: 'solid', size: 'sm' })}
-                  style={{ backgroundColor: statusColor[check.status] ?? '#6b7280', flexShrink: 0 }}
-                  aria-label={`Status: ${statusLabel[check.status] ?? check.status}`}
-                >
-                  {statusLabel[check.status] ?? check.status}
-                </span>
-                <styled.div flex="1">
-                  <styled.p fontSize="sm" fontWeight="medium" color="fg.default">
-                    {check.guidelineName}{' '}
-                    <styled.span color="fg.muted" fontSize="xs">
-                      ({check.guidelineId})
-                    </styled.span>
-                  </styled.p>
-                  <styled.p fontSize="sm" color="fg.muted" mt="0.5">
-                    {check.message}
-                  </styled.p>
-                  {check.details && (
-                    <styled.p fontSize="xs" color="fg.muted" mt="0.5" fontStyle="italic">
-                      {check.details}
-                    </styled.p>
-                  )}
-                </styled.div>
-              </styled.div>
-            </styled.li>
+          {items.map((check) => (
+            <CheckRow key={check.guidelineId} check={check} />
           ))}
         </styled.ul>
       </Collapsible.Content>
     </Collapsible.Root>
   )
 }
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 /**
  * Expandable/collapsible check results grouped by WSG category.

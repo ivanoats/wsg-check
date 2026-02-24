@@ -5,7 +5,8 @@ import { styled } from 'styled-system/jsx'
 import { css } from 'styled-system/css'
 import { button } from 'styled-system/recipes'
 import { card } from 'styled-system/recipes'
-import type { SustainabilityReport } from '@/report/types'
+import type { SustainabilityReport, Recommendation } from '@/report/types'
+import type { CategoryScore } from '@/core/types'
 import type { CheckResultLookupBody } from '@/api/types'
 import { CheckResultsSection } from '@/app/components/CheckResultsSection'
 
@@ -67,6 +68,72 @@ const sectionHeadingClass = css({
 
 const impactDot = (impact: string): string =>
   impact === 'high' ? '#ef4444' : impact === 'medium' ? '#f59e0b' : '#6b7280'
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+/** Single category score row — extracted to limit JSX nesting depth. */
+const CategoryScoreBar = ({ cat }: { readonly cat: CategoryScore }) => (
+  <styled.div className={cardStyles.root}>
+    <styled.div display="flex" justifyContent="space-between" alignItems="center" mb="1">
+      <styled.span fontSize="sm" fontWeight="medium" color="fg.default">
+        {cat.category.toUpperCase()}
+      </styled.span>
+      <styled.span fontSize="sm" fontWeight="bold" color="fg.default">
+        {cat.score}/100
+      </styled.span>
+    </styled.div>
+    <styled.div
+      h="2"
+      borderRadius="full"
+      bg="border.default"
+      overflow="hidden"
+      role="progressbar"
+      aria-valuenow={cat.score}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label={`${cat.category} score: ${cat.score} out of 100`}
+    >
+      <styled.div
+        h="full"
+        borderRadius="full"
+        style={{
+          width: `${cat.score}%`,
+          backgroundColor: cat.score >= 75 ? '#166534' : cat.score >= 50 ? '#92400e' : '#991b1b',
+        }}
+      />
+    </styled.div>
+  </styled.div>
+)
+
+/** Single recommendation card — extracted to limit JSX nesting depth. */
+const RecommendationItem = ({ rec }: { readonly rec: Recommendation }) => (
+  <styled.li className={cardStyles.root}>
+    <styled.div display="flex" gap="2" alignItems="flex-start">
+      <styled.span
+        w="2"
+        h="2"
+        borderRadius="full"
+        mt="1.5"
+        flexShrink="0"
+        style={{ backgroundColor: impactDot(rec.impact) }}
+        aria-label={`${rec.impact} impact`}
+      />
+      <styled.div flex="1">
+        <styled.p fontWeight="semibold" fontSize="sm" color="fg.default" mb="0.5">
+          {rec.guidelineName}{' '}
+          <styled.span color="fg.muted" fontSize="xs">
+            ({rec.guidelineId})
+          </styled.span>
+        </styled.p>
+        <styled.p fontSize="sm" color="fg.muted">
+          {rec.recommendation}
+        </styled.p>
+      </styled.div>
+    </styled.div>
+  </styled.li>
+)
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function ResultsIdPage({ params }: PageProps) {
   const { id } = await params
@@ -150,43 +217,7 @@ export default async function ResultsIdPage({ params }: PageProps) {
           </h2>
           <styled.div display="flex" flexDirection="column" gap="2">
             {report.categories.map((cat) => (
-              <styled.div key={cat.category} className={cardStyles.root}>
-                <styled.div
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  mb="1"
-                >
-                  <styled.span fontSize="sm" fontWeight="medium" color="fg.default">
-                    {cat.category.toUpperCase()}
-                  </styled.span>
-                  <styled.span fontSize="sm" fontWeight="bold" color="fg.default">
-                    {cat.score}/100
-                  </styled.span>
-                </styled.div>
-                {/* Progress bar */}
-                <styled.div
-                  h="2"
-                  borderRadius="full"
-                  bg="border.default"
-                  overflow="hidden"
-                  role="progressbar"
-                  aria-valuenow={cat.score}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-label={`${cat.category} score: ${cat.score} out of 100`}
-                >
-                  <styled.div
-                    h="full"
-                    borderRadius="full"
-                    style={{
-                      width: `${cat.score}%`,
-                      backgroundColor:
-                        cat.score >= 75 ? '#166534' : cat.score >= 50 ? '#92400e' : '#991b1b',
-                    }}
-                  />
-                </styled.div>
-              </styled.div>
+              <CategoryScoreBar key={cat.category} cat={cat} />
             ))}
           </styled.div>
         </styled.section>
@@ -199,31 +230,8 @@ export default async function ResultsIdPage({ params }: PageProps) {
             Recommendations
           </h2>
           <styled.ol listStyleType="none" m="0" p="0" display="flex" flexDirection="column" gap="3">
-            {report.recommendations.map((rec, i) => (
-              <styled.li key={`${rec.guidelineId}-${i}`} className={cardStyles.root}>
-                <styled.div display="flex" gap="2" alignItems="flex-start">
-                  <styled.span
-                    w="2"
-                    h="2"
-                    borderRadius="full"
-                    mt="1.5"
-                    flexShrink="0"
-                    style={{ backgroundColor: impactDot(rec.impact) }}
-                    aria-label={`${rec.impact} impact`}
-                  />
-                  <styled.div flex="1">
-                    <styled.p fontWeight="semibold" fontSize="sm" color="fg.default" mb="0.5">
-                      {rec.guidelineName}{' '}
-                      <styled.span color="fg.muted" fontSize="xs">
-                        ({rec.guidelineId})
-                      </styled.span>
-                    </styled.p>
-                    <styled.p fontSize="sm" color="fg.muted">
-                      {rec.recommendation}
-                    </styled.p>
-                  </styled.div>
-                </styled.div>
-              </styled.li>
+            {report.recommendations.map((rec) => (
+              <RecommendationItem key={rec.guidelineId} rec={rec} />
             ))}
           </styled.ol>
         </styled.section>
