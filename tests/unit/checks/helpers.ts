@@ -15,11 +15,10 @@ import { expect } from 'vitest'
  */
 const assertNonEmptyStringArray: (value: unknown) => asserts value is string[] = (value) => {
   expect(value).toBeDefined()
-  expect(value).toBeInstanceOf(Array)
-  // Array.isArray narrows the type so we can access .length without a cast
-  if (Array.isArray(value)) {
-    expect(value.length).toBeGreaterThan(0)
+  if (!Array.isArray(value)) {
+    throw new Error('Expected value to be an array')
   }
+  expect(value.length).toBeGreaterThan(0)
 }
 
 /**
