@@ -61,6 +61,26 @@ const collapsibleStyles = collapsible()
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
+/** Check details text — extracted for clarity. */
+const CheckDetails = ({ check }: { readonly check: CheckResult }) => (
+  <styled.div flex="1">
+    <styled.p fontSize="sm" fontWeight="medium" color="fg.default">
+      {check.guidelineName}{' '}
+      <styled.span color="fg.subtle" fontSize="xs">
+        ({check.guidelineId})
+      </styled.span>
+    </styled.p>
+    <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed" mt="0.5">
+      {check.message}
+    </styled.p>
+    {check.details && (
+      <styled.p fontSize="xs" color="fg.subtle" mt="0.5" fontStyle="italic">
+        {check.details}
+      </styled.p>
+    )}
+  </styled.div>
+)
+
 /** Single check result row — extracted to limit JSX nesting depth. */
 const CheckRow = ({ check }: { readonly check: CheckResult }) => (
   <styled.li role="listitem" className={checkRowClass}>
@@ -74,24 +94,32 @@ const CheckRow = ({ check }: { readonly check: CheckResult }) => (
       >
         {statusLabel[check.status] ?? check.status}
       </styled.span>
-      <styled.div flex="1">
-        <styled.p fontSize="sm" fontWeight="medium" color="fg.default">
-          {check.guidelineName}{' '}
-          <styled.span color="fg.subtle" fontSize="xs">
-            ({check.guidelineId})
-          </styled.span>
-        </styled.p>
-        <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed" mt="0.5">
-          {check.message}
-        </styled.p>
-        {check.details && (
-          <styled.p fontSize="xs" color="fg.subtle" mt="0.5" fontStyle="italic">
-            {check.details}
-          </styled.p>
-        )}
-      </styled.div>
+      <CheckDetails check={check} />
     </styled.div>
   </styled.li>
+)
+
+/** Category summary counts — extracted for clarity. */
+const CategorySummary = ({
+  passCount,
+  failCount,
+  warnCount,
+}: {
+  readonly passCount: number
+  readonly failCount: number
+  readonly warnCount: number
+}) => (
+  <styled.span display="flex" gap="2" alignItems="center" fontSize="xs" color="fg.subtle">
+    <styled.span color="green.9">✓ {passCount}</styled.span>
+    {failCount > 0 && <styled.span color="red.9">✗ {failCount}</styled.span>}
+    {warnCount > 0 && <styled.span color="amber.9">⚠ {warnCount}</styled.span>}
+    <Collapsible.Indicator
+      style={{ display: 'inline-block', transition: 'transform 0.2s' }}
+      className={css({ '[data-state=open] &': { transform: 'rotate(180deg)' } })}
+    >
+      <span aria-hidden="true">▼</span>
+    </Collapsible.Indicator>
+  </styled.span>
 )
 
 const CategoryGroup = ({
@@ -123,17 +151,7 @@ const CategoryGroup = ({
         <styled.span textTransform="uppercase" fontWeight="semibold">
           {category}
         </styled.span>
-        <styled.span display="flex" gap="2" alignItems="center" fontSize="xs" color="fg.subtle">
-          <styled.span color="green.9">✓ {passCount}</styled.span>
-          {failCount > 0 && <styled.span color="red.9">✗ {failCount}</styled.span>}
-          {warnCount > 0 && <styled.span color="amber.9">⚠ {warnCount}</styled.span>}
-          <Collapsible.Indicator
-            style={{ display: 'inline-block', transition: 'transform 0.2s' }}
-            className={css({ '[data-state=open] &': { transform: 'rotate(180deg)' } })}
-          >
-            <span aria-hidden="true">▼</span>
-          </Collapsible.Indicator>
-        </styled.span>
+        <CategorySummary passCount={passCount} failCount={failCount} warnCount={warnCount} />
       </Collapsible.Trigger>
 
       <Collapsible.Content className={collapsibleStyles.content}>

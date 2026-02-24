@@ -115,6 +115,58 @@ const SummaryCountCard = ({
   </styled.div>
 )
 
+/** Report header with grade badge and score. */
+const ReportHeader = ({
+  grade,
+  score,
+  url,
+}: {
+  readonly grade: string
+  readonly score: number
+  readonly url: string
+}) => (
+  <styled.div display="flex" gap="4" alignItems="center" mb="6">
+    <styled.div
+      className={gradeBadgeClass}
+      bg={gradeColors[grade]?.bg ?? 'gray.7'}
+      color={gradeColors[grade]?.fg ?? 'white'}
+      aria-label={`Grade ${grade}`}
+    >
+      {grade}
+    </styled.div>
+    <styled.div>
+      <styled.h1
+        id="results-heading"
+        fontSize={{ base: 'xl', md: '2xl' }}
+        fontWeight="bold"
+        color="fg.default"
+        mb="1"
+      >
+        Score: {score}/100
+      </styled.h1>
+      <styled.p fontSize="sm" color="fg.subtle" style={{ wordBreak: 'break-all' }}>
+        {url}
+      </styled.p>
+    </styled.div>
+  </styled.div>
+)
+
+/** Summary counts grid. */
+const SummarySection = ({ summary }: { readonly summary: ReportSummary }) => (
+  <styled.div
+    display="grid"
+    gridTemplateColumns="repeat(4, 1fr)"
+    gap="3"
+    mb="6"
+    role="list"
+    aria-label="Check summary"
+  >
+    {SUMMARY_CONFIG.map(({ label, key, colorToken }) => (
+      <SummaryCountCard key={label} label={label} count={summary[key]} colorToken={colorToken} />
+    ))}
+  </styled.div>
+)
+
 /** Single category score row — extracted to limit JSX nesting depth. */
 const CategoryScoreBar = ({ cat }: { readonly cat: CategoryScore }) => {
   const barColor = cat.score >= 75 ? 'green.9' : cat.score >= 50 ? 'amber.9' : 'red.9'
@@ -142,6 +194,27 @@ const CategoryScoreBar = ({ cat }: { readonly cat: CategoryScore }) => {
         <styled.div h="full" borderRadius="full" bg={barColor} width={`${cat.score}%`} />
       </styled.div>
     </styled.div>
+  )
+}
+
+/** Category breakdown section. */
+const CategoryScoresSection = ({
+  categories,
+}: {
+  readonly categories: ReadonlyArray<CategoryScore>
+}) => {
+  if (categories.length === 0) return null
+  return (
+    <styled.section aria-labelledby="categories-heading" mb="6">
+      <h2 id="categories-heading" className={sectionHeadingClass}>
+        Category Scores
+      </h2>
+      <styled.div display="flex" flexDirection="column" gap="2">
+        {categories.map((cat) => (
+          <CategoryScoreBar key={cat.category} cat={cat} />
+        ))}
+      </styled.div>
+    </styled.section>
   )
 }
 
@@ -173,6 +246,89 @@ const RecommendationItem = ({ rec }: { readonly rec: Recommendation }) => (
   </styled.li>
 )
 
+/** Recommendations section. */
+const RecommendationsSection = ({
+  recommendations,
+}: {
+  readonly recommendations: ReadonlyArray<Recommendation>
+}) => {
+  if (recommendations.length === 0) return null
+  return (
+    <styled.section aria-labelledby="recommendations-heading" mb="6">
+      <h2 id="recommendations-heading" className={sectionHeadingClass}>
+        Recommendations
+      </h2>
+      <styled.ol listStyleType="none" m="0" p="0" display="flex" flexDirection="column" gap="3">
+        {recommendations.map((rec) => (
+          <RecommendationItem key={rec.guidelineId} rec={rec} />
+        ))}
+      </styled.ol>
+    </styled.section>
+  )
+}
+
+/** Export and share section. */
+const ExportSection = ({ id }: { readonly id: string }) => (
+  <styled.section aria-labelledby="export-heading" mt="6">
+    <h2 id="export-heading" className={sectionHeadingClass}>
+      Export &amp; Share
+    </h2>
+    <styled.div display="flex" gap="3" flexWrap="wrap">
+      <a
+        href={`/api/check/${id}`}
+        download={`wsg-report-${id}.json`}
+        className={button({ variant: 'outline', size: 'sm' })}
+      >
+        Download JSON
+      </a>
+      <a
+        href={`/api/check/${id}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={button({ variant: 'ghost', size: 'sm' })}
+        aria-label="View JSON (opens in new tab)"
+      >
+        View JSON
+      </a>
+    </styled.div>
+    <styled.p fontSize="xs" color="fg.subtle" mt="3">
+      Share this result:{' '}
+      <styled.code
+        fontSize="xs"
+        px="1"
+        py="0.5"
+        borderRadius="sm"
+        bg="bg.subtle"
+        color="fg.default"
+        style={{ wordBreak: 'break-all' }}
+      >
+        {`/results/${id}`}
+      </styled.code>
+    </styled.p>
+  </styled.section>
+)
+
+/** Methodology note section. */
+const MethodologySection = ({
+  methodology,
+}: {
+  readonly methodology: { readonly disclaimer: string; readonly coreWebVitalsNote?: string }
+}) => (
+  <styled.section aria-labelledby="methodology-heading" mt="6">
+    <h2 id="methodology-heading" className={sectionHeadingClass}>
+      Methodology
+    </h2>
+    <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed">
+      {methodology.disclaimer}
+    </styled.p>
+    {methodology.coreWebVitalsNote && (
+      <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed" mt="2">
+        {methodology.coreWebVitalsNote}
+      </styled.p>
+    )}
+  </styled.section>
+)
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function ResultsIdPage({ params }: PageProps) {
@@ -189,135 +345,13 @@ export default async function ResultsIdPage({ params }: PageProps) {
         </Link>
       </styled.div>
 
-      {/* Header: score + grade */}
-      <styled.div display="flex" gap="4" alignItems="center" mb="6">
-        <styled.div
-          className={gradeBadgeClass}
-          bg={gradeColors[report.grade]?.bg ?? 'gray.7'}
-          color={gradeColors[report.grade]?.fg ?? 'white'}
-          aria-label={`Grade ${report.grade}`}
-        >
-          {report.grade}
-        </styled.div>
-        <styled.div>
-          <styled.h1
-            id="results-heading"
-            fontSize={{ base: 'xl', md: '2xl' }}
-            fontWeight="bold"
-            color="fg.default"
-            mb="1"
-          >
-            Score: {report.overallScore}/100
-          </styled.h1>
-          <styled.p fontSize="sm" color="fg.subtle" style={{ wordBreak: 'break-all' }}>
-            {report.url}
-          </styled.p>
-        </styled.div>
-      </styled.div>
-
-      {/* Summary counts */}
-      <styled.div
-        display="grid"
-        gridTemplateColumns="repeat(4, 1fr)"
-        gap="3"
-        mb="6"
-        role="list"
-        aria-label="Check summary"
-      >
-        {SUMMARY_CONFIG.map(({ label, key, colorToken }) => (
-          <SummaryCountCard
-            key={label}
-            label={label}
-            count={report.summary[key]}
-            colorToken={colorToken}
-          />
-        ))}
-      </styled.div>
-
-      {/* Category breakdown */}
-      {report.categories.length > 0 && (
-        <styled.section aria-labelledby="categories-heading" mb="6">
-          <h2 id="categories-heading" className={sectionHeadingClass}>
-            Category Scores
-          </h2>
-          <styled.div display="flex" flexDirection="column" gap="2">
-            {report.categories.map((cat) => (
-              <CategoryScoreBar key={cat.category} cat={cat} />
-            ))}
-          </styled.div>
-        </styled.section>
-      )}
-
-      {/* Recommendations */}
-      {report.recommendations.length > 0 && (
-        <styled.section aria-labelledby="recommendations-heading" mb="6">
-          <h2 id="recommendations-heading" className={sectionHeadingClass}>
-            Recommendations
-          </h2>
-          <styled.ol listStyleType="none" m="0" p="0" display="flex" flexDirection="column" gap="3">
-            {report.recommendations.map((rec) => (
-              <RecommendationItem key={rec.guidelineId} rec={rec} />
-            ))}
-          </styled.ol>
-        </styled.section>
-      )}
-
-      {/* Check results (grouped by category) */}
+      <ReportHeader grade={report.grade} score={report.overallScore} url={report.url} />
+      <SummarySection summary={report.summary} />
+      <CategoryScoresSection categories={report.categories} />
+      <RecommendationsSection recommendations={report.recommendations} />
       <CheckResultsSection checks={report.checks} />
-
-      {/* Export & share */}
-      <styled.section aria-labelledby="export-heading" mt="6">
-        <h2 id="export-heading" className={sectionHeadingClass}>
-          Export &amp; Share
-        </h2>
-        <styled.div display="flex" gap="3" flexWrap="wrap">
-          <a
-            href={`/api/check/${id}`}
-            download={`wsg-report-${id}.json`}
-            className={button({ variant: 'outline', size: 'sm' })}
-          >
-            Download JSON
-          </a>
-          <a
-            href={`/api/check/${id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={button({ variant: 'ghost', size: 'sm' })}
-            aria-label="View JSON (opens in new tab)"
-          >
-            View JSON
-          </a>
-        </styled.div>
-        <styled.p fontSize="xs" color="fg.subtle" mt="3">
-          Share this result:{' '}
-          <styled.code
-            fontSize="xs"
-            px="1"
-            py="0.5"
-            borderRadius="sm"
-            bg="bg.subtle"
-            color="fg.default"
-            style={{ wordBreak: 'break-all' }}
-          >
-            {`/results/${id}`}
-          </styled.code>
-        </styled.p>
-      </styled.section>
-
-      {/* Methodology note */}
-      <styled.section aria-labelledby="methodology-heading" mt="6">
-        <h2 id="methodology-heading" className={sectionHeadingClass}>
-          Methodology
-        </h2>
-        <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed">
-          {report.methodology.disclaimer}
-        </styled.p>
-        {report.methodology.coreWebVitalsNote && (
-          <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed" mt="2">
-            {report.methodology.coreWebVitalsNote}
-          </styled.p>
-        )}
-      </styled.section>
+      <ExportSection id={id} />
+      <MethodologySection methodology={report.methodology} />
     </styled.section>
   )
 }

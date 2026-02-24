@@ -54,6 +54,106 @@ const matchesFilters = (
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
+interface FilterControlsProps {
+  readonly search: string
+  readonly category: WSGCategory | ''
+  readonly testability: Testability | ''
+  readonly onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  readonly onCategoryChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+  readonly onTestabilityChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+}
+
+/** Filter controls section — search, category, and testability dropdowns. */
+const FilterControls = ({
+  search,
+  category,
+  testability,
+  onSearchChange,
+  onCategoryChange,
+  onTestabilityChange,
+}: FilterControlsProps) => (
+  <styled.div display="flex" flexWrap="wrap" gap="3" role="search" aria-label="Filter guidelines">
+    <Field.Root className={css({ flex: '1', minW: '40' })}>
+      <Field.Label className={css({ srOnly: true })}>Search guidelines</Field.Label>
+      <Field.Input
+        type="search"
+        placeholder="Search guidelines…"
+        value={search}
+        onChange={onSearchChange}
+        className={fieldStyles.input}
+        aria-label="Search guidelines"
+      />
+    </Field.Root>
+
+    <Field.Root>
+      <Field.Label className={css({ srOnly: true })}>Filter by category</Field.Label>
+      <Field.Select
+        value={category}
+        onChange={onCategoryChange}
+        className={fieldStyles.select}
+        aria-label="Filter by category"
+      >
+        <option value="">All categories</option>
+        {(['ux', 'web-dev', 'hosting', 'business'] as WSGCategory[]).map((catValue) => (
+          <option key={catValue} value={catValue}>
+            {categoryLabel[catValue]}
+          </option>
+        ))}
+      </Field.Select>
+    </Field.Root>
+
+    <Field.Root>
+      <Field.Label className={css({ srOnly: true })}>Filter by testability</Field.Label>
+      <Field.Select
+        value={testability}
+        onChange={onTestabilityChange}
+        className={fieldStyles.select}
+        aria-label="Filter by testability"
+      >
+        <option value="">All testability</option>
+        {(['automated', 'semi-automated', 'manual-only'] as Testability[]).map((testabValue) => (
+          <option key={testabValue} value={testabValue}>
+            {testabilityLabel[testabValue]}
+          </option>
+        ))}
+      </Field.Select>
+    </Field.Root>
+  </styled.div>
+)
+
+/** Guideline metadata badges (ID, testability, category). */
+const GuidelineBadges = ({ g }: { readonly g: GuidelineEntry }) => (
+  <styled.div display="flex" gap="2" alignItems="center" flexWrap="wrap">
+    <styled.span fontSize="xs" fontWeight="bold" color="fg.subtle" fontFamily="mono">
+      {g.id}
+    </styled.span>
+    <styled.span
+      fontSize="xs"
+      px="1.5"
+      py="0.5"
+      borderRadius="sm"
+      bg={testabilityColor[g.testability]?.bg ?? 'gray.7'}
+      color={testabilityColor[g.testability]?.fg ?? 'white'}
+      fontWeight="medium"
+      aria-label={`Testability: ${testabilityLabel[g.testability]}`}
+    >
+      {testabilityLabel[g.testability]}
+    </styled.span>
+    <styled.span
+      fontSize="xs"
+      px="1.5"
+      py="0.5"
+      borderRadius="sm"
+      borderWidth="1px"
+      borderColor="border.default"
+      color="fg.default"
+      fontWeight="medium"
+    >
+      {categoryLabel[g.category] ?? g.category}
+    </styled.span>
+  </styled.div>
+)
+
 /** Single guideline card — extracted to limit JSX nesting depth. */
 const GuidelineCard = ({ g }: { readonly g: GuidelineEntry }) => (
   <styled.li p="4" borderWidth="1px" borderColor="border.default" borderRadius="lg" bg="bg.subtle">
@@ -64,35 +164,7 @@ const GuidelineCard = ({ g }: { readonly g: GuidelineEntry }) => (
       gap="2"
       mb="1"
     >
-      <styled.div display="flex" gap="2" alignItems="center" flexWrap="wrap">
-        <styled.span fontSize="xs" fontWeight="bold" color="fg.subtle" fontFamily="mono">
-          {g.id}
-        </styled.span>
-        <styled.span
-          fontSize="xs"
-          px="1.5"
-          py="0.5"
-          borderRadius="sm"
-          bg={testabilityColor[g.testability]?.bg ?? 'gray.7'}
-          color={testabilityColor[g.testability]?.fg ?? 'white'}
-          fontWeight="medium"
-          aria-label={`Testability: ${testabilityLabel[g.testability]}`}
-        >
-          {testabilityLabel[g.testability]}
-        </styled.span>
-        <styled.span
-          fontSize="xs"
-          px="1.5"
-          py="0.5"
-          borderRadius="sm"
-          borderWidth="1px"
-          borderColor="border.default"
-          color="fg.default"
-          fontWeight="medium"
-        >
-          {categoryLabel[g.category] ?? g.category}
-        </styled.span>
-      </styled.div>
+      <GuidelineBadges g={g} />
       {g.specUrl && (
         <a
           href={g.specUrl}
@@ -149,61 +221,14 @@ export const GuidelinesFilter = ({ guidelines }: GuidelinesFilterProps) => {
   return (
     <styled.div display="flex" flexDirection="column" gap="4">
       {/* Filter controls */}
-      <styled.div
-        display="flex"
-        flexWrap="wrap"
-        gap="3"
-        role="search"
-        aria-label="Filter guidelines"
-      >
-        <Field.Root className={css({ flex: '1', minW: '40' })}>
-          <Field.Label className={css({ srOnly: true })}>Search guidelines</Field.Label>
-          <Field.Input
-            type="search"
-            placeholder="Search guidelines…"
-            value={search}
-            onChange={onSearchChange}
-            className={fieldStyles.input}
-            aria-label="Search guidelines"
-          />
-        </Field.Root>
-
-        <Field.Root>
-          <Field.Label className={css({ srOnly: true })}>Filter by category</Field.Label>
-          <Field.Select
-            value={category}
-            onChange={onCategoryChange}
-            className={fieldStyles.select}
-            aria-label="Filter by category"
-          >
-            <option value="">All categories</option>
-            {(['ux', 'web-dev', 'hosting', 'business'] as WSGCategory[]).map((catValue) => (
-              <option key={catValue} value={catValue}>
-                {categoryLabel[catValue]}
-              </option>
-            ))}
-          </Field.Select>
-        </Field.Root>
-
-        <Field.Root>
-          <Field.Label className={css({ srOnly: true })}>Filter by testability</Field.Label>
-          <Field.Select
-            value={testability}
-            onChange={onTestabilityChange}
-            className={fieldStyles.select}
-            aria-label="Filter by testability"
-          >
-            <option value="">All testability</option>
-            {(['automated', 'semi-automated', 'manual-only'] as Testability[]).map(
-              (testabValue) => (
-                <option key={testabValue} value={testabValue}>
-                  {testabilityLabel[testabValue]}
-                </option>
-              )
-            )}
-          </Field.Select>
-        </Field.Root>
-      </styled.div>
+      <FilterControls
+        search={search}
+        category={category}
+        testability={testability}
+        onSearchChange={onSearchChange}
+        onCategoryChange={onCategoryChange}
+        onTestabilityChange={onTestabilityChange}
+      />
 
       {/* Results count */}
       <styled.p fontSize="sm" color="fg.subtle" aria-live="polite" aria-atomic="true">

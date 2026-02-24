@@ -71,6 +71,43 @@ const activeLinkClass = css({
   _hover: { color: 'accent.default' },
 })
 
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+interface NavItemLinkProps {
+  readonly item: NavItem
+  readonly isActive: boolean
+}
+
+/** Single navigation item — extracted to limit JSX nesting depth. */
+const NavItemLink = ({ item, isActive }: NavItemLinkProps) => (
+  <styled.li flex="1">
+    <Link
+      href={item.href}
+      aria-label={item.ariaLabel}
+      aria-current={isActive ? 'page' : undefined}
+      className={cx(navLinkClass, isActive ? activeLinkClass : undefined)}
+    >
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={isActive ? 2.5 : 1.75}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d={item.iconPath} />
+      </svg>
+      <span>{item.label}</span>
+    </Link>
+  </styled.li>
+)
+
+// ─── Main component ──────────────────────────────────────────────────────────
+
 /**
  * Thumb-friendly bottom navigation bar for mobile-first layout (WSG 2.5).
  * Placed at the bottom of the viewport so primary actions are within easy reach.
@@ -96,35 +133,9 @@ export const BottomNav = () => {
       shadow="sm"
     >
       <styled.ul display="flex" w="full" listStyleType="none" m="0" p="0">
-        {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.href
-          return (
-            <styled.li key={item.href} flex="1">
-              <Link
-                href={item.href}
-                aria-label={item.ariaLabel}
-                aria-current={isActive ? 'page' : undefined}
-                className={cx(navLinkClass, isActive ? activeLinkClass : undefined)}
-              >
-                <svg
-                  aria-hidden="true"
-                  focusable="false"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={isActive ? 2.5 : 1.75}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d={item.iconPath} />
-                </svg>
-                <span>{item.label}</span>
-              </Link>
-            </styled.li>
-          )
-        })}
+        {NAV_ITEMS.map((item) => (
+          <NavItemLink key={item.href} item={item} isActive={pathname === item.href} />
+        ))}
       </styled.ul>
     </styled.nav>
   )
