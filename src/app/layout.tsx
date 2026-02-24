@@ -57,11 +57,12 @@ export default function RootLayout({
         </footer>
 
         {/* Progressive enhancement: inform users when JavaScript is disabled.
-            The URL check form requires JS; all static pages remain readable. */}
+            The URL check form requires JS; all static pages remain readable.
+            bottom="20" (5rem) clears the fixed bottom nav (4rem / h-16) with space to spare. */}
         <noscript>
           <styled.p
             position="fixed"
-            bottom="16"
+            bottom="20"
             left="0"
             right="0"
             textAlign="center"
