@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkCaching } from '@/checks/caching'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -104,8 +105,7 @@ describe('checkCaching (WSG 4.2)', () => {
 
   it('includes recommendation and resources on failure', async () => {
     const result = await checkCaching(makePageData({}))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect((result.resources ?? []).some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

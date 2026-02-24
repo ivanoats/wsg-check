@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { checkFormValidation } from '@/checks/form-validation'
 import type { PageData } from '@/core/types'
 import type { FormInputInfo } from '@/utils/html-parser'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -131,9 +132,8 @@ describe('checkFormValidation (WSG 3.10)', () => {
 
   it('includes a recommendation and resources link on fail', async () => {
     const result = await checkFormValidation(makePageData([makeInput({ hasLabel: false })]))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources?.[0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 
   it('pass message includes the total input count', async () => {

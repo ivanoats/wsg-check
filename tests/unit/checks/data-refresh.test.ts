@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkDataRefresh } from '@/checks/data-refresh'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -122,8 +123,7 @@ describe('checkDataRefresh (WSG 4.7)', () => {
 
   it('includes recommendation and resources when warn', async () => {
     const result = await checkDataRefresh(makePageData({}))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect((result.resources ?? []).some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkCdnUsage } from '@/checks/cdn-usage'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -111,9 +112,8 @@ describe('checkCdnUsage (WSG 4.10)', () => {
 
   it('includes recommendation and resources on warn', async () => {
     const result = await checkCdnUsage(makePageData({}))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect((result.resources ?? []).some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 
   it('reports all detected CDN headers in the message', async () => {

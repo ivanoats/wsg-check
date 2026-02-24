@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { checkRedirects } from '@/checks/redirects'
 import type { PageData } from '@/core/types'
 import type { RedirectEntry } from '@/utils/http-client'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -118,8 +119,7 @@ describe('checkRedirects (WSG 4.4)', () => {
   it('includes recommendation and resources on chain failure', async () => {
     const chain = [makeRedirect(301), makeRedirect(301), makeRedirect(301)]
     const result = await checkRedirects(makePageData(chain))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect((result.resources ?? []).some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })
