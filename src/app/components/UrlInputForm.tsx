@@ -210,7 +210,7 @@ export const UrlInputForm = () => {
 
       {recent.length > 0 && (
         <styled.div display="flex" flexDirection="column" gap="2">
-          <styled.p fontSize="sm" color="fg.muted" fontWeight="medium">
+          <styled.p fontSize="sm" color="fg.default" fontWeight="semibold">
             Recent checks
           </styled.p>
           <styled.ul listStyleType="none" m="0" p="0" display="flex" flexDirection="column" gap="1">

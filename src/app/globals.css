@@ -9,16 +9,8 @@
   margin: 0;
 }
 
-/* --- Design tokens: light mode defaults --- */
+/* --- Design tokens --- */
 :root {
-  --color-bg: #ffffff;
-  --color-text: #1a1a1a;
-  --color-accent: #166534; /* green-800 */
-  --color-accent-fg: #ffffff;
-
-  --font-size-base: 1rem;
-  --line-height-base: 1.5;
-
   /*
    * Font stack: Inter (self-hosted WOFF2 via next/font, font-display:swap) with
    * system-font fallbacks so text renders immediately before Inter loads.
@@ -34,16 +26,6 @@
    * WCAG 2.4.11 Focus Not Obscured (Minimum) — AA (WCAG 2.2).
    */
   scroll-padding-bottom: 4rem;
-}
-
-/* --- Dark mode (prefers-color-scheme) --- */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #0f172a;
-    --color-text: #f1f5f9;
-    --color-accent: #4ade80; /* green-400 */
-    --color-accent-fg: #0f172a;
-  }
 }
 
 /* --- Reduced motion --- */
@@ -62,24 +44,21 @@ html,
 body {
   max-width: 100vw;
   min-height: 100vh;
-  background-color: var(--color-bg);
-  color: var(--color-text);
   font-family: var(--font-family-base);
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Skip link — hidden until focused (WSG 3.9) */
+/* Skip link — hidden until focused (WSG 3.9)
+ * Uses Park UI semantic tokens for proper theming */
 .skip-link {
   position: absolute;
   top: -100%;
   left: 1rem;
   z-index: 200;
   padding: 0.5rem 1rem;
-  background-color: var(--color-accent);
-  color: var(--color-accent-fg);
+  background-color: token(colors.accent.default);
+  color: token(colors.accent.fg);
   border-radius: 0 0 0.25rem 0.25rem;
   font-weight: 600;
   text-decoration: none;
@@ -92,6 +71,6 @@ body {
 
 /* Ensure focus indicators are always visible */
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid token(colors.accent.default);
   outline-offset: 2px;
 }

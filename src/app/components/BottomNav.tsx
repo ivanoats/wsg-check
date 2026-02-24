@@ -49,7 +49,7 @@ const navLinkClass = css({
   justifyContent: 'center',
   height: 'full',
   gap: '1',
-  color: 'fg.muted',
+  color: 'fg.subtle',
   textDecoration: 'none',
   fontSize: 'xs',
   fontWeight: 'medium',
@@ -58,6 +58,12 @@ const navLinkClass = css({
   minW: '12',
   transition: 'color 0.15s',
   _hover: { color: 'fg.default' },
+  _focusVisible: {
+    color: 'accent.default',
+    outline: '2px solid',
+    outlineColor: 'accent.default',
+    outlineOffset: '2px',
+  },
 })
 
 const activeLinkClass = css({
@@ -123,4 +129,3 @@ export const BottomNav = () => {
     </styled.nav>
   )
 }
-

@@ -13,10 +13,10 @@ interface GuidelinesFilterProps {
 
 const fieldStyles = field()
 
-const testabilityColor: Readonly<Record<string, string>> = {
-  automated: '#166534',
-  'semi-automated': '#92400e',
-  'manual-only': '#374151',
+const testabilityColor: Readonly<Record<string, { bg: string; fg: string }>> = {
+  automated: { bg: 'green.9', fg: 'white' },
+  'semi-automated': { bg: 'amber.9', fg: 'white' },
+  'manual-only': { bg: 'gray.7', fg: 'white' },
 }
 
 const categoryLabel: Readonly<Record<string, string>> = {
@@ -65,7 +65,7 @@ const GuidelineCard = ({ g }: { readonly g: GuidelineEntry }) => (
       mb="1"
     >
       <styled.div display="flex" gap="2" alignItems="center" flexWrap="wrap">
-        <styled.span fontSize="xs" fontWeight="bold" color="fg.muted" fontFamily="mono">
+        <styled.span fontSize="xs" fontWeight="bold" color="fg.subtle" fontFamily="mono">
           {g.id}
         </styled.span>
         <styled.span
@@ -73,9 +73,9 @@ const GuidelineCard = ({ g }: { readonly g: GuidelineEntry }) => (
           px="1.5"
           py="0.5"
           borderRadius="sm"
-          color="white"
+          bg={testabilityColor[g.testability]?.bg ?? 'gray.7'}
+          color={testabilityColor[g.testability]?.fg ?? 'white'}
           fontWeight="medium"
-          style={{ backgroundColor: testabilityColor[g.testability] ?? '#374151' }}
           aria-label={`Testability: ${testabilityLabel[g.testability]}`}
         >
           {testabilityLabel[g.testability]}
@@ -87,7 +87,8 @@ const GuidelineCard = ({ g }: { readonly g: GuidelineEntry }) => (
           borderRadius="sm"
           borderWidth="1px"
           borderColor="border.default"
-          color="fg.muted"
+          color="fg.default"
+          fontWeight="medium"
         >
           {categoryLabel[g.category] ?? g.category}
         </styled.span>
@@ -108,7 +109,7 @@ const GuidelineCard = ({ g }: { readonly g: GuidelineEntry }) => (
     <styled.h3 fontSize="sm" fontWeight="semibold" color="fg.default" mb="1">
       {g.title}
     </styled.h3>
-    <styled.p fontSize="sm" color="fg.muted">
+    <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed">
       {g.description}
     </styled.p>
   </styled.li>
@@ -205,13 +206,13 @@ export const GuidelinesFilter = ({ guidelines }: GuidelinesFilterProps) => {
       </styled.div>
 
       {/* Results count */}
-      <styled.p fontSize="sm" color="fg.muted" aria-live="polite" aria-atomic="true">
+      <styled.p fontSize="sm" color="fg.subtle" aria-live="polite" aria-atomic="true">
         Showing {filtered.length} of {guidelines.length} guidelines
       </styled.p>
 
       {/* Guidelines list */}
       {filtered.length === 0 ? (
-        <styled.p color="fg.muted" fontSize="sm">
+        <styled.p color="fg.default" fontSize="sm">
           No guidelines match your filters.
         </styled.p>
       ) : (
