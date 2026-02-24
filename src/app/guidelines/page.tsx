@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { styled } from 'styled-system/jsx'
 
 export const metadata: Metadata = {
   title: 'Guidelines — WSG Check',
@@ -7,9 +8,9 @@ export const metadata: Metadata = {
 
 export default function GuidelinesPage() {
   return (
-    <section aria-labelledby="guidelines-heading" style={{ padding: '1.5rem 1rem' }}>
+    <styled.section aria-labelledby="guidelines-heading" px="4" py="6">
       <h1 id="guidelines-heading">Guidelines</h1>
       <p>A browsable list of all WSG guidelines will appear here.</p>
-    </section>
+    </styled.section>
   )
 }

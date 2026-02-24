@@ -12,34 +12,21 @@
 /* --- Design tokens: light mode defaults --- */
 :root {
   --color-bg: #ffffff;
-  --color-surface: #f4f4f4;
   --color-text: #1a1a1a;
-  --color-text-muted: #666666;
   --color-accent: #166534; /* green-800 */
   --color-accent-fg: #ffffff;
-  --color-border: #d1d5db;
-  --color-nav-bg: #ffffff;
-  --color-nav-border: #e5e7eb;
 
   --font-size-base: 1rem;
   --line-height-base: 1.5;
-
-  /* bottom nav height — used for main content bottom padding */
-  --bottom-nav-height: 4rem;
 }
 
 /* --- Dark mode (prefers-color-scheme) --- */
 @media (prefers-color-scheme: dark) {
   :root {
     --color-bg: #0f172a;
-    --color-surface: #1e293b;
     --color-text: #f1f5f9;
-    --color-text-muted: #94a3b8;
     --color-accent: #4ade80; /* green-400 */
     --color-accent-fg: #0f172a;
-    --color-border: #334155;
-    --color-nav-bg: #1e293b;
-    --color-nav-border: #334155;
   }
 }
 

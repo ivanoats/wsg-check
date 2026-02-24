@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { styled } from 'styled-system/jsx'
 
 export const metadata: Metadata = {
   title: 'About — WSG Check',
@@ -7,9 +8,9 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <section aria-labelledby="about-heading" style={{ padding: '1.5rem 1rem' }}>
+    <styled.section aria-labelledby="about-heading" px="4" py="6">
       <h1 id="about-heading">About WSG Check</h1>
       <p>Project purpose, methodology, and sustainability statement will appear here.</p>
-    </section>
+    </styled.section>
   )
 }
