@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkCssRedundancy } from '@/checks/redundancy'
 import type { PageData } from '@/core/types'
-
+import { expectRecommendationAndResources } from './helpers'
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
 function makePageData(body: string): PageData {
@@ -139,8 +139,7 @@ describe('checkCssRedundancy (WSG 3.5)', () => {
 
   it('includes a recommendation and resources link on warn', async () => {
     const result = await checkCssRedundancy(makePageData(REPEATED_INLINE_STYLES))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

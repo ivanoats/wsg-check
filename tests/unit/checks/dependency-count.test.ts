@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkDependencyCount } from '@/checks/dependency-count'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 import type { PageWeightAnalysis } from '@/utils/resource-analyzer'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
@@ -103,9 +104,8 @@ describe('checkDependencyCount (WSG 3.16)', () => {
         byType: { stylesheet: 0, script: 12, image: 0, font: 0, media: 0, other: 0 },
       })
     )
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 
   it('has high impact', async () => {

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { checkMetadata, checkStructuredData } from '@/checks/metadata'
 import type { PageData } from '@/core/types'
 import type { MetaTag, StructuredData } from '@/utils/html-parser'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -115,9 +116,8 @@ describe('checkMetadata (WSG 3.4)', () => {
 
   it('includes a recommendation and resources link on fail', async () => {
     const result = await checkMetadata(makePageData({ title: null }))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 
   it('treats meta description with empty content as missing', async () => {
@@ -185,8 +185,7 @@ describe('checkStructuredData (WSG 3.11)', () => {
 
   it('warn result includes a recommendation with resources link', async () => {
     const result = await checkStructuredData(makePageData({}))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

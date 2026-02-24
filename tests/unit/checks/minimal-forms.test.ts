@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkMinimalForms } from '@/checks/minimal-forms'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 import type { FormInputInfo } from '@/utils/html-parser'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
@@ -125,8 +126,7 @@ describe('checkMinimalForms (WSG 2.19)', () => {
     const result = await checkMinimalForms(
       makePageData([makeInput({ hasAutocomplete: false, hasInputmode: false })])
     )
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkPageWeight } from '@/checks/page-weight'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -110,9 +111,8 @@ describe('checkPageWeight (WSG 3.1)', () => {
 
   it('includes a recommendation and resources link when failing', async () => {
     const result = await checkPageWeight(makePageData(600 * KB))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 
   it('pass message includes the document size and resource count', async () => {

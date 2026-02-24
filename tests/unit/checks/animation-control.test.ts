@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkAnimationControl } from '@/checks/animation-control'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -126,8 +127,7 @@ describe('checkAnimationControl (WSG 2.15)', () => {
 
   it('includes a recommendation and resources link on fail', async () => {
     const result = await checkAnimationControl(makePageData(ANIMATION_NO_GUARD))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

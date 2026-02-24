@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkLazyLoading } from '@/checks/lazy-loading'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 import type { ResourceReference } from '@/utils/html-parser'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
@@ -119,8 +120,7 @@ describe('checkLazyLoading (WSG 2.11)', () => {
     const result = await checkLazyLoading(
       makePageData([makeImage('https://example.com/a.jpg'), makeImage('https://example.com/b.jpg')])
     )
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

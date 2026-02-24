@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkAccessibilityAids } from '@/checks/accessibility-aids'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -111,9 +112,8 @@ describe('checkAccessibilityAids (WSG 3.9)', () => {
     const result = await checkAccessibilityAids(
       makePageData({ hasSkipLink: false, landmarks: ['nav', 'main'] })
     )
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 
   it('detects nav via explicit ARIA role landmark', async () => {
