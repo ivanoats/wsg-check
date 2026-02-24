@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkMinification } from '@/checks/minification'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -130,9 +131,8 @@ describe('checkMinification (WSG 3.3)', () => {
 
   it('includes a recommendation and resources link on warn', async () => {
     const result = await checkMinification(makePageData(UNMINIFIED_BLANK_LINES))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 
   it('passes for an empty HTML body (no blank lines)', async () => {

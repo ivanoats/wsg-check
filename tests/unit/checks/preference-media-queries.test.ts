@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkPreferenceMediaQueries } from '@/checks/preference-media-queries'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 import type { LinkRef } from '@/utils/html-parser'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
@@ -143,8 +144,7 @@ describe('checkPreferenceMediaQueries (WSG 3.12)', () => {
 
   it('includes a recommendation and resources link on warn', async () => {
     const result = await checkPreferenceMediaQueries(makePageData(NO_STYLE_HTML))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

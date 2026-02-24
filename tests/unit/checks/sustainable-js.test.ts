@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { checkSustainableJs } from '@/checks/sustainable-js'
 import type { PageData } from '@/core/types'
 import type { ResourceReference } from '@/utils/html-parser'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -154,15 +155,13 @@ describe('checkSustainableJs (WSG 3.14)', () => {
       makeScript(`https://example.com/chunk${i}.js`)
     )
     const result = await checkSustainableJs(makePageData(scripts))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 
   it('includes a recommendation and resources link on fail', async () => {
     const result = await checkSustainableJs(makePageData([], DOCUMENT_WRITE_BODY))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

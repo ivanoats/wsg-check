@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { checkResponsiveDesign } from '@/checks/responsive-design'
 import type { PageData } from '@/core/types'
 import type { MetaTag, ResourceReference } from '@/utils/html-parser'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -179,8 +180,7 @@ describe('checkResponsiveDesign (WSG 3.13)', () => {
         body: BODY_WITH_MEDIA_QUERY,
       })
     )
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

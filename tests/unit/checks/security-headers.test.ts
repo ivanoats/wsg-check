@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkSecurityHeaders } from '@/checks/security-headers'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -106,9 +107,8 @@ describe('checkSecurityHeaders (WSG 3.15)', () => {
 
   it('includes a recommendation and resources link on failure', async () => {
     const result = await checkSecurityHeaders(makePageData({}))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 
   it('has high impact', async () => {

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkNonEssentialContent } from '@/checks/non-essential-content'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -105,8 +106,7 @@ describe('checkNonEssentialContent (WSG 2.9)', () => {
 
   it('includes a recommendation and resources link on fail', async () => {
     const result = await checkNonEssentialContent(makePageData(AUTOPLAY_VIDEO))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

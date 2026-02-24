@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkCompression } from '@/checks/compression'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -105,9 +106,8 @@ describe('checkCompression (WSG 4.3)', () => {
 
   it('includes recommendation and resources on failure', async () => {
     const result = await checkCompression(makePageData({}))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect((result.resources ?? []).some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 
   it('non-Brotli pass result includes a Brotli upgrade recommendation', async () => {

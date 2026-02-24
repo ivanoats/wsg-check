@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { checkThirdParty } from '@/checks/third-party'
 import type { PageData } from '@/core/types'
 import type { ResourceReference } from '@/utils/html-parser'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -139,8 +140,7 @@ describe('checkThirdParty (WSG 3.6)', () => {
   it('includes a recommendation and resources link on warn', async () => {
     const resources = [makeScript('https://tracker.thirdparty.com/t.js')]
     const result = await checkThirdParty(makePageData(resources))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

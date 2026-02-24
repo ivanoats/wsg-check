@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkOptimizedMedia } from '@/checks/optimized-media'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 import type { ResourceReference } from '@/utils/html-parser'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
@@ -116,8 +117,7 @@ describe('checkOptimizedMedia (WSG 2.7)', () => {
   it('includes a recommendation and resources link on fail', async () => {
     const resources = [makeImage('https://example.com/photo.jpeg')]
     const result = await checkOptimizedMedia(makePageData(resources))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

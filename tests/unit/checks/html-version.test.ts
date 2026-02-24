@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkHtmlVersion } from '@/checks/html-version'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -122,8 +123,7 @@ describe('checkHtmlVersion (WSG 3.19)', () => {
 
   it('includes a recommendation and resources link on warn', async () => {
     const result = await checkHtmlVersion(makePageData({ doctype: null }))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

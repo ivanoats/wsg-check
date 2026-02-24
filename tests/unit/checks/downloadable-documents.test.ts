@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkDownloadableDocuments } from '@/checks/downloadable-documents'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -118,8 +119,7 @@ describe('checkDownloadableDocuments (WSG 2.17)', () => {
 
   it('includes a recommendation and resources link on warn', async () => {
     const result = await checkDownloadableDocuments(makePageData(PDF_BODY))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

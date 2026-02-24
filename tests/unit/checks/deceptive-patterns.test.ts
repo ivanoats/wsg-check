@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkDeceptivePatterns } from '@/checks/deceptive-patterns'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -107,8 +108,7 @@ describe('checkDeceptivePatterns (WSG 2.10)', () => {
 
   it('includes a recommendation and resources link on warn', async () => {
     const result = await checkDeceptivePatterns(makePageData(COUNTDOWN_BODY))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

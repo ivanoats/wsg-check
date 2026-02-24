@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkSemanticHtml } from '@/checks/semantic-html'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 import type { HeadingNode } from '@/utils/html-parser'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
@@ -160,8 +161,7 @@ describe('checkSemanticHtml (WSG 3.7)', () => {
 
   it('includes a recommendation on warn', async () => {
     const result = await checkSemanticHtml(makePageData({ lang: null }))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

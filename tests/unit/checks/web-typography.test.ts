@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkWebTypography } from '@/checks/web-typography'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 import type { ResourceReference } from '@/utils/html-parser'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
@@ -146,8 +147,7 @@ describe('checkWebTypography (WSG 2.16)', () => {
         body: WITHOUT_FONT_DISPLAY,
       })
     )
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

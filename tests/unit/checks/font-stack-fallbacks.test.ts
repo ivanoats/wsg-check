@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkFontStackFallbacks } from '@/checks/font-stack-fallbacks'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -118,8 +119,7 @@ describe('checkFontStackFallbacks (WSG 2.16)', () => {
 
   it('includes a recommendation and resources link on warn', async () => {
     const result = await checkFontStackFallbacks(makePageData(WITHOUT_FALLBACK))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources![0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

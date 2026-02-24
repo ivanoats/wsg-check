@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { checkExpectedFiles, checkBeneficialFiles } from '@/checks/expected-files'
 import type { PageData } from '@/core/types'
 import type { LinkRef } from '@/utils/html-parser'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -120,9 +121,8 @@ describe('checkExpectedFiles (WSG 3.17)', () => {
 
   it('includes a recommendation and resources link on failure', async () => {
     const result = await checkExpectedFiles(makePageData({ links: [] }))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources?.[0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 })
 
@@ -165,9 +165,8 @@ describe('checkBeneficialFiles (WSG 3.17)', () => {
 
   it('includes a recommendation and resources link on warn', async () => {
     const result = await checkBeneficialFiles(makePageData({ links: [] }))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources?.[0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 
   it('detects partial presence of beneficial files', async () => {
