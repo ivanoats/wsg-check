@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { checkOfflineAccess } from '@/checks/offline-access'
 import type { PageData } from '@/core/types'
 import type { LinkRef } from '@/utils/html-parser'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -115,9 +116,8 @@ describe('checkOfflineAccess (WSG 4.2)', () => {
 
   it('includes recommendation and resources on failure', async () => {
     const result = await checkOfflineAccess(makePageData())
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect((result.resources ?? []).some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 
   it('detects service worker registration in inline script', async () => {

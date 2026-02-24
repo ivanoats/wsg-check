@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { checkSustainableHosting } from '@/checks/sustainable-hosting'
 import type { PageData } from '@/core/types'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -102,9 +103,8 @@ describe('checkSustainableHosting (WSG 4.1)', () => {
   it('includes recommendation and resources on failure', async () => {
     mockCheckGreenHosting.mockResolvedValue(false)
     const result = await checkSustainableHosting(makePageData())
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect((result.resources ?? []).some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 
   it('extracts hostname correctly from the page url', async () => {

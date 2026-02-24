@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkErrorPages } from '@/checks/error-pages'
 import type { PageData } from '@/core/types'
+import { expectResourcesDefined } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -93,7 +94,7 @@ describe('checkErrorPages (WSG 4.4)', () => {
 
   it('includes resources link', async () => {
     const result = await checkErrorPages(makePageData(200))
-    expect(result.resources).toBeDefined()
-    expect((result.resources ?? []).some((r) => r.startsWith('https://www.w3.org/'))).toBe(true)
+    const firstResource = expectResourcesDefined(result)
+    expect(firstResource).toContain('w3.org')
   })
 })

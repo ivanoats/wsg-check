@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { checkRenderBlocking } from '@/checks/render-blocking'
 import type { PageData } from '@/core/types'
 import type { ResourceReference } from '@/utils/html-parser'
+import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -163,16 +164,14 @@ describe('checkRenderBlocking (WSG 3.8)', () => {
     const result = await checkRenderBlocking(
       makePageData([makeScript('https://example.com/app.js')])
     )
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources?.[0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 
   it('includes a recommendation and resources link on warn', async () => {
     const result = await checkRenderBlocking(makePageData([makeImage('https://example.com/a.jpg')]))
-    expect(result.recommendation).toBeDefined()
-    expect(result.resources).toBeDefined()
-    expect(result.resources?.[0]).toContain('w3.org')
+    const firstResource = expectRecommendationAndResources(result)
+    expect(firstResource).toContain('w3.org')
   })
 
   it('counts blocking scripts correctly in the message', async () => {

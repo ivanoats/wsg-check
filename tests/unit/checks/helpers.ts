@@ -9,11 +9,24 @@ import type { CheckResult } from '@/core/types'
 import { expect } from 'vitest'
 
 /**
+ * Assertion helper that narrows `value` to a non-empty `string[]`.
+ * TypeScript recognises the `asserts` return type and narrows the type of
+ * the argument after this call — no cast required.
+ */
+const assertNonEmptyStringArray: (value: unknown) => asserts value is string[] = (value) => {
+  expect(value).toBeDefined()
+  if (!Array.isArray(value)) {
+    throw new TypeError('Expected value to be an array')
+  }
+  expect(value.length).toBeGreaterThan(0)
+}
+
+/**
  * Asserts that a CheckResult has a resources array with at least one element.
  * Returns the first resource for further testing.
  *
- * This function acts as a type guard, confirming the array exists and has content
- * before allowing access to its elements. This is safer than using non-null assertions.
+ * Uses a real TypeScript assertion function so callers benefit from proper
+ * type narrowing without any type casts.
  *
  * @param result - The CheckResult to validate
  * @returns The first resource string for further assertions
@@ -26,12 +39,8 @@ import { expect } from 'vitest'
  * ```
  */
 export const expectResourcesDefined = (result: CheckResult): string => {
-  expect(result.resources).toBeDefined()
-  expect(result.resources).toBeInstanceOf(Array)
-  // Type guard: after these assertions, we know resources is defined and is an array
-  const resources = result.resources as string[]
-  expect(resources.length).toBeGreaterThan(0)
-  return resources[0]
+  assertNonEmptyStringArray(result.resources)
+  return result.resources[0]
 }
 
 /**
