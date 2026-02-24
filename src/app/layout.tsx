@@ -25,7 +25,11 @@ export default function RootLayout({
         <Header />
 
         {/* Main content landmark — padding-bottom clears the fixed bottom nav */}
-        <main id="main-content" style={{ paddingBottom: 'var(--bottom-nav-height)' }}>
+        <main
+          id="main-content"
+          tabIndex={-1}
+          style={{ paddingBottom: 'var(--bottom-nav-height)' }}
+        >
           {children}
         </main>
 
