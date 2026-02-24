@@ -3,14 +3,22 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Field } from '@ark-ui/react/field'
-import { styled } from 'styled-system/jsx'
+import { createStyleContext, styled } from 'styled-system/jsx'
 import { css } from 'styled-system/css'
-import { field, button } from 'styled-system/recipes'
+import { field, button, input } from 'styled-system/recipes'
 
 const RECENT_CHECKS_KEY = 'wsg-check:recent-urls'
 const MAX_RECENT = 5
 
-const styles = field()
+// ─── Park UI styled Field components ─────────────────────────────────────────
+// Use createStyleContext so each sub-component receives its recipe slot class
+// from the nearest FieldRoot context — no manual className props required.
+const { withProvider, withContext } = createStyleContext(field)
+const FieldRoot = withProvider(Field.Root, 'root')
+const FieldLabel = withContext(Field.Label, 'label')
+const FieldErrorText = withContext(Field.ErrorText, 'errorText')
+// Input uses the standalone `input` recipe (not the `field__input` slot) for full border/padding styling.
+const FieldInput = styled(Field.Input, input)
 
 const recentButtonClass = css({
   color: 'accent.default',
@@ -75,19 +83,19 @@ interface UrlFieldInputProps {
 
 /** Field.Root + label + input + error text — extracted to limit JSX depth. */
 const UrlFieldInput = ({ value, error, isLoading, onChange }: UrlFieldInputProps) => (
-  <Field.Root invalid={Boolean(error)} className={css({ flex: '1' })}>
-    <Field.Label className={css({ srOnly: true })}>Website URL</Field.Label>
-    <Field.Input
+  <FieldRoot invalid={Boolean(error)} flex="1">
+    <FieldLabel srOnly>Website URL</FieldLabel>
+    <FieldInput
       type="url"
       autoComplete="url"
       placeholder="https://example.com"
       value={value}
       onChange={onChange}
       disabled={isLoading}
-      className={styles.input}
+      size="lg"
     />
-    <Field.ErrorText className={styles.errorText}>{error}</Field.ErrorText>
-  </Field.Root>
+    <FieldErrorText>{error}</FieldErrorText>
+  </FieldRoot>
 )
 
 interface RecentCheckButtonProps {
@@ -200,7 +208,7 @@ export const UrlInputForm = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className={button({ variant: 'solid', size: 'lg' })}
+            className={button({ variant: 'solid', size: 'xl' })}
             aria-busy={isLoading}
           >
             {isLoading ? 'Checking…' : 'Check'}
