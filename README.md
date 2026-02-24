@@ -8,7 +8,7 @@ A Web Sustainability Guidelines checker for websites. It checks a website agains
 - **Detailed Reporting**: The application provides a detailed report that includes the results of each check, along with explanations and recommendations for improving the sustainability of the website. The report is designed to be user-friendly and easy to understand, making it accessible to users with varying levels of technical expertise.
 - **Command-Line Interface**: WSG-Check includes a command-line interface that allows users to run checks and generate reports directly from the terminal. This feature is particularly useful for developers and technical users who prefer working in a command-line environment.
 
-## REST API (Phase 8)
+## REST API
 
 WSG-Check exposes REST endpoints through Next.js Route Handlers.
 
