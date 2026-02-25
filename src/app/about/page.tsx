@@ -39,10 +39,9 @@ const GradeScaleItem = ({ grade, range, bg, fg }: GradeScaleItemProps) => (
       borderRadius="full"
       fontWeight="bold"
       fontSize="lg"
-      bg={bg}
-      color={fg}
       flexShrink="0"
       aria-hidden="true"
+      style={{ backgroundColor: bg, color: fg }}
     >
       {grade}
     </styled.span>
@@ -58,11 +57,11 @@ const GradeScaleItem = ({ grade, range, bg, fg }: GradeScaleItemProps) => (
 )
 
 const GRADE_SCALE = [
-  { grade: 'A', range: '90–100', bg: 'green.9', fg: 'white' },
-  { grade: 'B', range: '75–89', bg: 'blue.9', fg: 'white' },
-  { grade: 'C', range: '60–74', bg: 'amber.9', fg: 'amber.12' },
-  { grade: 'D', range: '45–59', bg: 'orange.9', fg: 'white' },
-  { grade: 'F', range: '0–44', bg: 'red.9', fg: 'white' },
+  { grade: 'A', range: '90–100', bg: 'var(--colors-green-9)', fg: 'white' },
+  { grade: 'B', range: '75–89', bg: 'var(--colors-blue-9)', fg: 'white' },
+  { grade: 'C', range: '60–74', bg: 'var(--colors-amber-9)', fg: 'var(--colors-amber-12)' },
+  { grade: 'D', range: '45–59', bg: 'var(--colors-orange-9)', fg: 'white' },
+  { grade: 'F', range: '0–44', bg: 'var(--colors-red-9)', fg: 'white' },
 ] as const
 
 /** Purpose & Methodology section. */

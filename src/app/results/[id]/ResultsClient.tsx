@@ -41,11 +41,11 @@ const fetchReportFromApi = async (id: string): Promise<SustainabilityReport | nu
 // ─── Style constants ──────────────────────────────────────────────────────────
 
 const gradeColors: Readonly<Record<string, { bg: string; fg: string }>> = {
-  A: { bg: 'green.9', fg: 'white' },
-  B: { bg: 'blue.9', fg: 'white' },
-  C: { bg: 'amber.9', fg: 'amber.12' },
-  D: { bg: 'orange.9', fg: 'white' },
-  F: { bg: 'red.9', fg: 'white' },
+  A: { bg: 'var(--colors-green-9)', fg: 'white' },
+  B: { bg: 'var(--colors-blue-9)', fg: 'white' },
+  C: { bg: 'var(--colors-amber-9)', fg: 'var(--colors-amber-12)' },
+  D: { bg: 'var(--colors-orange-9)', fg: 'white' },
+  F: { bg: 'var(--colors-red-9)', fg: 'white' },
 }
 
 const cardStyles = card()
@@ -114,17 +114,13 @@ const ReportHeader = ({
 }) => (
   <styled.div display="flex" gap="4" alignItems="center" mb="6">
     <span
-      className={cx(
-        avatarStyles.root,
-        css({ bg: gradeColors[grade]?.bg ?? 'gray.7', flexShrink: '0' })
-      )}
+      className={cx(avatarStyles.root, css({ flexShrink: '0' }))}
       aria-label={`Grade ${grade}`}
+      style={{ backgroundColor: gradeColors[grade]?.bg ?? 'var(--colors-gray-7)' }}
     >
       <span
-        className={cx(
-          avatarStyles.fallback,
-          css({ color: 'white', fontSize: '2xl', fontWeight: 'bold' })
-        )}
+        className={cx(avatarStyles.fallback, css({ fontSize: '2xl', fontWeight: 'bold' }))}
+        style={{ color: gradeColors[grade]?.fg ?? 'white' }}
       >
         {grade}
       </span>

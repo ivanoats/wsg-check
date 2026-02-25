@@ -88,12 +88,14 @@ const GRADE_SCALE = [
 #### After:
 
 ```tsx
+// CSS variables used directly to guarantee correct rendering regardless of
+// whether Panda CSS generates utility classes for dynamic bg values.
 const GRADE_SCALE = [
-  { grade: 'A', range: '90–100', bg: 'green.9', fg: 'white' }, // Park UI tokens
-  { grade: 'C', range: '60–74', bg: 'amber.9', fg: 'amber.12' }, // amber.9/white fails WCAG AA
+  { grade: 'A', range: '90–100', bg: 'var(--colors-green-9)', fg: 'white' },
+  { grade: 'C', range: '60–74', bg: 'var(--colors-amber-9)', fg: 'var(--colors-amber-12)' }, // amber.9/white fails WCAG AA
   // ...
 ]
-<styled.span bg={bg} color={fg}>
+<styled.span style={{ backgroundColor: bg, color: fg }}>
 ```
 
 **Benefits:**

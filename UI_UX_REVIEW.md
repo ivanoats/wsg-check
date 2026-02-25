@@ -170,21 +170,21 @@ const GRADE_SCALE = [
 - `color: 'white'` text on these backgrounds may fail contrast in dark mode
 - Not using Park UI semantic tokens
 
-**Fix:** Use Park UI's color palette tokens with proper fg colors:
+**Fix:** Use CSS variables from Park UI's token system via inline `style` props. Using dynamic Panda `bg`/`color` props where the value comes from a variable is unreliable — Panda's static analysis may not generate the utility class. CSS variables (`var(--colors-*)`) are always defined by the Park UI preset and render correctly.
 
 ```tsx
+// CSS variables used directly — reliable regardless of Panda static analysis.
 const GRADE_SCALE = [
-  { grade: 'A', range: '90–100', bg: 'green.9', fg: 'white' },
-  { grade: 'B', range: '75–89', bg: 'blue.9', fg: 'white' },
-  { grade: 'C', range: '60–74', bg: 'amber.9', fg: 'amber.12' }, // amber.9/white fails WCAG AA; use amber.12 dark text instead
-  { grade: 'D', range: '45–59', bg: 'orange.9', fg: 'white' },
-  { grade: 'F', range: '0–44', bg: 'red.9', fg: 'white' },
+  { grade: 'A', range: '90–100', bg: 'var(--colors-green-9)', fg: 'white' },
+  { grade: 'B', range: '75–89', bg: 'var(--colors-blue-9)', fg: 'white' },
+  { grade: 'C', range: '60–74', bg: 'var(--colors-amber-9)', fg: 'var(--colors-amber-12)' }, // amber.9/white fails WCAG AA
+  { grade: 'D', range: '45–59', bg: 'var(--colors-orange-9)', fg: 'white' },
+  { grade: 'F', range: '0–44', bg: 'var(--colors-red-9)', fg: 'white' },
 ] as const
 
-// In component:
+// In component — use style prop, not Panda bg/color props:
 <styled.span
-  bg={bg}
-  color={fg}
+  style={{ backgroundColor: bg, color: fg }}
   // ... rest of props
 >
   {grade}
