@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { styled } from 'styled-system/jsx'
+import { cx, css } from 'styled-system/css'
 import { button, card, link } from 'styled-system/recipes'
 import { SectionHeading } from '../components/SectionHeading'
 
@@ -12,17 +13,41 @@ export const metadata: Metadata = {
 
 const cardStyles = card()
 
+/*
+ * Per-grade badge colours — each `css()` call uses a *literal* object so
+ * Panda's static extractor generates the utility classes (bg_green.9, etc.)
+ * at build time. Dynamic `bg={variable}` props are NOT extracted by Panda,
+ * which is why CSS-variable or dynamic-prop approaches left circles invisible.
+ */
+const gradeCircleBase = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  w: '10',
+  h: '10',
+  borderRadius: 'full',
+  fontWeight: 'bold',
+  fontSize: 'lg',
+  flexShrink: '0',
+})
+
+const gradeCircleColor: Readonly<Record<string, string>> = {
+  A: css({ bg: 'green.9', color: 'white' }), // green.9 in Park UI preset ✓
+  B: css({ bg: '[#0055b3]', color: 'white' }), // blue.9 token absent → arbitrary hex (≈7.1:1)
+  C: css({ bg: '[#ffb224]', color: '[#4d2000]' }), // amber.9/12 absent → arbitrary hex (≈7.1:1)
+  D: css({ bg: '[#ad4800]', color: 'white' }), // orange.9 token absent → arbitrary hex (≈5.7:1)
+  F: css({ bg: '[#c7272d]', color: 'white' }), // darker red than Panda's red.9 (≈5.6:1)
+}
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 interface GradeScaleItemProps {
   readonly grade: string
   readonly range: string
-  readonly bg: string
-  readonly fg: string
 }
 
 /** Single grade-scale card — extracted to limit JSX nesting depth. */
-const GradeScaleItem = ({ grade, range, bg, fg }: GradeScaleItemProps) => (
+const GradeScaleItem = ({ grade, range }: GradeScaleItemProps) => (
   <styled.div
     role="listitem"
     className={cardStyles.root}
@@ -30,27 +55,14 @@ const GradeScaleItem = ({ grade, range, bg, fg }: GradeScaleItemProps) => (
     gap="3"
     alignItems="center"
   >
-    <styled.span
-      display="inline-flex"
-      alignItems="center"
-      justifyContent="center"
-      w="10"
-      h="10"
-      borderRadius="full"
-      fontWeight="bold"
-      fontSize="lg"
-      bg={bg}
-      color={fg}
-      flexShrink="0"
-      aria-hidden="true"
-    >
+    <span className={cx(gradeCircleBase, gradeCircleColor[grade] ?? '')} aria-hidden="true">
       {grade}
-    </styled.span>
+    </span>
     <styled.div>
       <styled.p fontWeight="semibold" fontSize="sm" color="fg.default">
         Grade {grade}
       </styled.p>
-      <styled.p fontSize="xs" color="fg.subtle">
+      <styled.p fontSize="xs" color="fg.muted">
         Score {range}
       </styled.p>
     </styled.div>
@@ -58,11 +70,11 @@ const GradeScaleItem = ({ grade, range, bg, fg }: GradeScaleItemProps) => (
 )
 
 const GRADE_SCALE = [
-  { grade: 'A', range: '90–100', bg: 'green.9', fg: 'white' },
-  { grade: 'B', range: '75–89', bg: 'blue.9', fg: 'white' },
-  { grade: 'C', range: '60–74', bg: 'amber.10', fg: 'white' },
-  { grade: 'D', range: '45–59', bg: 'orange.9', fg: 'white' },
-  { grade: 'F', range: '0–44', bg: 'red.9', fg: 'white' },
+  { grade: 'A', range: '90–100' },
+  { grade: 'B', range: '75–89' },
+  { grade: 'C', range: '60–74' },
+  { grade: 'D', range: '45–59' },
+  { grade: 'F', range: '0–44' },
 ] as const
 
 /** Purpose & Methodology section. */
@@ -108,8 +120,8 @@ const ScoringSection = () => (
       role="list"
       aria-label="Grade scale"
     >
-      {GRADE_SCALE.map(({ grade, range, bg, fg }) => (
-        <GradeScaleItem key={grade} grade={grade} range={range} bg={bg} fg={fg} />
+      {GRADE_SCALE.map(({ grade, range }) => (
+        <GradeScaleItem key={grade} grade={grade} range={range} />
       ))}
     </styled.div>
   </styled.section>

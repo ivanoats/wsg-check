@@ -46,12 +46,25 @@ const fetchReportFromApi = async (id: string): Promise<SustainabilityReport | nu
 
 // ─── Style constants ──────────────────────────────────────────────────────────
 
-const gradeColors: Readonly<Record<string, { bg: string; fg: string }>> = {
-  A: { bg: 'green.9', fg: 'white' },
-  B: { bg: 'blue.9', fg: 'white' },
-  C: { bg: 'amber.10', fg: 'white' },
-  D: { bg: 'orange.9', fg: 'white' },
-  F: { bg: 'red.9', fg: 'white' },
+/*
+ * Per-grade badge colours — literal css() calls ensure Panda generates the
+ * utility classes at build time. Dynamic prop values and CSS variables are
+ * unreliable (Panda's extractor skips them; vars may not be defined).
+ */
+const gradeCircleBgClass: Readonly<Record<string, string>> = {
+  A: css({ bg: 'green.9' }), // green.9 in Park UI preset ✓
+  B: css({ bg: '[#0055b3]' }), // blue.9 token absent → arbitrary hex (≈7.1:1)
+  C: css({ bg: '[#ffb224]' }), // amber.9 token absent → arbitrary hex (≈7.1:1 with #4d2000)
+  D: css({ bg: '[#ad4800]' }), // orange.9 token absent → arbitrary hex (≈5.7:1)
+  F: css({ bg: '[#c7272d]' }), // darker red than Panda's red.9 (≈5.6:1)
+}
+
+const gradeCircleFgClass: Readonly<Record<string, string>> = {
+  A: css({ color: 'white' }),
+  B: css({ color: 'white' }),
+  C: css({ color: '[#4d2000]' }),
+  D: css({ color: 'white' }),
+  F: css({ color: 'white' }),
 }
 
 const cardStyles = card()
@@ -102,7 +115,7 @@ const SummaryCountCard = ({
     <styled.p fontWeight="bold" fontSize="xl" color={colorToken}>
       {count}
     </styled.p>
-    <styled.p fontSize="xs" color="fg.subtle">
+    <styled.p fontSize="xs" color="fg.muted">
       {label}
     </styled.p>
   </styled.div>
@@ -122,14 +135,16 @@ const ReportHeader = ({
     <span
       className={cx(
         avatarStyles.root,
-        css({ bg: gradeColors[grade]?.bg ?? 'gray.7', flexShrink: '0' })
+        css({ flexShrink: '0' }),
+        gradeCircleBgClass[grade] ?? css({ bg: 'gray.7' })
       )}
       aria-label={`Grade ${grade}`}
     >
       <span
         className={cx(
           avatarStyles.fallback,
-          css({ color: 'white', fontSize: '2xl', fontWeight: 'bold' })
+          css({ fontSize: '2xl', fontWeight: 'bold' }),
+          gradeCircleFgClass[grade] ?? css({ color: 'white' })
         )}
       >
         {grade}
@@ -145,7 +160,7 @@ const ReportHeader = ({
       >
         Score: {score}/100
       </styled.h1>
-      <styled.p fontSize="sm" color="fg.subtle" style={{ wordBreak: 'break-all' }}>
+      <styled.p fontSize="sm" color="fg.muted" style={{ wordBreak: 'break-all' }}>
         {url}
       </styled.p>
     </styled.div>
@@ -228,7 +243,7 @@ const CategoryScoresSection = ({
 const RecommendationTitle = ({ name, id }: { readonly name: string; readonly id: string }) => (
   <styled.p fontWeight="semibold" fontSize="sm" color="fg.default" mb="0.5">
     {name}{' '}
-    <styled.span color="fg.subtle" fontSize="xs">
+    <styled.span color="fg.muted" fontSize="xs">
       ({id})
     </styled.span>
   </styled.p>
@@ -318,11 +333,11 @@ const ExportSection = ({
           </a>
         </styled.div>
       ) : (
-        <styled.p fontSize="xs" color="fg.subtle" mt="3">
+        <styled.p fontSize="xs" color="fg.muted" mt="3">
           JSON export will be available once this report has fully loaded in your browser.
         </styled.p>
       )}
-      <styled.p fontSize="xs" color="fg.subtle" mt="3">
+      <styled.p fontSize="xs" color="fg.muted" mt="3">
         Share this result:{' '}
         <code className={code({ size: 'sm' })} style={{ wordBreak: 'break-all' }}>
           {`/results/${id}`}

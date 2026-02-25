@@ -28,6 +28,35 @@
    * WCAG 2.4.11 Focus Not Obscured (Minimum) — AA (WCAG 2.2).
    */
   scroll-padding-bottom: 4rem;
+
+  /*
+   * WCAG 1.4.3 — override Park UI accent tokens so white text on solid buttons
+   * and active-nav links meets the 4.5:1 AA contrast requirement.
+   * #13874f yields ~4.56:1 against white (pa11y-recommended value).
+   * Both --colors-accent-9 (direct solid button BG in Park UI recipes) and
+   * --colors-accent-default (semantic alias) are overridden.
+   * --colors-green-9 kept in sync for direct green.9 usage (e.g. grade badges).
+   * Unlayered :root wins over @layer tokens from the Park UI preset.
+   */
+  --colors-accent-default: #13874f;
+  --colors-accent-9: #13874f;
+  --colors-green-9: #13874f;
+
+  /*
+   * WCAG 1.4.3 — define missing Radix color tokens for grade badge circles
+   * (B=blue, D=orange, F=red). Park UI's createPreset only injects green and
+   * slate palettes; blue/orange/red CSS variables are absent from the generated
+   * token output.  Pa11y checks aria-hidden contrast too, so all badge colours
+   * must meet 4.5:1 with their text colour.
+   * Values chosen as darker variants of Radix .9 steps (≥4.5:1 with white):
+   *   blue:   #0055b3  ≈ 7.1:1 with white
+   *   orange: #ad4800  ≈ 5.7:1 with white
+   *   red:    #c7272d  ≈ 5.6:1 with white (overrides Panda's built-in red.9
+   *           #e5484d which is only 3.91:1 — also improves fail-count text)
+   */
+  --colors-blue-9: #0055b3;
+  --colors-orange-9: #ad4800;
+  --colors-red-9: #c7272d;
 }
 
 /* --- Reduced motion --- */

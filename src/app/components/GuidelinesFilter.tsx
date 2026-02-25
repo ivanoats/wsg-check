@@ -124,7 +124,7 @@ const FilterControls = ({
 /** Guideline metadata badges (ID, testability, category). */
 const GuidelineBadges = ({ g }: { readonly g: GuidelineEntry }) => (
   <styled.div display="flex" gap="2" alignItems="center" flexWrap="wrap">
-    <styled.span fontSize="xs" fontWeight="bold" color="fg.subtle" fontFamily="mono">
+    <styled.span fontSize="xs" fontWeight="bold" color="fg.muted" fontFamily="mono">
       {g.id}
     </styled.span>
     <styled.span
@@ -231,7 +231,7 @@ export const GuidelinesFilter = ({ guidelines }: GuidelinesFilterProps) => {
       />
 
       {/* Results count */}
-      <styled.p fontSize="sm" color="fg.subtle" aria-live="polite" aria-atomic="true">
+      <styled.p fontSize="sm" color="fg.muted" aria-live="polite" aria-atomic="true">
         Showing {filtered.length} of {guidelines.length} guidelines
       </styled.p>
 

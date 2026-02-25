@@ -170,28 +170,28 @@ const GRADE_SCALE = [
 - `color: 'white'` text on these backgrounds may fail contrast in dark mode
 - Not using Park UI semantic tokens
 
-**Fix:** Use Park UI's color palette tokens with proper fg colors:
+**Fix:** Use `css()` calls at **module level** with *literal* values — Panda's static extractor scans source files at build time and generates utility classes for every literal value it finds in recognised patterns. Dynamic `bg={variable}` props and `style={{ backgroundColor: cssVar }}` with CSS variable strings are both unreliable:
+- Panda's extractor skips dynamic prop values
+- CSS variable approach fails when the variable isn't defined by the preset (e.g. `--colors-blue-9`, `--colors-orange-9` may be absent)
 
 ```tsx
-const GRADE_SCALE = [
-  { grade: 'A', range: '90–100', bg: 'green.9', fg: 'white' },
-  { grade: 'B', range: '75–89', bg: 'blue.9', fg: 'white' },
-  { grade: 'C', range: '60–74', bg: 'amber.10', fg: 'white' },
-  { grade: 'D', range: '45–59', bg: 'orange.9', fg: 'white' },
-  { grade: 'F', range: '0–44', bg: 'red.9', fg: 'white' },
-] as const
+// Module-level css() calls — Panda's static extractor generates all utility
+// classes at build time. This is the correct, idiomatic Panda CSS pattern.
+const gradeCircleColor: Readonly<Record<string, string>> = {
+  A: css({ bg: 'green.9', color: 'white' }),
+  B: css({ bg: 'blue.9', color: 'white' }),
+  C: css({ bg: 'amber.9', color: 'amber.12' }), // amber.9/white fails WCAG AA
+  D: css({ bg: 'orange.9', color: 'white' }),
+  F: css({ bg: 'red.9', color: 'white' }),
+}
 
-// In component:
-<styled.span
-  bg={bg}
-  color={fg}
-  // ... rest of props
->
+// In component — apply via className, not style prop or dynamic Panda bg/color:
+<span className={cx(circleBase, gradeCircleColor[grade] ?? '')} aria-hidden="true">
   {grade}
-</styled.span>
+</span>
 ```
 
-Park UI's color scales (`.9`, `.10`) are designed to have sufficient contrast with white text in both light and dark modes.
+Park UI's `.9` scales are designed to have sufficient contrast with white text in both light and dark modes. **Exception:** amber is inherently light — `amber.9` with white text fails WCAG AA (≈2.3:1). Use `amber.12` (dark text) on `amber.9` background instead (≈5.5:1). Do **not** use `amber.10` with white text (≈1.55:1).
 
 ---
 
