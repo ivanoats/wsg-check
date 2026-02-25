@@ -88,14 +88,18 @@ const GRADE_SCALE = [
 #### After:
 
 ```tsx
-// CSS variables used directly to guarantee correct rendering regardless of
-// whether Panda CSS generates utility classes for dynamic bg values.
-const GRADE_SCALE = [
-  { grade: 'A', range: '90–100', bg: 'var(--colors-green-9)', fg: 'white' },
-  { grade: 'C', range: '60–74', bg: 'var(--colors-amber-9)', fg: 'var(--colors-amber-12)' }, // amber.9/white fails WCAG AA
-  // ...
-]
-<styled.span style={{ backgroundColor: bg, color: fg }}>
+// Module-level css() calls with *literal* values — Panda's static extractor
+// generates the utility classes at build time. Dynamic bg/color props and CSS
+// variable strings are both unreliable (extractor skips them or vars may be
+// undefined). This is the correct, idiomatic Panda CSS pattern.
+const gradeCircleColor: Readonly<Record<string, string>> = {
+  A: css({ bg: 'green.9', color: 'white' }),
+  B: css({ bg: 'blue.9', color: 'white' }),
+  C: css({ bg: 'amber.9', color: 'amber.12' }), // amber.9/white fails WCAG AA
+  D: css({ bg: 'orange.9', color: 'white' }),
+  F: css({ bg: 'red.9', color: 'white' }),
+}
+<span className={cx(circleBase, gradeCircleColor[grade] ?? '')} aria-hidden="true">
 ```
 
 **Benefits:**
