@@ -191,7 +191,11 @@ describe('UrlInputForm', () => {
   it('does not navigate when API returns an invalid result id', async () => {
     fetchMock.mockResolvedValue({
       ok: true,
-      json: async () => ({ id: '/\\/evil.com', status: 'completed', report: { overallScore: 80 } }),
+      json: async () => ({
+        id: String.raw`/\/evil.com`,
+        status: 'completed',
+        report: { overallScore: 80 },
+      }),
     })
 
     render(<UrlInputForm />)
@@ -204,6 +208,6 @@ describe('UrlInputForm', () => {
       expect(screen.getByText(/unexpected response from server/i)).toBeDefined()
     })
     expect(pushMock).not.toHaveBeenCalled()
-    expect(sessionStorageMock.getItem('wsg-check:result:/\\/evil.com')).toBeNull()
+    expect(sessionStorageMock.getItem(String.raw`wsg-check:result:/\/evil.com`)).toBeNull()
   })
 })
