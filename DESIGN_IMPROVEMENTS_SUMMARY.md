@@ -90,6 +90,7 @@ const GRADE_SCALE = [
 ```tsx
 const GRADE_SCALE = [
   { grade: 'A', range: '90–100', bg: 'green.9', fg: 'white' }, // Park UI tokens
+  { grade: 'C', range: '60–74', bg: 'amber.9', fg: 'amber.12' }, // amber.9/white fails WCAG AA
   // ...
 ]
 <styled.span bg={bg} color={fg}>
@@ -157,10 +158,12 @@ const testabilityColor = {
 #### After:
 
 ```tsx
+// Use light bg + dark fg pairs for WCAG AA compliance.
+// amber.9/white and gray.7/white both fail contrast; use .3/.11 pairs instead.
 const testabilityColor = {
-  automated: { bg: 'green.9', fg: 'white' },
-  'semi-automated': { bg: 'amber.9', fg: 'white' },
-  'manual-only': { bg: 'gray.7', fg: 'white' },
+  automated: { bg: 'green.3', fg: 'green.11' },
+  'semi-automated': { bg: 'amber.3', fg: 'amber.11' },
+  'manual-only': { bg: 'gray.3', fg: 'gray.11' },
 }
 <styled.span bg={...bg} color={...fg}>
 ```
@@ -278,12 +281,12 @@ _focusVisible: {
 | --------------------- | ----------- | ---------------------- |
 | `green.9`             | Dark green  | Pass, Grade A, Success |
 | `blue.9`              | Dark blue   | Info, Grade B          |
-| `amber.9`, `amber.10` | Dark amber  | Warning, Grade C       |
+| `amber.9` + `amber.12` fg | Dark amber | Warning, Grade C (amber.9/white fails WCAG AA — use amber.12 dark text) |
 | `orange.9`            | Dark orange | Grade D                |
 | `red.9`               | Dark red    | Fail, Grade F, Error   |
 | `gray.7`              | Medium gray | N/A, Manual-only       |
 
-**Note:** `.9` and `.10` scales are designed to have ≥4.5:1 contrast with white text in both light and dark modes.
+**Note:** `.9` scales are designed to have ≥4.5:1 contrast with white text. **Exception:** amber is inherently light — always pair `amber.9` background with `amber.12` text, never with `white`. Never use `amber.10` with white text (≈1.55:1 contrast).
 
 ---
 

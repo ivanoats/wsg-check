@@ -176,7 +176,7 @@ const GRADE_SCALE = [
 const GRADE_SCALE = [
   { grade: 'A', range: '90–100', bg: 'green.9', fg: 'white' },
   { grade: 'B', range: '75–89', bg: 'blue.9', fg: 'white' },
-  { grade: 'C', range: '60–74', bg: 'amber.10', fg: 'white' },
+  { grade: 'C', range: '60–74', bg: 'amber.9', fg: 'amber.12' }, // amber.9/white fails WCAG AA; use amber.12 dark text instead
   { grade: 'D', range: '45–59', bg: 'orange.9', fg: 'white' },
   { grade: 'F', range: '0–44', bg: 'red.9', fg: 'white' },
 ] as const
@@ -191,7 +191,7 @@ const GRADE_SCALE = [
 </styled.span>
 ```
 
-Park UI's color scales (`.9`, `.10`) are designed to have sufficient contrast with white text in both light and dark modes.
+Park UI's `.9` scales are designed to have sufficient contrast with white text in both light and dark modes. **Exception:** amber is inherently light — `amber.9` with white text fails WCAG AA (≈2.3:1). Use `amber.12` (dark text) on `amber.9` background instead (≈5.5:1). Do **not** use `amber.10` with white text (≈1.55:1).
 
 ---
 
