@@ -3,8 +3,8 @@
  *
  * Caching strategy:
  *   /_next/static/**   → cache-first   (immutable hashed assets)
- *   GET /api/check/:id → network-first, cache for offline fallback
- *   navigate requests  → network-first, fallback to cached shell
+ *   GET /api/check/:id → network-first, cache for offline fallback (max 50 entries)
+ *   navigate requests  → network-first, fallback to cached page or '/' app shell
  *
  * This allows users to view previously loaded results pages offline and
  * reduces repeat-visit data transfer by serving cached static assets
@@ -14,6 +14,9 @@
 const SHELL_CACHE = 'wsg-shell-v1'
 const RESULTS_CACHE = 'wsg-results-v1'
 const STATIC_CACHE = 'wsg-static-v1'
+
+/** Maximum number of API result responses to keep in RESULTS_CACHE. */
+const MAX_RESULTS_ENTRIES = 50
 
 /** App-shell pages pre-cached at install time. */
 const SHELL_PAGES = ['/', '/about', '/guidelines']
@@ -52,13 +55,13 @@ self.addEventListener('fetch', (event) => {
 
   // API result lookups → network-first, cache for offline fallback
   if (/^\/api\/check\/[^/]+$/.test(url.pathname) && request.method === 'GET') {
-    event.respondWith(networkFirst(request, RESULTS_CACHE))
+    event.respondWith(networkFirstWithLimit(request, RESULTS_CACHE, MAX_RESULTS_ENTRIES))
     return
   }
 
-  // Navigation requests → network-first, fallback to cached shell
+  // Navigation requests → network-first, fallback to exact cached page then '/' shell
   if (request.mode === 'navigate') {
-    event.respondWith(networkFirst(request, SHELL_CACHE))
+    event.respondWith(networkFirstWithShellFallback(request))
     return
   }
 })
@@ -73,14 +76,49 @@ async function cacheFirst(request, cacheName) {
   return response
 }
 
-/** Network-first: try the network, fall back to cache when offline. */
-async function networkFirst(request, cacheName) {
+/**
+ * Network-first with a max-entries eviction policy.
+ * After each successful cache.put(), prune the oldest entries so the cache
+ * never exceeds `maxEntries` items.
+ */
+async function networkFirstWithLimit(request, cacheName, maxEntries) {
   const cache = await caches.open(cacheName)
+  try {
+    const response = await fetch(request)
+    if (response.ok) {
+      cache.put(request, response.clone())
+      pruneCache(cache, maxEntries)
+    }
+    return response
+  } catch {
+    return (await cache.match(request)) ?? Response.error()
+  }
+}
+
+/**
+ * Network-first for navigation: on network failure fall back to the exact
+ * cached page, then to the pre-cached '/' app shell so users always get
+ * something meaningful rather than a browser error.
+ */
+async function networkFirstWithShellFallback(request) {
+  const cache = await caches.open(SHELL_CACHE)
   try {
     const response = await fetch(request)
     if (response.ok) cache.put(request, response.clone())
     return response
   } catch {
-    return (await cache.match(request)) ?? Response.error()
+    return (await cache.match(request)) ?? (await cache.match('/')) ?? Response.error()
+  }
+}
+
+/**
+ * Prune the oldest cache entries once the cache exceeds `maxEntries`.
+ * Keys are returned in insertion order by the Cache API.
+ */
+async function pruneCache(cache, maxEntries) {
+  const keys = await cache.keys()
+  if (keys.length > maxEntries) {
+    const toDelete = keys.slice(0, keys.length - maxEntries)
+    await Promise.all(toDelete.map((k) => cache.delete(k)))
   }
 }
