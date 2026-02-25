@@ -313,7 +313,7 @@ export default async function ResultsIdPage({ params }: PageProps) {
   if (!report) notFound()
 
   return (
-    <styled.section aria-labelledby="results-heading" px="4" py="6" maxW="2xl" mx="auto">
+    <styled.section aria-labelledby="results-heading" py="6" maxW="2xl" mx="auto">
       {/* Back link */}
       <styled.div mb="4">
         <Link href="/" className={button({ variant: 'ghost', size: 'sm' })}>
