@@ -79,6 +79,7 @@ describe('CheckResultsSection', () => {
     const webDevButton = screen.getByRole('button', { name: /toggle web-dev/i })
     expect(webDevButton.getAttribute('aria-expanded')).toBe('false')
     await act(async () => {
+      fireEvent.focus(webDevButton) // transition Accordion machine to 'focused' state
       fireEvent.click(webDevButton)
     })
     expect(webDevButton.getAttribute('aria-expanded')).toBe('true')
@@ -88,8 +89,10 @@ describe('CheckResultsSection', () => {
     render(<CheckResultsSection checks={SAMPLE_CHECKS} />)
     const webDevButton = screen.getByRole('button', { name: /toggle web-dev/i })
     await act(async () => {
+      fireEvent.focus(webDevButton)
       fireEvent.click(webDevButton)
     })
+    expect(webDevButton.getAttribute('aria-expanded')).toBe('true')
     // web-dev is now open, ux should still be closed
     const uxButton = screen.getByRole('button', { name: /toggle ux/i })
     expect(uxButton.getAttribute('aria-expanded')).toBe('false')

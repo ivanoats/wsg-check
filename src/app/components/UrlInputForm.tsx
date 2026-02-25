@@ -4,8 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Field } from '@ark-ui/react/field'
 import { createStyleContext, styled } from 'styled-system/jsx'
-import { css } from 'styled-system/css'
-import { field, button, input } from 'styled-system/recipes'
+import { field, button, input, alert } from 'styled-system/recipes'
 
 const RECENT_CHECKS_KEY = 'wsg-check:recent-urls'
 const MAX_RECENT = 5
@@ -20,16 +19,7 @@ const FieldErrorText = withContext(Field.ErrorText, 'errorText')
 // Input uses the standalone `input` recipe (not the `field__input` slot) for full border/padding styling.
 const FieldInput = styled(Field.Input, input)
 
-const recentButtonClass = css({
-  color: 'accent.default',
-  textDecoration: 'none',
-  fontSize: 'sm',
-  cursor: 'pointer',
-  background: 'none',
-  border: 'none',
-  padding: '0',
-  _hover: { textDecoration: 'underline' },
-})
+const alertStyles = alert()
 
 /**
  * Validates that a string is a well-formed http/https URL.
@@ -110,7 +100,11 @@ const RecentCheckButton = ({ url, onSelect }: RecentCheckButtonProps) => {
   }, [url, onSelect])
 
   return (
-    <button type="button" className={recentButtonClass} onClick={handleClick}>
+    <button
+      type="button"
+      className={button({ variant: 'ghost', size: 'sm' })}
+      onClick={handleClick}
+    >
       {url}
     </button>
   )
@@ -131,6 +125,7 @@ export const UrlInputForm = () => {
   const router = useRouter()
   const [value, setValue] = useState('')
   const [error, setError] = useState('')
+  const [apiError, setApiError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [recent, setRecent] = useState<ReadonlyArray<string>>([])
 
@@ -147,6 +142,7 @@ export const UrlInputForm = () => {
         return
       }
       setError('')
+      setApiError('')
       setIsLoading(true)
       try {
         const res = await fetch('/api/check', {
@@ -156,19 +152,19 @@ export const UrlInputForm = () => {
         })
         if (!res.ok) {
           const body = (await res.json()) as { message?: string }
-          setError(body.message ?? 'Check failed. Please try again.')
+          setApiError(body.message ?? 'Check failed. Please try again.')
           return
         }
         const data = (await res.json()) as { id?: string }
         if (!data.id) {
-          setError('Unexpected response from server.')
+          setApiError('Unexpected response from server.')
           return
         }
         saveRecent(parsed.url.toString())
         setRecent(readRecent())
         router.push(`/results/${data.id}`)
       } catch {
-        setError('Network error. Please check your connection and try again.')
+        setApiError('Network error. Please check your connection and try again.')
       } finally {
         setIsLoading(false)
       }
@@ -188,8 +184,9 @@ export const UrlInputForm = () => {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setValue(e.target.value)
       if (error) setError('')
+      if (apiError) setApiError('')
     },
-    [error]
+    [error, apiError]
   )
 
   const handleRecentSelect = useCallback(
@@ -215,6 +212,14 @@ export const UrlInputForm = () => {
           </button>
         </styled.div>
       </form>
+
+      {apiError && (
+        <div className={alertStyles.root} role="alert">
+          <div className={alertStyles.content}>
+            <p className={alertStyles.description}>{apiError}</p>
+          </div>
+        </div>
+      )}
 
       {recent.length > 0 && (
         <styled.div display="flex" flexDirection="column" gap="2">
