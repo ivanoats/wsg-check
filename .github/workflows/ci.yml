@@ -135,7 +135,7 @@ jobs:
 
   accessibility:
     name: Accessibility (pa11y-ci)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
     needs: [build]
@@ -168,9 +168,9 @@ jobs:
         run: npx wait-on http://localhost:3000 --timeout 30000
 
       - name: Run pa11y-ci accessibility tests
-        run: PUPPETEER_ARGS="--no-sandbox" npm run test:a11y
+        run: npm run test:a11y
         env:
-          PUPPETEER_LAUNCH_ARGS: '--no-sandbox'
+          PUPPETEER_LAUNCH_ARGS: '--no-sandbox --disable-setuid-sandbox'
           PUPPETEER_DISABLE_SANDBOX: 'true'
 
   lighthouse:
