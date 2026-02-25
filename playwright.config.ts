@@ -24,8 +24,8 @@ export default defineConfig({
 
   /** Shared settings for every test. */
   use: {
-    /** Base URL for page.goto('/') calls. */
-    baseURL: 'http://localhost:3000',
+    /** Base URL for page.goto('/') calls. Override with PLAYWRIGHT_BASE_URL for staging/prod. */
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000',
 
     /** Capture screenshot on failure automatically. */
     screenshot: 'only-on-failure',
@@ -65,6 +65,10 @@ export default defineConfig({
    * Start the Next.js dev server before the test suite and shut it down
    * afterwards.  Playwright waits until the URL is reachable before running
    * any tests.
+   *
+   * For production-like testing use:
+   *   PLAYWRIGHT_BASE_URL=https://your-staging-url npx playwright test
+   * or build first and set the command to 'npm run build && npm start'.
    */
   webServer: {
     command: 'npm run dev',

@@ -5,11 +5,7 @@ import { test, expect } from '@playwright/test'
  * and element-level screenshots for visual regression baseline creation.
  *
  * Screenshots are written to:
- *   test-results/<test-name>/          – artefacts on failure
- *   tests/e2e/screenshots/             – explicit manual snapshots (see below)
- *
- * To update visual baselines after intentional UI changes:
- *   npx playwright test --update-snapshots
+ *   test-results/          – artefacts and explicit manual snapshots
  */
 
 test.describe('Screenshot capture', () => {
