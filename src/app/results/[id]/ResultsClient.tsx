@@ -381,11 +381,11 @@ export const ResultsClient = ({ id }: ResultsClientProps) => {
   // showing "Loading results…" when the data is already cached (typical flow
   // after a form submission).
   const [report, setReport] = useState<SustainabilityReport | null>(() => {
-    if (typeof window === 'undefined') return null
+    if (globalThis.window === undefined) return null
     return readCachedResult(id)
   })
   const [loading, setLoading] = useState(
-    () => typeof window === 'undefined' || readCachedResult(id) === null
+    () => globalThis.window === undefined || readCachedResult(id) === null
   )
 
   useEffect(() => {
