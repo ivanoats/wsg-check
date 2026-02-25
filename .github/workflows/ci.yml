@@ -170,6 +170,7 @@ jobs:
       - name: Run pa11y-ci accessibility tests
         run: PUPPETEER_ARGS="--no-sandbox" npm run test:a11y
         env:
+          PUPPETEER_LAUNCH_ARGS: '--no-sandbox'
           PUPPETEER_DISABLE_SANDBOX: 'true'
 
   lighthouse:

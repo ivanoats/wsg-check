@@ -5,7 +5,7 @@
     "ignore": ["WCAG2AA.Principle2.Guideline2_4.2_4_1.H64.1"]
   },
   "chromeLaunchConfig": {
-    "args": ["--no-sandbox"]
+    "args": ["--no-sandbox", "--disable-setuid-sandbox"]
   },
   "urls": [
     "http://localhost:3000/",
