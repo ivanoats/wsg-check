@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Field } from '@ark-ui/react/field'
 import { createStyleContext, styled } from 'styled-system/jsx'
 import { field, button, input, alert } from 'styled-system/recipes'
+import type { CheckResponseBody } from '@/api/types'
 
 const RECENT_CHECKS_KEY = 'wsg-check:recent-urls'
 const MAX_RECENT = 5
@@ -155,7 +156,7 @@ export const UrlInputForm = () => {
           setApiError(body.message ?? 'Check failed. Please try again.')
           return
         }
-        const data = (await res.json()) as { id?: string; status?: string; report?: unknown }
+        const data = (await res.json()) as Partial<CheckResponseBody>
         if (!data.id) {
           setApiError('Unexpected response from server.')
           return

@@ -270,36 +270,61 @@ const RecommendationsSection = ({
   )
 }
 
-/** Export and share section. */
-const ExportSection = ({ id }: { readonly id: string }) => (
-  <styled.section aria-labelledby="export-heading" mt="6">
-    <SectionHeading id="export-heading">Export &amp; Share</SectionHeading>
-    <styled.div display="flex" gap="3" flexWrap="wrap">
-      <a
-        href={`/api/check/${id}`}
-        download={`wsg-report-${id}.json`}
-        className={button({ variant: 'outline', size: 'sm' })}
-      >
-        Download JSON
-      </a>
-      <a
-        href={`/api/check/${id}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={button({ variant: 'ghost', size: 'sm' })}
-        aria-label="View JSON (opens in new tab)"
-      >
-        View JSON
-      </a>
-    </styled.div>
-    <styled.p fontSize="xs" color="fg.subtle" mt="3">
-      Share this result:{' '}
-      <code className={code({ size: 'sm' })} style={{ wordBreak: 'break-all' }}>
-        {`/results/${id}`}
-      </code>
-    </styled.p>
-  </styled.section>
-)
+/** Export and share section — generates download links from the cached report. */
+const ExportSection = ({
+  id,
+  report,
+}: {
+  readonly id: string
+  readonly report: SustainabilityReport
+}) => {
+  const [dataUrl, setDataUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    try {
+      const json = JSON.stringify({ id, status: 'completed', report }, null, 2)
+      setDataUrl(`data:application/json;charset=utf-8,${encodeURIComponent(json)}`)
+    } catch {
+      setDataUrl(null)
+    }
+  }, [id, report])
+
+  return (
+    <styled.section aria-labelledby="export-heading" mt="6">
+      <SectionHeading id="export-heading">Export &amp; Share</SectionHeading>
+      {dataUrl !== null ? (
+        <styled.div display="flex" gap="3" flexWrap="wrap">
+          <a
+            href={dataUrl}
+            download={`wsg-report-${id}.json`}
+            className={button({ variant: 'outline', size: 'sm' })}
+          >
+            Download JSON
+          </a>
+          <a
+            href={dataUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={button({ variant: 'ghost', size: 'sm' })}
+            aria-label="View JSON (opens in new tab)"
+          >
+            View JSON
+          </a>
+        </styled.div>
+      ) : (
+        <styled.p fontSize="xs" color="fg.subtle" mt="3">
+          JSON export will be available once this report has fully loaded in your browser.
+        </styled.p>
+      )}
+      <styled.p fontSize="xs" color="fg.subtle" mt="3">
+        Share this result:{' '}
+        <code className={code({ size: 'sm' })} style={{ wordBreak: 'break-all' }}>
+          {`/results/${id}`}
+        </code>
+      </styled.p>
+    </styled.section>
+  )
+}
 
 /** Methodology note section. */
 const MethodologySection = ({
@@ -337,32 +362,29 @@ interface ResultsClientProps {
  * across function instances (e.g. on Netlify).
  */
 export const ResultsClient = ({ id }: ResultsClientProps) => {
-  const [report, setReport] = useState<SustainabilityReport | null>(null)
-  const [loading, setLoading] = useState(true)
+  // Lazy initialisers: read from sessionStorage on first client render to avoid
+  // showing "Loading results…" when the data is already cached (typical flow
+  // after a form submission).
+  const [report, setReport] = useState<SustainabilityReport | null>(() => {
+    if (typeof window === 'undefined') return null
+    return readCachedResult(id)
+  })
+  const [loading, setLoading] = useState(
+    () => typeof window === 'undefined' || readCachedResult(id) === null
+  )
 
   useEffect(() => {
-    const cached = readCachedResult(id)
-    if (cached) {
-      setReport(cached)
-      setLoading(false)
-      return
-    }
+    if (!loading) return // cache hit — nothing to fetch
 
     fetchReportFromApi(id)
-      .then((r) => {
-        setReport(r)
-      })
-      .catch(() => {
-        setReport(null)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
-  }, [id])
+      .then((r) => setReport(r))
+      .catch(() => setReport(null))
+      .finally(() => setLoading(false))
+  }, [id]) // only re-run when id changes
 
   if (loading) {
     return (
-      <styled.section aria-labelledby="results-heading" py="6" maxW="2xl" mx="auto">
+      <styled.section aria-label="Loading results" py="6" maxW="2xl" mx="auto">
         <styled.div mb="4">
           <Link href="/" className={button({ variant: 'ghost', size: 'sm' })}>
             ← New check
@@ -375,7 +397,7 @@ export const ResultsClient = ({ id }: ResultsClientProps) => {
 
   if (!report) {
     return (
-      <styled.section aria-labelledby="results-heading" py="6" maxW="2xl" mx="auto">
+      <styled.section aria-label="Result not found" py="6" maxW="2xl" mx="auto">
         <styled.div mb="4">
           <Link href="/" className={button({ variant: 'ghost', size: 'sm' })}>
             ← New check
@@ -402,7 +424,7 @@ export const ResultsClient = ({ id }: ResultsClientProps) => {
       <CategoryScoresSection categories={report.categories} />
       <RecommendationsSection recommendations={report.recommendations} />
       <CheckResultsSection checks={report.checks} />
-      <ExportSection id={id} />
+      <ExportSection id={id} report={report} />
       <MethodologySection methodology={report.methodology} />
     </styled.section>
   )
