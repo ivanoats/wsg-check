@@ -12,10 +12,10 @@ export default tseslint.config(
   {
     // Service workers run in the browser's service-worker global scope.
     // Declare those globals so ESLint does not flag them as undefined.
+    // `self` is intentionally omitted — use the standardised `globalThis` instead.
     files: ['public/sw.js'],
     languageOptions: {
       globals: {
-        self: 'readonly',
         caches: 'readonly',
         clients: 'readonly',
         fetch: 'readonly',

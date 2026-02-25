@@ -21,26 +21,26 @@ const MAX_RESULTS_ENTRIES = 50
 /** App-shell pages pre-cached at install time. */
 const SHELL_PAGES = ['/', '/about', '/guidelines']
 
-self.addEventListener('install', (event) => {
+globalThis.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(SHELL_CACHE)
       .then((cache) => cache.addAll(SHELL_PAGES))
-      .then(() => self.skipWaiting())
+      .then(() => globalThis.skipWaiting())
   )
 })
 
-self.addEventListener('activate', (event) => {
+globalThis.addEventListener('activate', (event) => {
   const current = new Set([SHELL_CACHE, RESULTS_CACHE, STATIC_CACHE])
   event.waitUntil(
     caches
       .keys()
       .then((keys) => Promise.all(keys.filter((k) => !current.has(k)).map((k) => caches.delete(k))))
-      .then(() => self.clients.claim())
+      .then(() => globalThis.clients.claim())
   )
 })
 
-self.addEventListener('fetch', (event) => {
+globalThis.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
 
