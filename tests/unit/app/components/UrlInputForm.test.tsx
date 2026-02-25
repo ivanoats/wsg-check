@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { UrlInputForm } from '@/app/components/UrlInputForm'
+import { useRouter } from 'next/navigation'
 
 vi.mock('next/link')
 vi.mock('next/navigation')
@@ -46,10 +47,21 @@ const sessionStorageMock = (() => {
 vi.stubGlobal('sessionStorage', sessionStorageMock)
 
 describe('UrlInputForm', () => {
+  const pushMock = vi.fn()
+
   beforeEach(() => {
     localStorageMock.clear()
     sessionStorageMock.clear()
     fetchMock.mockReset()
+    pushMock.mockReset()
+    vi.mocked(useRouter).mockReturnValue({
+      push: pushMock,
+      replace: vi.fn(),
+      back: vi.fn(),
+      forward: vi.fn(),
+      refresh: vi.fn(),
+      prefetch: vi.fn(),
+    })
   })
 
   it('renders the URL input and submit button', () => {
@@ -150,7 +162,11 @@ describe('UrlInputForm', () => {
   })
 
   it('saves the full response to sessionStorage on successful check', async () => {
-    const mockData = { id: 'test-uuid', status: 'completed', report: { overallScore: 80 } }
+    const mockData = {
+      id: '123e4567-e89b-42d3-a456-426614174000',
+      status: 'completed',
+      report: { overallScore: 80 },
+    }
     fetchMock.mockResolvedValue({
       ok: true,
       json: async () => mockData,
@@ -161,11 +177,37 @@ describe('UrlInputForm', () => {
     })
     fireEvent.submit(screen.getByRole('form', { name: /sustainability check form/i }))
     await waitFor(() => {
-      const stored = sessionStorageMock.getItem('wsg-check:result:test-uuid')
+      const stored = sessionStorageMock.getItem(
+        'wsg-check:result:123e4567-e89b-42d3-a456-426614174000'
+      )
       expect(stored).not.toBeNull()
       const parsed = JSON.parse(stored ?? '{}') as typeof mockData
-      expect(parsed.id).toBe('test-uuid')
+      expect(parsed.id).toBe('123e4567-e89b-42d3-a456-426614174000')
       expect(parsed.report.overallScore).toBe(80)
     })
+    expect(pushMock).toHaveBeenCalledWith('/results/123e4567-e89b-42d3-a456-426614174000')
+  })
+
+  it('does not navigate when API returns an invalid result id', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: String.raw`/\/evil.com`,
+        status: 'completed',
+        report: { overallScore: 80 },
+      }),
+    })
+
+    render(<UrlInputForm />)
+    fireEvent.change(screen.getByRole('textbox', { name: /website url/i }), {
+      target: { value: 'https://example.com' },
+    })
+    fireEvent.submit(screen.getByRole('form', { name: /sustainability check form/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/unexpected response from server/i)).toBeDefined()
+    })
+    expect(pushMock).not.toHaveBeenCalled()
+    expect(sessionStorageMock.getItem(String.raw`wsg-check:result:/\/evil.com`)).toBeNull()
   })
 })
