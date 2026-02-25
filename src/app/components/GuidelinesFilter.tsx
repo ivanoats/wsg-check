@@ -14,9 +14,9 @@ interface GuidelinesFilterProps {
 const fieldStyles = field()
 
 const testabilityColor: Readonly<Record<string, { bg: string; fg: string }>> = {
-  automated: { bg: 'green.9', fg: 'white' },
-  'semi-automated': { bg: 'amber.9', fg: 'white' },
-  'manual-only': { bg: 'gray.7', fg: 'white' },
+  automated: { bg: 'green.3', fg: 'green.11' },
+  'semi-automated': { bg: 'amber.3', fg: 'amber.11' },
+  'manual-only': { bg: 'gray.3', fg: 'gray.11' },
 }
 
 const categoryLabel: Readonly<Record<string, string>> = {
@@ -132,8 +132,8 @@ const GuidelineBadges = ({ g }: { readonly g: GuidelineEntry }) => (
       px="1.5"
       py="0.5"
       borderRadius="sm"
-      bg={testabilityColor[g.testability]?.bg ?? 'gray.7'}
-      color={testabilityColor[g.testability]?.fg ?? 'white'}
+      bg={testabilityColor[g.testability]?.bg ?? 'gray.3'}
+      color={testabilityColor[g.testability]?.fg ?? 'gray.11'}
       fontWeight="medium"
       aria-label={`Testability: ${testabilityLabel[g.testability]}`}
     >
@@ -178,9 +178,9 @@ const GuidelineCard = ({ g }: { readonly g: GuidelineEntry }) => (
         </a>
       )}
     </styled.div>
-    <styled.h3 fontSize="sm" fontWeight="semibold" color="fg.default" mb="1">
+    <styled.h2 fontSize="sm" fontWeight="semibold" color="fg.default" mb="1">
       {g.title}
-    </styled.h3>
+    </styled.h2>
     <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed">
       {g.description}
     </styled.p>

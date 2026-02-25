@@ -1,0 +1,15 @@
+{
+  "defaults": {
+    "timeout": 10000,
+    "wait": 2000,
+    "ignore": ["WCAG2AA.Principle2.Guideline2_4.2_4_1.H64.1"]
+  },
+  "chromeLaunchConfig": {
+    "args": ["--no-sandbox", "--disable-setuid-sandbox"]
+  },
+  "urls": [
+    "http://localhost:3000/",
+    "http://localhost:3000/about",
+    "http://localhost:3000/guidelines"
+  ]
+}
