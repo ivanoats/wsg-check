@@ -118,4 +118,30 @@ describe('CheckResultsSection', () => {
     expect(screen.getByText(/✓ 1/)).toBeDefined()
     expect(screen.getByText(/✗ 1/)).toBeDefined()
   })
+
+  it('does not emit a duplicate-key warning when two checks share the same guidelineId', () => {
+    const consoleSpy = vi.spyOn(console, 'error')
+    const duplicateIdChecks: ReadonlyArray<CheckResult> = [
+      makeCheck({
+        guidelineId: '3.17',
+        guidelineName: 'Expected Files',
+        successCriterion: 'Pages should link to a favicon, a web app manifest, and a sitemap',
+        status: 'pass',
+        category: 'web-dev',
+      }),
+      makeCheck({
+        guidelineId: '3.17',
+        guidelineName: 'Beneficial Files',
+        successCriterion: 'Sites should provide a robots.txt, humans.txt, and security.txt',
+        status: 'warn',
+        category: 'web-dev',
+      }),
+    ]
+    render(<CheckResultsSection checks={duplicateIdChecks} />)
+    const duplicateKeyWarning = consoleSpy.mock.calls.some((args) =>
+      String(args[0]).includes('same key')
+    )
+    expect(duplicateKeyWarning).toBe(false)
+    consoleSpy.mockRestore()
+  })
 })
