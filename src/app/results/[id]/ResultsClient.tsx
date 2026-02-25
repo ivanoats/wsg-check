@@ -54,7 +54,7 @@ const fetchReportFromApi = async (id: string): Promise<SustainabilityReport | nu
 const gradeCircleBgClass: Readonly<Record<string, string>> = {
   A: css({ bg: 'green.9' }), // green.9 in Park UI preset ✓
   B: css({ bg: '[#0055b3]' }), // blue.9 token absent → arbitrary hex (≈7.1:1)
-  C: css({ bg: 'amber.9' }), // amber.9 in Panda preset ✓
+  C: css({ bg: '[#ffb224]' }), // amber.9 token absent → arbitrary hex (≈7.1:1 with #4d2000)
   D: css({ bg: '[#ad4800]' }), // orange.9 token absent → arbitrary hex (≈5.7:1)
   F: css({ bg: '[#c7272d]' }), // darker red than Panda's red.9 (≈5.6:1)
 }
@@ -62,7 +62,7 @@ const gradeCircleBgClass: Readonly<Record<string, string>> = {
 const gradeCircleFgClass: Readonly<Record<string, string>> = {
   A: css({ color: 'white' }),
   B: css({ color: 'white' }),
-  C: css({ color: 'amber.12' }),
+  C: css({ color: '[#4d2000]' }),
   D: css({ color: 'white' }),
   F: css({ color: 'white' }),
 }

@@ -34,7 +34,7 @@ const gradeCircleBase = css({
 const gradeCircleColor: Readonly<Record<string, string>> = {
   A: css({ bg: 'green.9', color: 'white' }), // green.9 in Park UI preset ✓
   B: css({ bg: '[#0055b3]', color: 'white' }), // blue.9 token absent → arbitrary hex (≈7.1:1)
-  C: css({ bg: 'amber.9', color: 'amber.12' }), // amber.9 in Panda preset, dark text (≈5.5:1)
+  C: css({ bg: '[#ffb224]', color: '[#4d2000]' }), // amber.9/12 absent → arbitrary hex (≈7.1:1)
   D: css({ bg: '[#ad4800]', color: 'white' }), // orange.9 token absent → arbitrary hex (≈5.7:1)
   F: css({ bg: '[#c7272d]', color: 'white' }), // darker red than Panda's red.9 (≈5.6:1)
 }
