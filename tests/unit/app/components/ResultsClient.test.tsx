@@ -41,6 +41,8 @@ const MOCK_REPORT: SustainabilityReport = {
 }
 
 describe('ResultsClient', () => {
+  const validId = '123e4567-e89b-42d3-a456-426614174000'
+
   beforeEach(() => {
     sessionStorageMock.clear()
     fetchMock.mockReset()
@@ -48,11 +50,11 @@ describe('ResultsClient', () => {
 
   it('renders report immediately from sessionStorage without calling fetch', async () => {
     sessionStorageMock.setItem(
-      'wsg-check:result:abc123',
-      JSON.stringify({ id: 'abc123', status: 'completed', report: MOCK_REPORT })
+      `wsg-check:result:${validId}`,
+      JSON.stringify({ id: validId, status: 'completed', report: MOCK_REPORT })
     )
 
-    render(<ResultsClient id="abc123" />)
+    render(<ResultsClient id={validId} />)
 
     // Score should be visible without any async wait (no loading flicker)
     expect(screen.getByText(/score: 80\/100/i)).toBeDefined()
@@ -62,21 +64,23 @@ describe('ResultsClient', () => {
   it('fetches from API when sessionStorage is empty and renders the report', async () => {
     fetchMock.mockResolvedValue({
       ok: true,
-      json: async () => ({ id: 'abc123', status: 'completed', report: MOCK_REPORT }),
+      json: async () => ({ id: validId, status: 'completed', report: MOCK_REPORT }),
     })
 
-    render(<ResultsClient id="abc123" />)
+    render(<ResultsClient id={validId} />)
 
     await waitFor(() => {
       expect(screen.getByText(/score: 80\/100/i)).toBeDefined()
     })
-    expect(fetchMock).toHaveBeenCalledWith('/api/check/abc123', { cache: 'no-store' })
+    expect(fetchMock).toHaveBeenCalledWith(`/api/check/${encodeURIComponent(validId)}`, {
+      cache: 'no-store',
+    })
   })
 
   it('shows expired message when sessionStorage is empty and API returns not found', async () => {
     fetchMock.mockResolvedValue({ ok: false })
 
-    render(<ResultsClient id="missing123" />)
+    render(<ResultsClient id="023e4567-e89b-42d3-a456-426614174000" />)
 
     await waitFor(() => {
       expect(screen.getByText(/result not found/i)).toBeDefined()
@@ -85,12 +89,21 @@ describe('ResultsClient', () => {
 
   it('shows the checked URL in the report header', async () => {
     sessionStorageMock.setItem(
-      'wsg-check:result:def456',
-      JSON.stringify({ id: 'def456', status: 'completed', report: MOCK_REPORT })
+      `wsg-check:result:${validId}`,
+      JSON.stringify({ id: validId, status: 'completed', report: MOCK_REPORT })
     )
 
-    render(<ResultsClient id="def456" />)
+    render(<ResultsClient id={validId} />)
 
     expect(screen.getByText('https://example.com')).toBeDefined()
+  })
+
+  it('does not call fetch for an invalid id and shows not found message', async () => {
+    render(<ResultsClient id="/\\/evil.com" />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/result not found/i)).toBeDefined()
+    })
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

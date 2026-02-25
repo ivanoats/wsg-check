@@ -13,6 +13,12 @@ import { CheckResultsSection } from '@/app/components/CheckResultsSection'
 import { SectionHeading } from '@/app/components/SectionHeading'
 
 const RESULT_STORAGE_PREFIX = 'wsg-check:result:'
+const RESULT_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+const parseResultId = (value: string): string | null => {
+  const trimmed = value.trim()
+  return RESULT_ID_PATTERN.test(trimmed) ? trimmed : null
+}
 
 /** Read a cached check result from sessionStorage, or null if unavailable. */
 const readCachedResult = (id: string): SustainabilityReport | null => {
@@ -29,7 +35,7 @@ const readCachedResult = (id: string): SustainabilityReport | null => {
 /** Fetch the report from the API using a relative URL (browser handles routing). */
 const fetchReportFromApi = async (id: string): Promise<SustainabilityReport | null> => {
   try {
-    const res = await fetch(`/api/check/${id}`, { cache: 'no-store' })
+    const res = await fetch(`/api/check/${encodeURIComponent(id)}`, { cache: 'no-store' })
     if (!res.ok) return null
     const body = (await res.json()) as CheckResponseBody
     return body.report ?? null
@@ -362,25 +368,28 @@ interface ResultsClientProps {
  * across function instances (e.g. on Netlify).
  */
 export const ResultsClient = ({ id }: ResultsClientProps) => {
+  const resultId = parseResultId(id)
+
   // Lazy initialisers: read from sessionStorage on first client render to avoid
   // showing "Loading results…" when the data is already cached (typical flow
   // after a form submission).
   const [report, setReport] = useState<SustainabilityReport | null>(() => {
-    if (typeof window === 'undefined') return null
-    return readCachedResult(id)
+    if (globalThis.window === undefined || resultId === null) return null
+    return readCachedResult(resultId)
   })
   const [loading, setLoading] = useState(
-    () => typeof window === 'undefined' || readCachedResult(id) === null
+    () =>
+      globalThis.window === undefined || (resultId !== null && readCachedResult(resultId) === null)
   )
 
   useEffect(() => {
-    if (!loading) return // cache hit — nothing to fetch
+    if (!loading || resultId === null) return // cache hit or invalid id
 
-    fetchReportFromApi(id)
+    fetchReportFromApi(resultId)
       .then((r) => setReport(r))
       .catch(() => setReport(null))
       .finally(() => setLoading(false))
-  }, [id]) // only re-run when id changes
+  }, [loading, resultId])
 
   if (loading) {
     return (
@@ -395,7 +404,7 @@ export const ResultsClient = ({ id }: ResultsClientProps) => {
     )
   }
 
-  if (!report) {
+  if (!report || resultId === null) {
     return (
       <styled.section aria-label="Result not found" py="6" maxW="2xl" mx="auto">
         <styled.div mb="4">
@@ -424,7 +433,7 @@ export const ResultsClient = ({ id }: ResultsClientProps) => {
       <CategoryScoresSection categories={report.categories} />
       <RecommendationsSection recommendations={report.recommendations} />
       <CheckResultsSection checks={report.checks} />
-      <ExportSection id={id} report={report} />
+      <ExportSection id={resultId} report={report} />
       <MethodologySection methodology={report.methodology} />
     </styled.section>
   )

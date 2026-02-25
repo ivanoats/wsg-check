@@ -28,6 +28,8 @@ const { GET } = await import('@/app/api/check/[id]/route')
 const { findCheckResult } = await import('@/api/store')
 
 describe('check routes', () => {
+  const uuidV4Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
   beforeEach(() => {
     vi.clearAllMocks()
     enforceRateLimitMock.mockResolvedValue(null)
@@ -53,6 +55,7 @@ describe('check routes', () => {
     expect(response.status).toBe(200)
     expect(body.status).toBe('completed')
     expect(typeof body.id).toBe('string')
+    expect(body.id).toMatch(uuidV4Pattern)
     expect(saveCheckResultMock).toHaveBeenCalledTimes(1)
   })
 
