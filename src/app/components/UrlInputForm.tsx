@@ -155,10 +155,17 @@ export const UrlInputForm = () => {
           setApiError(body.message ?? 'Check failed. Please try again.')
           return
         }
-        const data = (await res.json()) as { id?: string }
+        const data = (await res.json()) as { id?: string; status?: string; report?: unknown }
         if (!data.id) {
           setApiError('Unexpected response from server.')
           return
+        }
+        // Cache the full response in sessionStorage so the results page can read
+        // it client-side, avoiding serverless in-memory store sharing issues.
+        try {
+          sessionStorage.setItem(`wsg-check:result:${data.id}`, JSON.stringify(data))
+        } catch {
+          // ignore sessionStorage errors (private browsing, storage quota)
         }
         saveRecent(parsed.url.toString())
         setRecent(readRecent())
