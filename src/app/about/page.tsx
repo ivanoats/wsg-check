@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { styled } from 'styled-system/jsx'
-import { css } from 'styled-system/css'
 import { button, card, link } from 'styled-system/recipes'
+import { SectionHeading } from '../components/SectionHeading'
 
 export const metadata: Metadata = {
   title: 'About — WSG Check',
@@ -11,13 +11,6 @@ export const metadata: Metadata = {
 }
 
 const cardStyles = card()
-
-const sectionHeadingClass = css({
-  fontSize: 'lg',
-  fontWeight: 'semibold',
-  color: 'fg.default',
-  mb: '3',
-})
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -75,9 +68,7 @@ const GRADE_SCALE = [
 /** Purpose & Methodology section. */
 const PurposeSection = () => (
   <styled.section aria-labelledby="purpose-heading" mb="8">
-    <h2 id="purpose-heading" className={sectionHeadingClass}>
-      Purpose &amp; Methodology
-    </h2>
+    <SectionHeading id="purpose-heading">Purpose &amp; Methodology</SectionHeading>
     <styled.p fontSize="sm" color="fg.muted" mb="3">
       WSG Check analyses a web page&apos;s HTML and HTTP responses against 80+ automated and
       semi-automated checks derived from the W3C Web Sustainability Guidelines. Each check maps to a
@@ -104,9 +95,7 @@ const PurposeSection = () => (
 /** Scoring methodology section. */
 const ScoringSection = () => (
   <styled.section aria-labelledby="scoring-heading" mb="8">
-    <h2 id="scoring-heading" className={sectionHeadingClass}>
-      How Scoring Works
-    </h2>
+    <SectionHeading id="scoring-heading">How Scoring Works</SectionHeading>
     <styled.p fontSize="sm" color="fg.muted" mb="4">
       Each check contributes a score of 0–100, weighted by impact (high, medium, low). The overall
       sustainability score is a weighted average across all scored checks. Checks with status{' '}
@@ -129,9 +118,7 @@ const ScoringSection = () => (
 /** Sustainability statement section. */
 const SustainabilitySection = () => (
   <styled.section aria-labelledby="sustainability-heading" mb="8">
-    <h2 id="sustainability-heading" className={sectionHeadingClass}>
-      Sustainability Statement
-    </h2>
+    <SectionHeading id="sustainability-heading">Sustainability Statement</SectionHeading>
     <styled.p fontSize="sm" color="fg.muted" mb="3">
       WSG Check is itself designed to minimise environmental impact:
     </styled.p>
@@ -168,9 +155,7 @@ const SustainabilitySection = () => (
 /** Resources and links section. */
 const ResourcesSection = () => (
   <styled.section aria-labelledby="links-heading" mb="6">
-    <h2 id="links-heading" className={sectionHeadingClass}>
-      Resources
-    </h2>
+    <SectionHeading id="links-heading">Resources</SectionHeading>
     <styled.div display="flex" gap="3" flexWrap="wrap">
       <a
         href="https://www.w3.org/TR/web-sustainability-guidelines/"

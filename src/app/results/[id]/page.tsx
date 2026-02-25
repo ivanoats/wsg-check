@@ -1,13 +1,15 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { Progress } from '@ark-ui/react'
 import { styled } from 'styled-system/jsx'
-import { css } from 'styled-system/css'
-import { button, card } from 'styled-system/recipes'
+import { cx, css } from 'styled-system/css'
+import { button, card, avatar, progress, code } from 'styled-system/recipes'
 import type { SustainabilityReport, Recommendation, ReportSummary } from '@/report/types'
 import type { CategoryScore } from '@/core/types'
 import type { CheckResultLookupBody } from '@/api/types'
 import { CheckResultsSection } from '@/app/components/CheckResultsSection'
+import { SectionHeading } from '@/app/components/SectionHeading'
 
 interface PageProps {
   readonly params: Promise<{ readonly id: string }>
@@ -44,26 +46,8 @@ const gradeColors: Readonly<Record<string, { bg: string; fg: string }>> = {
 }
 
 const cardStyles = card()
-
-const gradeBadgeClass = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  w: '16',
-  h: '16',
-  borderRadius: 'full',
-  fontWeight: 'bold',
-  fontSize: '2xl',
-  color: 'white',
-  flexShrink: '0',
-})
-
-const sectionHeadingClass = css({
-  fontSize: 'lg',
-  fontWeight: 'semibold',
-  color: 'fg.default',
-  mb: '3',
-})
+const avatarStyles = avatar({ size: '2xl' })
+const progressStyles = progress()
 
 const impactColors: Readonly<Record<string, { bg: string }>> = {
   high: { bg: 'red.9' },
@@ -126,14 +110,22 @@ const ReportHeader = ({
   readonly url: string
 }) => (
   <styled.div display="flex" gap="4" alignItems="center" mb="6">
-    <styled.div
-      className={gradeBadgeClass}
-      bg={gradeColors[grade]?.bg ?? 'gray.7'}
-      color={gradeColors[grade]?.fg ?? 'white'}
+    <span
+      className={cx(
+        avatarStyles.root,
+        css({ bg: gradeColors[grade]?.bg ?? 'gray.7', flexShrink: '0' })
+      )}
       aria-label={`Grade ${grade}`}
     >
-      {grade}
-    </styled.div>
+      <span
+        className={cx(
+          avatarStyles.fallback,
+          css({ color: 'white', fontSize: '2xl', fontWeight: 'bold' })
+        )}
+      >
+        {grade}
+      </span>
+    </span>
     <styled.div>
       <styled.h1
         id="results-heading"
@@ -180,19 +172,19 @@ const CategoryScoreBar = ({ cat }: { readonly cat: CategoryScore }) => {
           {cat.score}/100
         </styled.span>
       </styled.div>
-      <styled.div
-        h="2"
-        borderRadius="full"
-        bg="border.default"
-        overflow="hidden"
-        role="progressbar"
-        aria-valuenow={cat.score}
-        aria-valuemin={0}
-        aria-valuemax={100}
+      <Progress.Root
+        className={progressStyles.root}
+        value={cat.score}
+        min={0}
+        max={100}
         aria-label={`${cat.category} score: ${cat.score} out of 100`}
       >
-        <styled.div h="full" borderRadius="full" bg={barColor} width={`${cat.score}%`} />
-      </styled.div>
+        <Progress.Track className={cx(progressStyles.track, css({ h: '2', borderRadius: 'full' }))}>
+          <Progress.Range
+            className={cx(progressStyles.range, css({ bg: barColor, borderRadius: 'full' }))}
+          />
+        </Progress.Track>
+      </Progress.Root>
     </styled.div>
   )
 }
@@ -206,9 +198,7 @@ const CategoryScoresSection = ({
   if (categories.length === 0) return null
   return (
     <styled.section aria-labelledby="categories-heading" mb="6">
-      <h2 id="categories-heading" className={sectionHeadingClass}>
-        Category Scores
-      </h2>
+      <SectionHeading id="categories-heading">Category Scores</SectionHeading>
       <styled.div display="flex" flexDirection="column" gap="2">
         {categories.map((cat) => (
           <CategoryScoreBar key={cat.category} cat={cat} />
@@ -255,9 +245,7 @@ const RecommendationsSection = ({
   if (recommendations.length === 0) return null
   return (
     <styled.section aria-labelledby="recommendations-heading" mb="6">
-      <h2 id="recommendations-heading" className={sectionHeadingClass}>
-        Recommendations
-      </h2>
+      <SectionHeading id="recommendations-heading">Recommendations</SectionHeading>
       <styled.ol listStyleType="none" m="0" p="0" display="flex" flexDirection="column" gap="3">
         {recommendations.map((rec) => (
           <RecommendationItem key={rec.guidelineId} rec={rec} />
@@ -270,9 +258,7 @@ const RecommendationsSection = ({
 /** Export and share section. */
 const ExportSection = ({ id }: { readonly id: string }) => (
   <styled.section aria-labelledby="export-heading" mt="6">
-    <h2 id="export-heading" className={sectionHeadingClass}>
-      Export &amp; Share
-    </h2>
+    <SectionHeading id="export-heading">Export &amp; Share</SectionHeading>
     <styled.div display="flex" gap="3" flexWrap="wrap">
       <a
         href={`/api/check/${id}`}
@@ -293,17 +279,9 @@ const ExportSection = ({ id }: { readonly id: string }) => (
     </styled.div>
     <styled.p fontSize="xs" color="fg.subtle" mt="3">
       Share this result:{' '}
-      <styled.code
-        fontSize="xs"
-        px="1"
-        py="0.5"
-        borderRadius="sm"
-        bg="bg.subtle"
-        color="fg.default"
-        style={{ wordBreak: 'break-all' }}
-      >
+      <code className={code({ size: 'sm' })} style={{ wordBreak: 'break-all' }}>
         {`/results/${id}`}
-      </styled.code>
+      </code>
     </styled.p>
   </styled.section>
 )
@@ -315,9 +293,7 @@ const MethodologySection = ({
   readonly methodology: { readonly disclaimer: string; readonly coreWebVitalsNote?: string }
 }) => (
   <styled.section aria-labelledby="methodology-heading" mt="6">
-    <h2 id="methodology-heading" className={sectionHeadingClass}>
-      Methodology
-    </h2>
+    <SectionHeading id="methodology-heading">Methodology</SectionHeading>
     <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed">
       {methodology.disclaimer}
     </styled.p>

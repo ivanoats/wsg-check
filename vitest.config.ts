@@ -24,6 +24,16 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // Force Zag.js packages to resolve to the versions Ark UI ships (1.33.x)
+      // to avoid a version mismatch with the top-level 0.62.x installs.
+      '@zag-js/accordion': path.resolve(
+        __dirname,
+        './node_modules/@ark-ui/react/node_modules/@zag-js/accordion'
+      ),
+      '@zag-js/collapsible': path.resolve(
+        __dirname,
+        './node_modules/@ark-ui/react/node_modules/@zag-js/collapsible'
+      ),
       'styled-system/css': path.resolve(__dirname, './styled-system/css'),
       'styled-system/jsx': path.resolve(__dirname, './styled-system/jsx'),
       'styled-system/patterns': path.resolve(__dirname, './styled-system/patterns'),

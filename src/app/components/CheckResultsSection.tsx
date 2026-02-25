@@ -1,10 +1,11 @@
 'use client'
 
-import { Collapsible } from '@ark-ui/react'
+import { Accordion } from '@ark-ui/react'
 import { styled } from 'styled-system/jsx'
-import { css } from 'styled-system/css'
-import { collapsible, badge, button } from 'styled-system/recipes'
+import { cx, css } from 'styled-system/css'
+import { accordion, badge } from 'styled-system/recipes'
 import type { CheckResult } from '@/core/types'
+import { SectionHeading } from './SectionHeading'
 
 interface CheckResultsSectionProps {
   readonly checks: ReadonlyArray<CheckResult>
@@ -25,13 +26,6 @@ const statusLabel: Readonly<Record<string, string>> = {
   info: 'Info',
   'not-applicable': 'N/A',
 }
-
-const sectionHeadingClass = css({
-  fontSize: 'lg',
-  fontWeight: 'semibold',
-  color: 'fg.default',
-  mb: '3',
-})
 
 const checkRowClass = css({
   px: '4',
@@ -57,7 +51,7 @@ const groupByCategory = (
   return Array.from(map.entries()).map(([category, items]) => ({ category, items }))
 }
 
-const collapsibleStyles = collapsible()
+const accordionStyles = accordion()
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
@@ -113,12 +107,11 @@ const CategorySummary = ({
     <styled.span color="green.9">✓ {passCount}</styled.span>
     {failCount > 0 && <styled.span color="red.9">✗ {failCount}</styled.span>}
     {warnCount > 0 && <styled.span color="amber.9">⚠ {warnCount}</styled.span>}
-    <Collapsible.Indicator
-      style={{ display: 'inline-block', transition: 'transform 0.2s' }}
-      className={css({ '[data-state=open] &': { transform: 'rotate(180deg)' } })}
+    <Accordion.ItemIndicator
+      className={cx(accordionStyles.itemIndicator, css({ display: 'inline-block' }))}
     >
       <span aria-hidden="true">▼</span>
-    </Collapsible.Indicator>
+    </Accordion.ItemIndicator>
   </styled.span>
 )
 
@@ -134,27 +127,17 @@ const CategoryGroup = ({
   const warnCount = items.filter((c) => c.status === 'warn').length
 
   return (
-    <Collapsible.Root
-      className={collapsibleStyles.root}
-      style={{
-        marginBottom: '0.75rem',
-        border: '1px solid var(--colors-border-default)',
-        borderRadius: '0.5rem',
-        overflow: 'hidden',
-      }}
-    >
-      <Collapsible.Trigger
-        className={button({ variant: 'ghost', size: 'md' })}
-        style={{ width: '100%', justifyContent: 'space-between', borderRadius: 0 }}
+    <Accordion.Item value={category} className={accordionStyles.item}>
+      <Accordion.ItemTrigger
+        className={accordionStyles.itemTrigger}
         aria-label={`Toggle ${category} check results`}
       >
         <styled.span textTransform="uppercase" fontWeight="semibold">
           {category}
         </styled.span>
         <CategorySummary passCount={passCount} failCount={failCount} warnCount={warnCount} />
-      </Collapsible.Trigger>
-
-      <Collapsible.Content className={collapsibleStyles.content}>
+      </Accordion.ItemTrigger>
+      <Accordion.ItemContent className={accordionStyles.itemContent}>
         <styled.ul
           listStyleType="none"
           m="0"
@@ -166,8 +149,8 @@ const CategoryGroup = ({
             <CheckRow key={check.guidelineId} check={check} />
           ))}
         </styled.ul>
-      </Collapsible.Content>
-    </Collapsible.Root>
+      </Accordion.ItemContent>
+    </Accordion.Item>
   )
 }
 
@@ -175,8 +158,9 @@ const CategoryGroup = ({
 
 /**
  * Expandable/collapsible check results grouped by WSG category.
- * Uses Ark UI Collapsible + Park UI collapsible recipe for accessible
- * expand/collapse with CSS animation (WSG 2.6).
+ * Uses Ark UI Accordion + Park UI accordion recipe for accessible
+ * expand/collapse with CSS animation (WSG 2.6). multiple=true allows
+ * all categories to be open simultaneously.
  */
 export const CheckResultsSection = ({ checks }: CheckResultsSectionProps) => {
   const groups = groupByCategory(checks)
@@ -184,12 +168,12 @@ export const CheckResultsSection = ({ checks }: CheckResultsSectionProps) => {
 
   return (
     <styled.section aria-labelledby="check-results-heading" mt="6">
-      <h2 id="check-results-heading" className={sectionHeadingClass}>
-        Check Results
-      </h2>
-      {groups.map(({ category, items }) => (
-        <CategoryGroup key={category} category={category} items={items} />
-      ))}
+      <SectionHeading id="check-results-heading">Check Results</SectionHeading>
+      <Accordion.Root className={accordionStyles.root} multiple>
+        {groups.map(({ category, items }) => (
+          <CategoryGroup key={category} category={category} items={items} />
+        ))}
+      </Accordion.Root>
     </styled.section>
   )
 }

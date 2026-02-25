@@ -1,16 +1,12 @@
 import { styled } from 'styled-system/jsx'
-import { css } from 'styled-system/css'
+import { css, cx } from 'styled-system/css'
+import { link } from 'styled-system/recipes'
 import Link from 'next/link'
 
-const homeLinkClass = css({
-  color: 'fg.default',
-  textDecoration: 'none',
-  fontWeight: 'bold',
-  fontSize: 'lg',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '2',
-})
+const homeLinkClass = cx(
+  link(),
+  css({ fontWeight: 'bold', fontSize: 'lg', display: 'flex', alignItems: 'center', gap: '2' })
+)
 
 /**
  * Minimal, distraction-free site header (WSG 2.6).

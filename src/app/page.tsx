@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { styled } from 'styled-system/jsx'
-import { css } from 'styled-system/css'
-import { link } from 'styled-system/recipes'
+import { cx, css } from 'styled-system/css'
+import { link, avatar } from 'styled-system/recipes'
 import { UrlInputForm } from './components/UrlInputForm'
 
 export const metadata: Metadata = {
@@ -9,19 +9,7 @@ export const metadata: Metadata = {
   description: 'Check any website against the W3C Web Sustainability Guidelines (WSG) instantly.',
 }
 
-const stepBadgeClass = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  w: '8',
-  h: '8',
-  borderRadius: 'full',
-  bg: 'accent.default',
-  color: 'accent.fg',
-  fontWeight: 'bold',
-  fontSize: 'sm',
-  flexShrink: '0',
-})
+const stepAvatarStyles = avatar({ size: 'md' })
 
 interface HowItWorksStepProps {
   readonly step: string
@@ -32,8 +20,18 @@ interface HowItWorksStepProps {
 /** Single how-it-works step — extracted to keep JSX nesting ≤ 5 levels. */
 const HowItWorksStep = ({ step, title, detail }: HowItWorksStepProps) => (
   <styled.li display="flex" gap="3" alignItems="flex-start">
-    <span className={stepBadgeClass} aria-hidden="true">
-      {step}
+    <span
+      className={cx(stepAvatarStyles.root, css({ bg: 'accent.default', flexShrink: '0' }))}
+      aria-hidden="true"
+    >
+      <span
+        className={cx(
+          stepAvatarStyles.fallback,
+          css({ color: 'accent.fg', fontWeight: 'bold', fontSize: 'sm' })
+        )}
+      >
+        {step}
+      </span>
     </span>
     <styled.div>
       <styled.p fontWeight="semibold" color="fg.default">
