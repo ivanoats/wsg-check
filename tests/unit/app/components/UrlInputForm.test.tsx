@@ -18,7 +18,7 @@ const localStorageMock = (() => {
       store[key] = value
     },
     removeItem: (key: string) => {
-      delete store[key]
+      Reflect.deleteProperty(store, key)
     },
     clear: () => {
       store = {}
@@ -27,9 +27,28 @@ const localStorageMock = (() => {
 })()
 vi.stubGlobal('localStorage', localStorageMock)
 
+// Stub sessionStorage
+const sessionStorageMock = (() => {
+  let store: Record<string, string> = {}
+  return {
+    getItem: (key: string) => store[key] ?? null,
+    setItem: (key: string, value: string) => {
+      store[key] = value
+    },
+    removeItem: (key: string) => {
+      Reflect.deleteProperty(store, key)
+    },
+    clear: () => {
+      store = {}
+    },
+  }
+})()
+vi.stubGlobal('sessionStorage', sessionStorageMock)
+
 describe('UrlInputForm', () => {
   beforeEach(() => {
     localStorageMock.clear()
+    sessionStorageMock.clear()
     fetchMock.mockReset()
   })
 
@@ -127,6 +146,26 @@ describe('UrlInputForm', () => {
     await waitFor(() => {
       expect(screen.getByText('https://example.com')).toBeDefined()
       expect(screen.getByText('https://other.com')).toBeDefined()
+    })
+  })
+
+  it('saves the full response to sessionStorage on successful check', async () => {
+    const mockData = { id: 'test-uuid', status: 'completed', report: { overallScore: 80 } }
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => mockData,
+    })
+    render(<UrlInputForm />)
+    fireEvent.change(screen.getByRole('textbox', { name: /website url/i }), {
+      target: { value: 'https://example.com' },
+    })
+    fireEvent.submit(screen.getByRole('form', { name: /sustainability check form/i }))
+    await waitFor(() => {
+      const stored = sessionStorageMock.getItem('wsg-check:result:test-uuid')
+      expect(stored).not.toBeNull()
+      const parsed = JSON.parse(stored ?? '{}') as typeof mockData
+      expect(parsed.id).toBe('test-uuid')
+      expect(parsed.report.overallScore).toBe(80)
     })
   })
 })
