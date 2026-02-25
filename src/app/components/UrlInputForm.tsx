@@ -223,7 +223,7 @@ export const UrlInputForm = () => {
             type="submit"
             disabled={isLoading}
             className={button({ variant: 'solid', size: 'xl' })}
-            aria-busy="true"
+            aria-busy={isLoading}
           >
             {isLoading ? 'Checking…' : 'Check'}
           </button>
