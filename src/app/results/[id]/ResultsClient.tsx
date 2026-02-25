@@ -300,13 +300,22 @@ const ExportSection = ({
   readonly report: SustainabilityReport
 }) => {
   const [dataUrl, setDataUrl] = useState<string | null>(null)
+  const [blobUrl, setBlobUrl] = useState<string | null>(null)
 
   useEffect(() => {
+    let createdBlobUrl: string | null = null
     try {
       const json = JSON.stringify({ id, status: 'completed', report }, null, 2)
       setDataUrl(`data:application/json;charset=utf-8,${encodeURIComponent(json)}`)
+      const blob = new Blob([json], { type: 'application/json' })
+      createdBlobUrl = URL.createObjectURL(blob)
+      setBlobUrl(createdBlobUrl)
     } catch {
       setDataUrl(null)
+      setBlobUrl(null)
+    }
+    return () => {
+      if (createdBlobUrl !== null) URL.revokeObjectURL(createdBlobUrl)
     }
   }, [id, report])
 
@@ -323,7 +332,7 @@ const ExportSection = ({
             Download JSON
           </a>
           <a
-            href={dataUrl}
+            href={blobUrl ?? '#'}
             target="_blank"
             rel="noopener noreferrer"
             className={button({ variant: 'ghost', size: 'sm' })}
