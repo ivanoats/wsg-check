@@ -255,7 +255,7 @@ const RecommendationsSection = ({
       <SectionHeading id="recommendations-heading">Recommendations</SectionHeading>
       <styled.ol listStyleType="none" m="0" p="0" display="flex" flexDirection="column" gap="3">
         {recommendations.map((rec) => (
-          <RecommendationItem key={rec.guidelineId} rec={rec} />
+          <RecommendationItem key={`${rec.guidelineId}-${rec.recommendation}`} rec={rec} />
         ))}
       </styled.ol>
     </styled.section>
