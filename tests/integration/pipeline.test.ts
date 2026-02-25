@@ -48,10 +48,7 @@ vi.mock('node:dns/promises', () => ({
 // Mock green-hosting API so tests run offline
 vi.mock('@tgwf/co2', () => ({
   co2: class MockCO2 {
-    constructor(_opts: unknown) {} // eslint-disable-line @typescript-eslint/no-unused-vars
-    perByte() {
-      return 0.0042
-    }
+    perByte = () => 0.0042
   },
   hosting: { check: vi.fn().mockResolvedValue(false) },
 }))
