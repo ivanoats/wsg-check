@@ -169,6 +169,8 @@ jobs:
 
       - name: Run pa11y-ci accessibility tests
         run: npm run test:a11y
+        env:
+          PUPPETEER_DISABLE_SANDBOX: 'true'
 
   lighthouse:
     name: Performance (Lighthouse CI)
