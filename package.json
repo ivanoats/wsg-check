@@ -24,6 +24,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
+    "test:a11y": "pa11y-ci --config .pa11yci.json",
+    "test:lighthouse": "lhci autorun",
     "prepare": "husky && panda codegen"
   },
   "dependencies": {
@@ -42,6 +44,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@lhci/cli": "^0.15.1",
     "@pandacss/dev": "^1.8.2",
     "@park-ui/panda-preset": "^0.43.1",
     "@playwright/test": "^1.58.2",
@@ -57,10 +60,12 @@
     "husky": "^9.1.7",
     "jsdom": "^28.1.0",
     "lint-staged": "^16.2.7",
+    "pa11y-ci": "^4.0.1",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.1",
-    "vitest": "^4.0.18"
+    "vitest": "^4.0.18",
+    "wait-on": "^9.0.4"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
