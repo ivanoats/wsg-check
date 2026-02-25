@@ -9,6 +9,7 @@ import type { CheckResponseBody } from '@/api/types'
 
 const RECENT_CHECKS_KEY = 'wsg-check:recent-urls'
 const MAX_RECENT = 5
+const RESULT_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 // ─── Park UI styled Field components ─────────────────────────────────────────
 // Use createStyleContext so each sub-component receives its recipe slot class
@@ -61,6 +62,13 @@ const saveRecent = (url: string): void => {
   } catch {
     // ignore localStorage errors (private browsing, storage quota)
   }
+}
+
+const parseResultId = (value: unknown): { ok: true; id: string } | { ok: false } => {
+  if (typeof value !== 'string') return { ok: false }
+  const trimmed = value.trim()
+  if (!RESULT_ID_PATTERN.test(trimmed)) return { ok: false }
+  return { ok: true, id: trimmed }
 }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -157,20 +165,21 @@ export const UrlInputForm = () => {
           return
         }
         const data = (await res.json()) as Partial<CheckResponseBody>
-        if (!data.id) {
+        const parsedResultId = parseResultId(data.id)
+        if (!parsedResultId.ok) {
           setApiError('Unexpected response from server.')
           return
         }
         // Cache the full response in sessionStorage so the results page can read
         // it client-side, avoiding serverless in-memory store sharing issues.
         try {
-          sessionStorage.setItem(`wsg-check:result:${data.id}`, JSON.stringify(data))
+          sessionStorage.setItem(`wsg-check:result:${parsedResultId.id}`, JSON.stringify(data))
         } catch {
           // ignore sessionStorage errors (private browsing, storage quota)
         }
         saveRecent(parsed.url.toString())
         setRecent(readRecent())
-        router.push(`/results/${data.id}`)
+        router.push(`/results/${encodeURIComponent(parsedResultId.id)}`)
       } catch {
         setApiError('Network error. Please check your connection and try again.')
       } finally {
@@ -214,7 +223,7 @@ export const UrlInputForm = () => {
             type="submit"
             disabled={isLoading}
             className={button({ variant: 'solid', size: 'xl' })}
-            aria-busy={isLoading}
+            aria-busy="true"
           >
             {isLoading ? 'Checking…' : 'Check'}
           </button>
