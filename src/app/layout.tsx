@@ -4,6 +4,7 @@ import './globals.css'
 import { styled } from 'styled-system/jsx'
 import { Header } from './components/Header'
 import { BottomNav } from './components/BottomNav'
+import { ServiceWorkerRegistrar } from './components/ServiceWorkerRegistrar'
 
 /**
  * Inter is self-hosted by Next.js at build time — no runtime external request.
@@ -20,6 +21,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'WSG Check',
   description: 'Checks a website against the W3C Web Sustainability Guidelines',
+  // Link the Web App Manifest so browsers can offer PWA installation and
+  // the WSG 4.2 offline-access check detects the <link rel="manifest"> tag.
+  manifest: '/site.webmanifest',
 }
 
 /** Explicit viewport export — prevents user-scalable=no and sets a safe default. */
@@ -80,6 +84,9 @@ export default function RootLayout({
             functional.
           </styled.p>
         </noscript>
+
+        {/* Service worker registration — enables offline access to cached results (WSG 4.2) */}
+        <ServiceWorkerRegistrar />
       </body>
     </html>
   )

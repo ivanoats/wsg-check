@@ -578,10 +578,10 @@ wsg-check --version
 
 ### 9.4 Sustainability of the Tool Itself
 
-- [ ] Minimize page weight (<500KB initial load budget)
-- [ ] Minimal third-party dependencies on the frontend
-- [ ] Efficient data fetching (no unnecessary API calls)
-- [ ] Service worker for offline access to previous results (WSG 4.2)
+- [x] Minimize page weight (<500KB initial load budget)
+- [x] Minimal third-party dependencies on the frontend
+- [x] Efficient data fetching (no unnecessary API calls)
+- [x] Service worker for offline access to previous results (WSG 4.2)
 
 **Deliverable:** A fully functional, accessible, mobile-first web application.
 
