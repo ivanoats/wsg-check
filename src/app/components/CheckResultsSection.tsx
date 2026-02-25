@@ -146,7 +146,7 @@ const CategoryGroup = ({
           aria-label={`${category} check results`}
         >
           {items.map((check) => (
-            <CheckRow key={check.guidelineId} check={check} />
+            <CheckRow key={`${check.guidelineId}-${check.successCriterion}`} check={check} />
           ))}
         </styled.ul>
       </Accordion.ItemContent>
