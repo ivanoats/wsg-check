@@ -300,13 +300,43 @@ const ExportSection = ({
   readonly report: SustainabilityReport
 }) => {
   const [dataUrl, setDataUrl] = useState<string | null>(null)
+  const [blobUrl, setBlobUrl] = useState<string | null>(null)
 
   useEffect(() => {
+    let createdBlobUrl: string | null = null
     try {
       const json = JSON.stringify({ id, status: 'completed', report }, null, 2)
       setDataUrl(`data:application/json;charset=utf-8,${encodeURIComponent(json)}`)
+
+      const hasBlobSupport =
+        typeof globalThis.window !== 'undefined' &&
+        typeof globalThis.window.Blob !== 'undefined' &&
+        typeof URL !== 'undefined' &&
+        typeof URL.createObjectURL === 'function'
+
+      if (hasBlobSupport) {
+        try {
+          const blob = new Blob([json], { type: 'application/json' })
+          createdBlobUrl = URL.createObjectURL(blob)
+          setBlobUrl(createdBlobUrl)
+        } catch {
+          setBlobUrl(null)
+        }
+      } else {
+        setBlobUrl(null)
+      }
     } catch {
       setDataUrl(null)
+      setBlobUrl(null)
+    }
+    return () => {
+      if (
+        createdBlobUrl !== null &&
+        typeof URL !== 'undefined' &&
+        typeof URL.revokeObjectURL === 'function'
+      ) {
+        URL.revokeObjectURL(createdBlobUrl)
+      }
     }
   }, [id, report])
 
@@ -323,7 +353,7 @@ const ExportSection = ({
             Download JSON
           </a>
           <a
-            href={dataUrl}
+            href={blobUrl ?? '#'}
             target="_blank"
             rel="noopener noreferrer"
             className={button({ variant: 'ghost', size: 'sm' })}

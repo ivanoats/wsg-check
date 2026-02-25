@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { ResultsClient } from '@/app/results/[id]/ResultsClient'
 import type { SustainabilityReport } from '@/report/types'
@@ -46,6 +46,10 @@ describe('ResultsClient', () => {
   beforeEach(() => {
     sessionStorageMock.clear()
     fetchMock.mockReset()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it('renders report immediately from sessionStorage without calling fetch', async () => {
@@ -105,5 +109,25 @@ describe('ResultsClient', () => {
       expect(screen.getByText(/result not found/i)).toBeDefined()
     })
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('View JSON link uses a blob URL, not a data: URI', async () => {
+    const mockBlobUrl = 'blob:http://localhost/mock-uuid'
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue(mockBlobUrl)
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined)
+
+    sessionStorageMock.setItem(
+      `wsg-check:result:${validId}`,
+      JSON.stringify({ id: validId, status: 'completed', report: MOCK_REPORT })
+    )
+
+    render(<ResultsClient id={validId} />)
+
+    await waitFor(() => {
+      const viewLink = screen.getByRole('link', { name: /view json/i })
+      expect(viewLink.getAttribute('href')).toBe(mockBlobUrl)
+      expect(viewLink.getAttribute('href')).not.toMatch(/^data:/)
+      expect(viewLink.getAttribute('target')).toBe('_blank')
+    })
   })
 })
