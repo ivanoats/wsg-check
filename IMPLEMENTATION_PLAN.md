@@ -591,13 +591,13 @@ wsg-check --version
 
 ### 10.1 Testing Strategy
 
-- [ ] Unit tests for each check function (≥80% coverage)
-- [ ] Integration tests for the full pipeline (URL → Check → Report)
-- [ ] E2E tests for frontend (Playwright or Cypress)
-- [ ] API endpoint tests
-- [ ] CLI integration tests
-- [ ] Accessibility tests with pa11y
-- [ ] Performance tests with Lighthouse CI
+- [x] Unit tests for each check function (≥80% coverage) — 97.74% statement coverage achieved
+- [x] Integration tests for the full pipeline (URL → Check → Report) — `tests/integration/pipeline.test.ts` (12 tests)
+- [x] E2E tests for frontend (Playwright or Cypress) — `tests/e2e/` (mobile-emulation & screenshots)
+- [x] API endpoint tests — `tests/unit/api/` (check-routes, guidelines-routes, health, validation, cors, rate-limit, store)
+- [x] CLI integration tests — `tests/unit/cli/index.test.ts` (15 tests covering all options and output formats)
+- [x] Accessibility tests with pa11y — `pa11y-ci` configured (`.pa11yci.json`), `npm run test:a11y`, CI job added
+- [x] Performance tests with Lighthouse CI — `@lhci/cli` configured (`.lighthouserc.json`), `npm run test:lighthouse`, CI job added
 
 ### 10.2 Quality Gates
 
