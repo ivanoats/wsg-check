@@ -168,7 +168,7 @@ jobs:
         run: npx wait-on http://localhost:3000 --timeout 30000
 
       - name: Run pa11y-ci accessibility tests
-        run: npm run test:a11y
+        run: PUPPETEER_ARGS="--no-sandbox" npm run test:a11y
         env:
           PUPPETEER_DISABLE_SANDBOX: 'true'
 
