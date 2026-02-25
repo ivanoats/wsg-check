@@ -307,15 +307,36 @@ const ExportSection = ({
     try {
       const json = JSON.stringify({ id, status: 'completed', report }, null, 2)
       setDataUrl(`data:application/json;charset=utf-8,${encodeURIComponent(json)}`)
-      const blob = new Blob([json], { type: 'application/json' })
-      createdBlobUrl = URL.createObjectURL(blob)
-      setBlobUrl(createdBlobUrl)
+
+      const hasBlobSupport =
+        typeof globalThis.window !== 'undefined' &&
+        typeof globalThis.window.Blob !== 'undefined' &&
+        typeof URL !== 'undefined' &&
+        typeof URL.createObjectURL === 'function'
+
+      if (hasBlobSupport) {
+        try {
+          const blob = new Blob([json], { type: 'application/json' })
+          createdBlobUrl = URL.createObjectURL(blob)
+          setBlobUrl(createdBlobUrl)
+        } catch {
+          setBlobUrl(null)
+        }
+      } else {
+        setBlobUrl(null)
+      }
     } catch {
       setDataUrl(null)
       setBlobUrl(null)
     }
     return () => {
-      if (createdBlobUrl !== null) URL.revokeObjectURL(createdBlobUrl)
+      if (
+        createdBlobUrl !== null &&
+        typeof URL !== 'undefined' &&
+        typeof URL.revokeObjectURL === 'function'
+      ) {
+        URL.revokeObjectURL(createdBlobUrl)
+      }
     }
   }, [id, report])
 
