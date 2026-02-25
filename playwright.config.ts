@@ -16,7 +16,7 @@ export default defineConfig({
 
   /** Fail fast on CI; keep going locally so you can see all failures. */
   fullyParallel: true,
-  forbidOnly: !!process.env.CI,
+  forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
 
