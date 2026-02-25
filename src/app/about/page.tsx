@@ -32,11 +32,11 @@ const gradeCircleBase = css({
 })
 
 const gradeCircleColor: Readonly<Record<string, string>> = {
-  A: css({ bg: 'green.9', color: 'white' }),
-  B: css({ bg: 'blue.9', color: 'white' }),
-  C: css({ bg: 'amber.9', color: 'amber.12' }),
-  D: css({ bg: 'orange.9', color: 'white' }),
-  F: css({ bg: 'red.9', color: 'white' }),
+  A: css({ bg: 'green.9', color: 'white' }), // green.9 in Park UI preset ✓
+  B: css({ bg: '[#0055b3]', color: 'white' }), // blue.9 token absent → arbitrary hex (≈7.1:1)
+  C: css({ bg: 'amber.9', color: 'amber.12' }), // amber.9 in Panda preset, dark text (≈5.5:1)
+  D: css({ bg: '[#ad4800]', color: 'white' }), // orange.9 token absent → arbitrary hex (≈5.7:1)
+  F: css({ bg: '[#c7272d]', color: 'white' }), // darker red than Panda's red.9 (≈5.6:1)
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -55,10 +55,7 @@ const GradeScaleItem = ({ grade, range }: GradeScaleItemProps) => (
     gap="3"
     alignItems="center"
   >
-    <span
-      className={cx(gradeCircleBase, gradeCircleColor[grade] ?? '')}
-      aria-hidden="true"
-    >
+    <span className={cx(gradeCircleBase, gradeCircleColor[grade] ?? '')} aria-hidden="true">
       {grade}
     </span>
     <styled.div>

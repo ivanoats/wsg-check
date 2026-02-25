@@ -52,11 +52,11 @@ const fetchReportFromApi = async (id: string): Promise<SustainabilityReport | nu
  * unreliable (Panda's extractor skips them; vars may not be defined).
  */
 const gradeCircleBgClass: Readonly<Record<string, string>> = {
-  A: css({ bg: 'green.9' }),
-  B: css({ bg: 'blue.9' }),
-  C: css({ bg: 'amber.9' }),
-  D: css({ bg: 'orange.9' }),
-  F: css({ bg: 'red.9' }),
+  A: css({ bg: 'green.9' }), // green.9 in Park UI preset ✓
+  B: css({ bg: '[#0055b3]' }), // blue.9 token absent → arbitrary hex (≈7.1:1)
+  C: css({ bg: 'amber.9' }), // amber.9 in Panda preset ✓
+  D: css({ bg: '[#ad4800]' }), // orange.9 token absent → arbitrary hex (≈5.7:1)
+  F: css({ bg: '[#c7272d]' }), // darker red than Panda's red.9 (≈5.6:1)
 }
 
 const gradeCircleFgClass: Readonly<Record<string, string>> = {
