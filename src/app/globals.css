@@ -44,10 +44,10 @@
    * Unlayered :root wins over @layer tokens from the Park UI preset.
    */
   --colors-green-light-9: #13874f;
-  --colors-green-default: #13874f;
-  --colors-accent-default: #13874f;
-  --colors-accent-9: #13874f;
-  --colors-green-9: #13874f;
+  --colors-green-default: var(--colors-green-light-9);
+  --colors-accent-default: var(--colors-green-light-9);
+  --colors-accent-9: var(--colors-green-light-9);
+  --colors-green-9: var(--colors-green-light-9);
 
   /*
    * WCAG 1.4.3 — define missing Radix color tokens for grade badge circles
