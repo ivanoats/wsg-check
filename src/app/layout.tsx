@@ -45,9 +45,10 @@ export default function RootLayout({
         {/* Banner landmark */}
         <Header />
 
-        {/* Main content landmark — pb="16" (4 rem) clears the fixed bottom nav.
+        {/* Main content landmark — pb="16" (4 rem) clears the fixed bottom nav; px="4" (1 rem)
+            provides consistent horizontal whitespace on all pages.
             tabIndex={-1} allows the skip link to reliably move focus here. */}
-        <styled.main id="main-content" tabIndex={-1} pb="16">
+        <styled.main id="main-content" tabIndex={-1} pb="16" px="4">
           {children}
         </styled.main>
 

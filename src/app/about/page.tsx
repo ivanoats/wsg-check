@@ -86,7 +86,7 @@ const PurposeSection = () => (
         className={link()}
       >
         Google PageSpeed Insights
-      </a>
+      </a>{' '}
       .
     </styled.p>
   </styled.section>
@@ -182,7 +182,7 @@ const ResourcesSection = () => (
 
 export default function AboutPage() {
   return (
-    <styled.section aria-labelledby="about-heading" px="4" py="6" maxW="2xl" mx="auto">
+    <styled.section aria-labelledby="about-heading" py="6" maxW="2xl" mx="auto">
       <styled.h1
         id="about-heading"
         fontSize={{ base: '2xl', md: '3xl' }}
@@ -201,7 +201,7 @@ export default function AboutPage() {
           className={link()}
         >
           W3C Web Sustainability Guidelines (WSG)
-        </a>
+        </a>{' '}
         .
       </styled.p>
 

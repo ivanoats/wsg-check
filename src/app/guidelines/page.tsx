@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function GuidelinesPage() {
   return (
-    <styled.section aria-labelledby="guidelines-heading" px="4" py="6" maxW="2xl" mx="auto">
+    <styled.section aria-labelledby="guidelines-heading" py="6" maxW="2xl" mx="auto">
       <styled.h1
         id="guidelines-heading"
         fontSize={{ base: '2xl', md: '3xl' }}
@@ -31,7 +31,7 @@ export default function GuidelinesPage() {
           className={link()}
         >
           W3C Web Sustainability Guidelines
-        </a>
+        </a>{' '}
         . Filter by category, testability level, or search by keyword.
       </styled.p>
 
