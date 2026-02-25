@@ -43,7 +43,7 @@ const fetchReportFromApi = async (id: string): Promise<SustainabilityReport | nu
 const gradeColors: Readonly<Record<string, { bg: string; fg: string }>> = {
   A: { bg: 'green.9', fg: 'white' },
   B: { bg: 'blue.9', fg: 'white' },
-  C: { bg: 'amber.10', fg: 'white' },
+  C: { bg: 'amber.9', fg: 'amber.12' },
   D: { bg: 'orange.9', fg: 'white' },
   F: { bg: 'red.9', fg: 'white' },
 }
@@ -96,7 +96,7 @@ const SummaryCountCard = ({
     <styled.p fontWeight="bold" fontSize="xl" color={colorToken}>
       {count}
     </styled.p>
-    <styled.p fontSize="xs" color="fg.subtle">
+    <styled.p fontSize="xs" color="fg.muted">
       {label}
     </styled.p>
   </styled.div>
@@ -139,7 +139,7 @@ const ReportHeader = ({
       >
         Score: {score}/100
       </styled.h1>
-      <styled.p fontSize="sm" color="fg.subtle" style={{ wordBreak: 'break-all' }}>
+      <styled.p fontSize="sm" color="fg.muted" style={{ wordBreak: 'break-all' }}>
         {url}
       </styled.p>
     </styled.div>
@@ -222,7 +222,7 @@ const CategoryScoresSection = ({
 const RecommendationTitle = ({ name, id }: { readonly name: string; readonly id: string }) => (
   <styled.p fontWeight="semibold" fontSize="sm" color="fg.default" mb="0.5">
     {name}{' '}
-    <styled.span color="fg.subtle" fontSize="xs">
+    <styled.span color="fg.muted" fontSize="xs">
       ({id})
     </styled.span>
   </styled.p>
@@ -312,11 +312,11 @@ const ExportSection = ({
           </a>
         </styled.div>
       ) : (
-        <styled.p fontSize="xs" color="fg.subtle" mt="3">
+        <styled.p fontSize="xs" color="fg.muted" mt="3">
           JSON export will be available once this report has fully loaded in your browser.
         </styled.p>
       )}
-      <styled.p fontSize="xs" color="fg.subtle" mt="3">
+      <styled.p fontSize="xs" color="fg.muted" mt="3">
         Share this result:{' '}
         <code className={code({ size: 'sm' })} style={{ wordBreak: 'break-all' }}>
           {`/results/${id}`}

@@ -60,7 +60,7 @@ const CheckDetails = ({ check }: { readonly check: CheckResult }) => (
   <styled.div flex="1">
     <styled.p fontSize="sm" fontWeight="medium" color="fg.default">
       {check.guidelineName}{' '}
-      <styled.span color="fg.subtle" fontSize="xs">
+      <styled.span color="fg.muted" fontSize="xs">
         ({check.guidelineId})
       </styled.span>
     </styled.p>
@@ -68,7 +68,7 @@ const CheckDetails = ({ check }: { readonly check: CheckResult }) => (
       {check.message}
     </styled.p>
     {check.details && (
-      <styled.p fontSize="xs" color="fg.subtle" mt="0.5" fontStyle="italic">
+      <styled.p fontSize="xs" color="fg.muted" mt="0.5" fontStyle="italic">
         {check.details}
       </styled.p>
     )}
@@ -103,7 +103,7 @@ const CategorySummary = ({
   readonly failCount: number
   readonly warnCount: number
 }) => (
-  <styled.span display="flex" gap="2" alignItems="center" fontSize="xs" color="fg.subtle">
+  <styled.span display="flex" gap="2" alignItems="center" fontSize="xs" color="fg.muted">
     <styled.span color="green.9">✓ {passCount}</styled.span>
     {failCount > 0 && <styled.span color="red.9">✗ {failCount}</styled.span>}
     {warnCount > 0 && <styled.span color="amber.9">⚠ {warnCount}</styled.span>}

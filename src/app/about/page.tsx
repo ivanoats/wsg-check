@@ -58,11 +58,11 @@ const GradeScaleItem = ({ grade, range, bg, fg }: GradeScaleItemProps) => (
 )
 
 const GRADE_SCALE = [
-  { grade: 'A', range: '90–100', bg: 'green.11', fg: 'white' },
-  { grade: 'B', range: '75–89', bg: 'blue.11', fg: 'white' },
+  { grade: 'A', range: '90–100', bg: 'green.9', fg: 'white' },
+  { grade: 'B', range: '75–89', bg: 'blue.9', fg: 'white' },
   { grade: 'C', range: '60–74', bg: 'amber.9', fg: 'amber.12' },
-  { grade: 'D', range: '45–59', bg: 'orange.11', fg: 'white' },
-  { grade: 'F', range: '0–44', bg: 'red.11', fg: 'white' },
+  { grade: 'D', range: '45–59', bg: 'orange.9', fg: 'white' },
+  { grade: 'F', range: '0–44', bg: 'red.9', fg: 'white' },
 ] as const
 
 /** Purpose & Methodology section. */
