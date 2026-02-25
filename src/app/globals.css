@@ -30,14 +30,21 @@
   scroll-padding-bottom: 4rem;
 
   /*
-   * WCAG 1.4.3 — override Park UI accent tokens so white text on solid buttons
+   * WCAG 1.4.3 — override Park UI green token so white text on solid buttons
    * and active-nav links meets the 4.5:1 AA contrast requirement.
    * #13874f yields ~4.56:1 against white (pa11y-recommended value).
-   * Both --colors-accent-9 (direct solid button BG in Park UI recipes) and
-   * --colors-accent-default (semantic alias) are overridden.
-   * --colors-green-9 kept in sync for direct green.9 usage (e.g. grade badges).
+   *
+   * The solid button recipe uses `colorPalette.default` which resolves via:
+   *   --colors-color-palette-default → --colors-green-default → --colors-green-light-9
+   * So --colors-green-light-9 is the authoritative variable to override.
+   * --colors-green-default (semantic alias) and --colors-green-9 (shorthand for
+   * direct green.9 token usage, e.g. grade badges) are kept in sync.
+   * --colors-accent-default/--colors-accent-9 are kept for any component that
+   * uses bg: 'accent.default' / bg: 'accent.9' Panda utilities directly.
    * Unlayered :root wins over @layer tokens from the Park UI preset.
    */
+  --colors-green-light-9: #13874f;
+  --colors-green-default: #13874f;
   --colors-accent-default: #13874f;
   --colors-accent-9: #13874f;
   --colors-green-9: #13874f;
