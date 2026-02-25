@@ -18,7 +18,7 @@ const localStorageMock = (() => {
       store[key] = value
     },
     removeItem: (key: string) => {
-      delete store[key]
+      Reflect.deleteProperty(store, key)
     },
     clear: () => {
       store = {}
@@ -36,7 +36,7 @@ const sessionStorageMock = (() => {
       store[key] = value
     },
     removeItem: (key: string) => {
-      delete store[key]
+      Reflect.deleteProperty(store, key)
     },
     clear: () => {
       store = {}
@@ -163,7 +163,7 @@ describe('UrlInputForm', () => {
     await waitFor(() => {
       const stored = sessionStorageMock.getItem('wsg-check:result:test-uuid')
       expect(stored).not.toBeNull()
-      const parsed = JSON.parse(stored!) as typeof mockData
+      const parsed = JSON.parse(stored ?? '{}') as typeof mockData
       expect(parsed.id).toBe('test-uuid')
       expect(parsed.report.overallScore).toBe(80)
     })

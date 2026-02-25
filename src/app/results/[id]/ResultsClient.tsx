@@ -218,6 +218,16 @@ const CategoryScoresSection = ({
   )
 }
 
+/** Recommendation guideline name + ID line — extracted to reduce JSX nesting depth. */
+const RecommendationTitle = ({ name, id }: { readonly name: string; readonly id: string }) => (
+  <styled.p fontWeight="semibold" fontSize="sm" color="fg.default" mb="0.5">
+    {name}{' '}
+    <styled.span color="fg.subtle" fontSize="xs">
+      ({id})
+    </styled.span>
+  </styled.p>
+)
+
 /** Single recommendation card — extracted to limit JSX nesting depth. */
 const RecommendationItem = ({ rec }: { readonly rec: Recommendation }) => (
   <styled.li className={cardStyles.root}>
@@ -232,12 +242,7 @@ const RecommendationItem = ({ rec }: { readonly rec: Recommendation }) => (
         aria-label={`${rec.impact} impact`}
       />
       <styled.div flex="1">
-        <styled.p fontWeight="semibold" fontSize="sm" color="fg.default" mb="0.5">
-          {rec.guidelineName}{' '}
-          <styled.span color="fg.subtle" fontSize="xs">
-            ({rec.guidelineId})
-          </styled.span>
-        </styled.p>
+        <RecommendationTitle name={rec.guidelineName} id={rec.guidelineId} />
         <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed">
           {rec.recommendation}
         </styled.p>
