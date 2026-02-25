@@ -601,21 +601,21 @@ wsg-check --version
 
 ### 10.2 Quality Gates
 
-- [ ] All CI jobs pass (lint, type-check, test, build)
-- [ ] Coverage ≥80% overall
+- [x] All CI jobs pass (lint, type-check, test, build) — CI workflow fixed: `format:check` instead of `format`, correct artifact path, pinned action versions
+- [x] Coverage ≥80% overall — 97.91% statement coverage achieved
 - [ ] No critical SonarQube issues
-- [ ] No Snyk security vulnerabilities in dependencies
+- [x] No Snyk security vulnerabilities in dependencies — `rollup` high-severity patched via `npm audit fix`; `tmp` low-severity patched via npm override `"tmp": "^0.2.5"`
 - [ ] Lighthouse scores meet thresholds
 - [ ] pa11y returns zero accessibility errors
 
 ### 10.3 Documentation
 
-- [ ] Update README with usage instructions, examples, architecture
-- [ ] API documentation (OpenAPI/Swagger)
-- [ ] CLI `--help` output is comprehensive
-- [ ] CONTRIBUTING.md with development setup guide
-- [ ] CHANGELOG.md (keep-a-changelog format)
-- [ ] Inline code comments for complex logic (WSG 2.8)
+- [x] Update README with usage instructions, examples, architecture — Quick Start section, CI badges, CONTRIBUTING/CHANGELOG links added
+- [x] API documentation (OpenAPI/Swagger) — OpenAPI 3.1 spec served at `GET /api/openapi`
+- [x] CLI `--help` output is comprehensive — all options documented in CLI source and README
+- [x] CONTRIBUTING.md with development setup guide — `CONTRIBUTING.md` created
+- [x] CHANGELOG.md (keep-a-changelog format) — `CHANGELOG.md` created
+- [x] Inline code comments for complex logic (WSG 2.8) — module docblocks added to `src/api/store.ts` and `src/api/rate-limit.ts`; all check, core, and utils modules already fully documented
 
 **Deliverable:** Comprehensive test suite and documentation.
 
