@@ -31,7 +31,7 @@
 
   /*
    * WCAG 1.4.3 — override Park UI green token so white text on solid buttons
-   * and active-nav links meets the 4.5:1 AA contrast requirement.
+   * and active-nav links meet the 4.5:1 AA contrast requirement.
    * #13874f yields ~4.56:1 against white (pa11y-recommended value).
    *
    * The solid button recipe uses `colorPalette.default` which resolves via:
