@@ -29,7 +29,7 @@ describe('results/[id]/page', () => {
 
   it('calls notFound for an invalid id', async () => {
     await expect(
-      ResultsIdPage({ params: Promise.resolve({ id: '/\\/evil.com' }) })
+      ResultsIdPage({ params: Promise.resolve({ id: String.raw`/\/evil.com` }) })
     ).rejects.toThrow('NEXT_NOT_FOUND')
 
     expect(notFoundMock).toHaveBeenCalledTimes(1)
