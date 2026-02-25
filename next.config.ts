@@ -13,8 +13,8 @@ const nextConfig: NextConfig = {
   /**
    * Performance budget (WSG 9.4 — Sustainability of the Tool Itself).
    * Turbopack does not support webpack's `performance.hints` config.
-   * The 500 KB initial-load budget is instead enforced via Lighthouse CI
-   * (see .lighthouserc.json — `resource-summary:script:size` assertion).
+   * The 500 KB initial-load script budget is enforced via Lighthouse CI:
+   * see the `resource-summary:script:size` assertion in .lighthouserc.json.
    */
 }
 
