@@ -86,7 +86,7 @@ const PurposeSection = () => (
         className={link()}
       >
         Google PageSpeed Insights
-      </a>
+      </a>{' '}
       .
     </styled.p>
   </styled.section>
@@ -201,7 +201,7 @@ export default function AboutPage() {
           className={link()}
         >
           W3C Web Sustainability Guidelines (WSG)
-        </a>
+        </a>{' '}
         .
       </styled.p>
 

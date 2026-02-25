@@ -31,7 +31,7 @@ export default function GuidelinesPage() {
           className={link()}
         >
           W3C Web Sustainability Guidelines
-        </a>
+        </a>{' '}
         . Filter by category, testability level, or search by keyword.
       </styled.p>
 

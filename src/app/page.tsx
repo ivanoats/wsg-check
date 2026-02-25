@@ -83,7 +83,7 @@ export default function Home() {
           className={link()}
         >
           W3C Web Sustainability Guidelines
-        </a>
+        </a>{' '}
         .
       </styled.p>
 

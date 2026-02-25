@@ -159,9 +159,16 @@ const SummarySection = ({ summary }: { readonly summary: ReportSummary }) => (
   </styled.div>
 )
 
+/** Determine bar color based on category score. */
+const getScoreBarColor = (score: number): string => {
+  if (score >= 75) return 'green.9'
+  if (score >= 50) return 'amber.9'
+  return 'red.9'
+}
+
 /** Single category score row — extracted to limit JSX nesting depth. */
 const CategoryScoreBar = ({ cat }: { readonly cat: CategoryScore }) => {
-  const barColor = cat.score >= 75 ? 'green.9' : cat.score >= 50 ? 'amber.9' : 'red.9'
+  const barColor = getScoreBarColor(cat.score)
   return (
     <styled.div className={cardStyles.root}>
       <styled.div display="flex" justifyContent="space-between" alignItems="center" mb="1">
