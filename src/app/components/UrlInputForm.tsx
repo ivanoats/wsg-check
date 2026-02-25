@@ -78,7 +78,7 @@ const UrlFieldInput = ({ value, error, isLoading, onChange }: UrlFieldInputProps
     <FieldLabel srOnly>Website URL</FieldLabel>
     <FieldInput
       type="url"
-      autoComplete="url"
+      autoComplete="on"
       placeholder="https://example.com"
       value={value}
       onChange={onChange}

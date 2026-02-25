@@ -49,7 +49,7 @@ const navLinkClass = css({
   justifyContent: 'center',
   height: 'full',
   gap: '1',
-  color: 'fg.subtle',
+  color: 'fg.muted',
   textDecoration: 'none',
   fontSize: 'xs',
   fontWeight: 'medium',

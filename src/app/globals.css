@@ -28,6 +28,14 @@
    * WCAG 2.4.11 Focus Not Obscured (Minimum) — AA (WCAG 2.2).
    */
   scroll-padding-bottom: 4rem;
+
+  /*
+   * WCAG 1.4.3 — darken the accent green so white text on solid buttons and
+   * active-nav links meets the 4.5:1 AA contrast requirement.
+   * Park UI's default green.9 (#30a46c) yields ~3.16:1; #13874f yields ~4.56:1.
+   * This unlayered rule wins over the @layer tokens value from the Park UI preset.
+   */
+  --colors-green-9: #13874f;
 }
 
 /* --- Reduced motion --- */
