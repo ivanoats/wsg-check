@@ -11,22 +11,11 @@ const nextConfig: NextConfig = {
   },
 
   /**
-   * Enforce a 500 KB initial-load performance budget in production client
-   * builds (WSG 9.4 — Sustainability of the Tool Itself).
-   * Emits a build warning rather than an error so CI is not blocked on a
-   * single over-budget chunk, but the warning is visible in build output and
-   * can be used to track regressions.
+   * Performance budget (WSG 9.4 — Sustainability of the Tool Itself).
+   * Turbopack does not support webpack's `performance.hints` config.
+   * The 500 KB initial-load budget is instead enforced via Lighthouse CI
+   * (see .lighthouserc.json — `resource-summary:script:size` assertion).
    */
-  webpack: (config, { isServer, dev }) => {
-    if (!dev && !isServer) {
-      config.performance = {
-        hints: 'warning',
-        maxAssetSize: 500_000,
-        maxEntrypointSize: 500_000,
-      }
-    }
-    return config
-  },
 }
 
 export default nextConfig
