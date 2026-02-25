@@ -1,12 +1,14 @@
 /* PandaCSS layer injection — must come first so panda styles layer correctly */
 @layer reset, base, tokens, recipes, utilities;
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
 }
 
 /* --- Design tokens --- */
