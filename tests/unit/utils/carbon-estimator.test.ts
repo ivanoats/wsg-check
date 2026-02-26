@@ -7,7 +7,7 @@ const mockHostingCheck = vi.fn()
 
 vi.mock('@tgwf/co2', () => ({
   co2: class MockCO2 {
-  constructor(_options: unknown) {} // eslint-disable-line @typescript-eslint/no-unused-vars
+    constructor(_options: unknown) {} // eslint-disable-line @typescript-eslint/no-unused-vars
     perByte = mockPerByte
   },
   hosting: {

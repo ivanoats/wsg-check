@@ -1,3 +1,14 @@
+/**
+ * In-memory rate limiter for Next.js Route Handlers.
+ *
+ * Uses `rate-limiter-flexible` with an in-memory backend.  Each client IP is
+ * allowed {@link RATE_LIMIT_POINTS} requests per {@link RATE_LIMIT_DURATION}
+ * second window.  Both values are overridable via environment variables
+ * (see `.env.example`).
+ *
+ * Client IP resolution respects the `WSG_API_TRUST_PROXY` flag to prevent
+ * header-spoofing bypasses — see {@link getClientIp} for the full trust chain.
+ */
 import type { NextRequest } from 'next/server'
 import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible'
 import { errorJson } from './response'

@@ -1,6 +1,33 @@
 # WSG-Check
 
-A Web Sustainability Guidelines checker for websites. It checks a website against the Web Sustainability Guidelines and provides a report on the sustainability of the website.
+[![CI](https://github.com/ivanoats/wsg-check/actions/workflows/ci.yml/badge.svg)](https://github.com/ivanoats/wsg-check/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/ivanoats/wsg-check/branch/main/graph/badge.svg)](https://codecov.io/gh/ivanoats/wsg-check)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+A Web Sustainability Guidelines checker for websites. It checks a website against the [W3C Web Sustainability Guidelines](https://www.w3.org/TR/web-sustainability-guidelines/) and provides a report with a score and actionable recommendations.
+
+## Quick Start
+
+```bash
+# Check a website from the command line (no install needed)
+npx wsg-check https://example.com
+
+# Or install globally
+npm install -g wsg-check
+wsg-check https://example.com --format json --output report.json
+```
+
+To run the web app locally:
+
+```bash
+git clone https://github.com/ivanoats/wsg-check.git
+cd wsg-check
+npm install
+npm run prepare   # generate Panda CSS tokens
+npm run dev       # start dev server at http://localhost:3000
+```
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for full development setup instructions.
 
 ## Features
 
@@ -20,6 +47,16 @@ WSG-Check exposes REST endpoints through Next.js Route Handlers.
 - `GET /api/openapi` — OpenAPI 3.1 JSON specification
 
 All endpoints include CORS headers, shared error envelopes, and in-memory rate limiting.
+
+The interactive OpenAPI specification is served at `/api/openapi` when the server is running.
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup, code-style guidelines, and PR instructions.
+
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for a full history of notable changes.
 
 ## Executive Summary
 

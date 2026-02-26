@@ -32,8 +32,8 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-      - name: Apply Prettier formatting
-        run: npm run format
+      - name: Check Prettier formatting
+        run: npm run format:check
 
   type-check:
     name: TypeScript Type Check
@@ -95,7 +95,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Upload coverage to DeepSource
-        uses: deepsourcelabs/test-coverage-action@master
+        uses: deepsourcelabs/test-coverage-action@v1.1.3
         with:
           key: javascript
           coverage-file: ./coverage/lcov.info
@@ -129,8 +129,8 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: dist
-          path: dist/
+          name: nextjs-build
+          path: .next/
           retention-days: 7
 
   accessibility:

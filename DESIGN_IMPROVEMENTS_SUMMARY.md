@@ -283,14 +283,14 @@ _focusVisible: {
 
 ### Color Scale Tokens (for status/grades)
 
-| Token                 | Color       | Usage                  |
-| --------------------- | ----------- | ---------------------- |
-| `green.9`             | Dark green  | Pass, Grade A, Success |
-| `blue.9`              | Dark blue   | Info, Grade B          |
-| `amber.9` + `amber.12` fg | Dark amber | Warning, Grade C (amber.9/white fails WCAG AA — use amber.12 dark text) |
-| `orange.9`            | Dark orange | Grade D                |
-| `red.9`               | Dark red    | Fail, Grade F, Error   |
-| `gray.7`              | Medium gray | N/A, Manual-only       |
+| Token                     | Color       | Usage                                                                   |
+| ------------------------- | ----------- | ----------------------------------------------------------------------- |
+| `green.9`                 | Dark green  | Pass, Grade A, Success                                                  |
+| `blue.9`                  | Dark blue   | Info, Grade B                                                           |
+| `amber.9` + `amber.12` fg | Dark amber  | Warning, Grade C (amber.9/white fails WCAG AA — use amber.12 dark text) |
+| `orange.9`                | Dark orange | Grade D                                                                 |
+| `red.9`                   | Dark red    | Fail, Grade F, Error                                                    |
+| `gray.7`                  | Medium gray | N/A, Manual-only                                                        |
 
 **Note:** `.9` scales are designed to have ≥4.5:1 contrast with white text. **Exception:** amber is inherently light — always pair `amber.9` background with `amber.12` text, never with `white`. Never use `amber.10` with white text (≈1.55:1 contrast).
 

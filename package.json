@@ -70,7 +70,8 @@
   "overrides": {
     "@park-ui/panda-preset": {
       "@zag-js/core": "^0.82.2"
-    }
+    },
+    "tmp": "^0.2.5"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

@@ -170,7 +170,8 @@ const GRADE_SCALE = [
 - `color: 'white'` text on these backgrounds may fail contrast in dark mode
 - Not using Park UI semantic tokens
 
-**Fix:** Use `css()` calls at **module level** with *literal* values — Panda's static extractor scans source files at build time and generates utility classes for every literal value it finds in recognised patterns. Dynamic `bg={variable}` props and `style={{ backgroundColor: cssVar }}` with CSS variable strings are both unreliable:
+**Fix:** Use `css()` calls at **module level** with _literal_ values — Panda's static extractor scans source files at build time and generates utility classes for every literal value it finds in recognised patterns. Dynamic `bg={variable}` props and `style={{ backgroundColor: cssVar }}` with CSS variable strings are both unreliable:
+
 - Panda's extractor skips dynamic prop values
 - CSS variable approach fails when the variable isn't defined by the preset (e.g. `--colors-blue-9`, `--colors-orange-9` may be absent)
 
