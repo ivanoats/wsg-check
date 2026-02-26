@@ -2,7 +2,6 @@
 
 [![CI](https://github.com/ivanoats/wsg-check/actions/workflows/ci.yml/badge.svg)](https://github.com/ivanoats/wsg-check/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/ivanoats/wsg-check/branch/main/graph/badge.svg)](https://codecov.io/gh/ivanoats/wsg-check)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 A Web Sustainability Guidelines checker for websites. It checks a website against the [W3C Web Sustainability Guidelines](https://www.w3.org/TR/web-sustainability-guidelines/) and provides a report with a score and actionable recommendations.
 
