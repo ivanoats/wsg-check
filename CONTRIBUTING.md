@@ -11,7 +11,6 @@ Thank you for your interest in contributing to WSG-Check! This guide will help y
 - [Submitting a Pull Request](#submitting-a-pull-request)
 - [Reporting Bugs](#reporting-bugs)
 - [Requesting Features](#requesting-features)
-- [Contributor License Agreement](#submitting-a-pull-request)
 
 ---
 
