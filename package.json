@@ -29,6 +29,7 @@
     "dist/",
     "README.md",
     "LICENSE",
+    "NOTICE",
     "CLA.md"
   ],
   "main": "./dist/cli/index.js",
