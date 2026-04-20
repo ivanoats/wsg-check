@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Checks a website with the Web Sustainability Guidelines (W3C WSG)",
   "license": "Apache-2.0",
-  "author": "van Storck",
+  "author": "Ivan Storck",
   "homepage": "https://github.com/ivanoats/wsg-check#readme",
   "repository": {
     "type": "git",

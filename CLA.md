@@ -1,6 +1,6 @@
 # Contributor License Agreement (CLA)
 
-Thank you for your interest in contributing to **WSG-Check** (the "Project"), maintained by van Storck ("Maintainer").
+Thank you for your interest in contributing to **WSG-Check** (the "Project"), maintained by Ivan Storck ("Maintainer").
 
 By submitting a pull request, issue, or any other contribution to this repository, you agree to the terms below. Please read them carefully before contributing.
 
@@ -10,7 +10,7 @@ By submitting a pull request, issue, or any other contribution to this repositor
 
 - **"Contribution"** means any work of authorship, including source code, documentation, bug reports, feature requests, patches, or any other material you submit to this Project.
 - **"You" (or "Your")** means the individual or Legal Entity making a Contribution.
-- **"Maintainer"** means van Storck, the copyright owner and primary steward of this Project.
+- **"Maintainer"** means Ivan Storck, the copyright owner and primary steward of this Project.
 
 ---
 
