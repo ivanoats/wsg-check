@@ -11,6 +11,7 @@ Thank you for your interest in contributing to WSG-Check! This guide will help y
 - [Submitting a Pull Request](#submitting-a-pull-request)
 - [Reporting Bugs](#reporting-bugs)
 - [Requesting Features](#requesting-features)
+- [Contributor License Agreement](#submitting-a-pull-request)
 
 ---
 
@@ -168,6 +169,9 @@ npm run type-check
 
 ## Submitting a Pull Request
 
+> **Contributor License Agreement (CLA)**
+> By opening a pull request you agree to the terms of the [CLA](./CLA.md). Add a `Signed-off-by` trailer to every commit (`git commit -s`) to indicate your acceptance.
+
 1. **Create a branch** from `main`:
 
    ```bash
@@ -184,13 +188,15 @@ npm run type-check
    npm run lint && npm run type-check && npm run test:run
    ```
 
-5. **Commit** with a descriptive message following [Conventional Commits](https://www.conventionalcommits.org/):
+5. **Commit** with a descriptive message following [Conventional Commits](https://www.conventionalcommits.org/) and include a `Signed-off-by` trailer:
 
    ```
    feat: add check for unused CSS
-   fix: correct scoring for hosting category
-   docs: update README with new CLI options
+
+   Signed-off-by: Your Name <your-email@example.com>
    ```
+
+   Use `git commit -s` to add the sign-off automatically.
 
 6. **Open a PR** against `main` and fill in the PR template.
 

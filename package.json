@@ -2,7 +2,7 @@
   "name": "wsg-check",
   "version": "0.0.1",
   "description": "Checks a website with the Web Sustainability Guidelines (W3C WSG)",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "van Storck",
   "homepage": "https://github.com/ivanoats/wsg-check#readme",
   "repository": {
@@ -25,7 +25,8 @@
   "files": [
     "dist/",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CLA.md"
   ],
   "main": "./dist/cli/index.js",
   "bin": {
