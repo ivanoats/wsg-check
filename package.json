@@ -21,6 +21,9 @@
     "green-web",
     "sustainability"
   ],
+  "engines": {
+    "node": ">=22"
+  },
   "type": "module",
   "files": [
     "dist/",
