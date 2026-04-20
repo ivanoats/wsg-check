@@ -1,17 +1,41 @@
 {
   "name": "wsg-check",
   "version": "0.0.1",
-  "description": "Checks a website with the Web Sustainabilty Guidelines",
-  "license": "private",
+  "description": "Checks a website with the Web Sustainability Guidelines (W3C WSG)",
+  "license": "MIT",
   "author": "van Storck",
+  "homepage": "https://github.com/ivanoats/wsg-check#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ivanoats/wsg-check.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ivanoats/wsg-check/issues"
+  },
+  "keywords": [
+    "web-sustainability",
+    "wsg",
+    "w3c",
+    "cli",
+    "website-checker",
+    "green-web",
+    "sustainability"
+  ],
   "type": "module",
-  "main": "index.js",
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/cli/index.js",
   "bin": {
     "wsg-check": "./dist/cli/index.js"
   },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:cli": "tsup",
+    "prepublishOnly": "npm run build:cli",
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -62,6 +86,7 @@
     "lint-staged": "^16.2.7",
     "pa11y-ci": "^4.0.1",
     "prettier": "^3.8.1",
+    "tsup": "^8.5.1",
     "typescript": "5.9.3",
     "typescript-eslint": "^8.56.1",
     "vitest": "^4.0.18",
