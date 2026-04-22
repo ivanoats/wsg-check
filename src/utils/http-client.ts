@@ -12,6 +12,7 @@ import axios, { AxiosError, type AxiosInstance, type AxiosResponse } from 'axios
 import robotsParser from 'robots-parser'
 import { FetchError, type Result, ok, err } from './errors'
 import { isDisallowedHost, dnsResolvesToPrivateAddress } from './ssrf'
+import { VERSION } from '../version'
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
@@ -65,7 +66,7 @@ export interface HttpClientOptions {
 
 const DEFAULT_OPTIONS: Required<HttpClientOptions> = {
   timeout: 30_000,
-  userAgent: 'Mozilla/5.0 (compatible; wsg-check/0.0.1; +https://github.com/ivanoats/wsg-check)',
+  userAgent: `Mozilla/5.0 (compatible; wsg-check/${VERSION}; +https://github.com/ivanoats/wsg-check)`,
   followRedirects: true,
   maxRetries: 2,
   retryDelay: 500,
