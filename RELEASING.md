@@ -38,8 +38,11 @@ Runbook for cutting releases of `@sustainablewebsites/wsg-check` to npm.
 
 Use this when you need to ship an out-of-band patch that doesn't fit the conventional-commit-driven flow — e.g. a hotfix from a named branch, or re-publishing a previously-failed release.
 
-1. Bump `package.json` version on main (via PR).
-2. Merge. Main now has the new version.
+1. Bump the version on main (via PR) and keep all release-tracking files in sync:
+   - `package.json`
+   - `.release-please-manifest.json`
+   - any other version source touched by the release
+2. Merge. Main now has the new version recorded consistently for both npm and future release-please runs.
 3. Tag and create a release:
    ```bash
    gh release create vX.Y.Z --title "vX.Y.Z" --generate-notes
