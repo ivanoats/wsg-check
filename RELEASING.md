@@ -68,7 +68,7 @@ Use this when you need to ship an out-of-band patch that doesn't fit the convent
 
 Despite being a 404, this is actually an **auth failure** on a scoped package. npm hides the existence of private/unauthenticated scopes.
 
-- Provenance signed but publish 404s → npm CLI too old for OIDC token exchange. Check `publish.yml` uses Node 24.
+- Provenance signed but publish 404s → npm CLI too old for OIDC token exchange. Check `publish.yml` uses Node 23.
 - Provenance also fails → Trusted Publisher config on npmjs.com doesn't match the workflow's OIDC claims. Verify the configured `workflow_ref` matches `publish.yml`.
 
 ### `403 Forbidden - Package name too similar to existing package`
