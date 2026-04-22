@@ -12,7 +12,9 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: googleapis/release-please-action@v4
+      # Pinned to full SHA for supply-chain security; this is release-please-action v4.4.1.
+      # Dependabot (github-actions ecosystem) will propose SHA + comment updates when v4.x.y advances.
+      - uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4.4.1
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
