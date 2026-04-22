@@ -3,6 +3,10 @@ name: Publish to npm
 on:
   release:
     types: [published]
+  # Allows manual dispatch from the Actions tab after release-please
+  # merges a release PR — GITHUB_TOKEN-created releases don't trigger
+  # other workflows, so this is how we publish them.
+  workflow_dispatch:
 
 jobs:
   publish:
