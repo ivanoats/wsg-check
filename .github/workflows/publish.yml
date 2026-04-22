@@ -19,7 +19,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          # Node 24 ships with npm 11.x, required for Trusted Publishing (OIDC)
+          # token exchange with the npm registry (added in npm 11.5.1).
+          node-version: '24'
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
