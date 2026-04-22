@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "node",
+  "include-v-in-tag": true,
+  "include-component-in-tag": false,
+  "packages": {
+    ".": {
+      "package-name": "@sustainablewebsites/wsg-check",
+      "changelog-path": "CHANGELOG.md",
+      "changelog-sections": [
+        { "type": "feat", "section": "Added" },
+        { "type": "fix", "section": "Fixed" },
+        { "type": "security", "section": "Security" },
+        { "type": "perf", "section": "Changed" },
+        { "type": "refactor", "section": "Changed" },
+        { "type": "revert", "section": "Changed" },
+        { "type": "docs", "section": "Changed" },
+        { "type": "build", "section": "Dependencies" },
+        { "type": "deps", "section": "Dependencies" },
+        { "type": "ci", "hidden": true },
+        { "type": "chore", "hidden": true },
+        { "type": "test", "hidden": true },
+        { "type": "style", "hidden": true }
+      ]
+    }
+  }
+}
