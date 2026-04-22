@@ -1,4 +1,5 @@
 import type { WSGCheckConfig } from './types'
+import { VERSION } from '../version'
 
 /**
  * Sensible default configuration values for wsg-check.
@@ -12,7 +13,7 @@ export const DEFAULT_CONFIG: Omit<WSGCheckConfig, 'url'> = {
 
   timeout: 30_000, // 30 seconds
   maxDepth: 1, // single page by default
-  userAgent: 'Mozilla/5.0 (compatible; wsg-check/0.0.1; +https://github.com/ivanoats/wsg-check)',
+  userAgent: `Mozilla/5.0 (compatible; wsg-check/${VERSION}; +https://github.com/ivanoats/wsg-check)`,
   followRedirects: true,
 
   format: 'terminal',
