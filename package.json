@@ -1,6 +1,9 @@
 {
-  "name": "wsg-check",
-  "version": "0.1.0",
+  "name": "@sustainablewebsites/wsg-check",
+  "version": "0.1.1",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Checks a website with the Web Sustainability Guidelines (W3C WSG)",
   "license": "Apache-2.0",
   "author": "Ivan Storck",
