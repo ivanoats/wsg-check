@@ -74,7 +74,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@lhci/cli": "^0.15.1",
-    "@pandacss/dev": "^1.8.2",
+    "@pandacss/dev": "^1.10.0",
     "@park-ui/panda-preset": "^0.43.1",
     "@playwright/test": "^1.58.2",
     "@testing-library/react": "^16.3.2",
