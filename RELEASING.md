@@ -27,7 +27,7 @@ Runbook for cutting releases of `@sustainablewebsites/wsg-check` to npm.
      gh workflow run publish.yml --ref main
      ```
 
-   The workflow checks out `main`, bundles the CLI with `tsup`, and runs `npm publish --provenance --access public`. Auth is OIDC via [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers) — no long-lived token involved.
+   The workflow checks out the workflow run ref, bundles the CLI with `tsup`, and runs `npm publish --provenance --access public`. For manual dispatch, that's the ref you selected (for the normal flow, `main`); for a `release: published` run, that's the tag commit (`GITHUB_SHA`). Auth is OIDC via [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers) — no long-lived token involved.
 
 5. **Verify on npm.**
    ```bash
