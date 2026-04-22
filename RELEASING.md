@@ -60,7 +60,7 @@ Use this when you need to ship an out-of-band patch that doesn't fit the convent
 
 - **Trusted Publishing** configured for the package at https://www.npmjs.com/package/@sustainablewebsites/wsg-check/access
 - **No `NPM_TOKEN` secret** — intentionally absent. If OIDC ever breaks, reverting to token auth is a one-line workflow change plus adding back an Automation-type token.
-- **Node 24** in `publish.yml` — required because npm's OIDC → publish-token exchange landed in npm 11.5.1, and Node 22 ships with npm 10.x.
+- **Node 23** in `publish.yml` — required because npm's OIDC → publish-token exchange landed in npm 11.5.1, and Node 22 ships with npm 10.x.
 
 ## Troubleshooting
 
