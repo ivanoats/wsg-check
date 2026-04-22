@@ -9,10 +9,10 @@ A Web Sustainability Guidelines checker for websites. It checks a website agains
 
 ```bash
 # Check a website from the command line (no install needed)
-npx wsg-check https://example.com
+npx @sustainablewebsites/wsg-check https://example.com
 
 # Or install globally
-npm install -g wsg-check
+npm install -g @sustainablewebsites/wsg-check
 wsg-check https://example.com --format json --output report.json
 ```
 
@@ -912,16 +912,16 @@ WSG-Check ships with a command-line tool that lets you check any website directl
 
 ```bash
 # Check a website with default (terminal) output
-npx wsg-check https://example.com
+npx @sustainablewebsites/wsg-check https://example.com
 
 # Output as JSON
-npx wsg-check https://example.com --format json
+npx @sustainablewebsites/wsg-check https://example.com --format json
 
 # Save the report to a file
-npx wsg-check https://example.com --format markdown --output report.md
+npx @sustainablewebsites/wsg-check https://example.com --format markdown --output report.md
 
 # Fail the process (exit 1) if the score is below 70
-npx wsg-check https://example.com --fail-threshold 70
+npx @sustainablewebsites/wsg-check https://example.com --fail-threshold 70
 ```
 
 ### Options
@@ -945,7 +945,7 @@ Use `--fail-threshold` to fail your pipeline when a site's sustainability score 
 ```yaml
 # .github/workflows/sustainability.yml
 - name: Check sustainability
-  run: npx wsg-check https://example.com --fail-threshold 60 --format json --output wsg-report.json
+  run: npx @sustainablewebsites/wsg-check https://example.com --fail-threshold 60 --format json --output wsg-report.json
 - name: Upload report
   uses: actions/upload-artifact@v4
   with:
