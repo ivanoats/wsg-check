@@ -63,7 +63,7 @@ Use this when you need to ship an out-of-band patch that doesn't fit the convent
 
 - **Trusted Publishing** configured for the package at https://www.npmjs.com/package/@sustainablewebsites/wsg-check/access
 - **No `NPM_TOKEN` secret** — intentionally absent. If OIDC ever breaks, reverting to token auth is a one-line workflow change plus adding back an Automation-type token.
-- **Node 23** in `publish.yml` — required because npm's OIDC → publish-token exchange landed in npm 11.5.1, and Node 22 ships with npm 10.x.
+- **`publish.yml` uses Node 24** — the actual requirement for npm Trusted Publishing is **npm 11.5.1 or newer** for the OIDC → publish-token exchange. Node 24 is the currently chosen compatible runtime in the workflow, rather than the only possible way to meet that requirement.
 
 ## Troubleshooting
 
@@ -71,7 +71,7 @@ Use this when you need to ship an out-of-band patch that doesn't fit the convent
 
 Despite being a 404, this is actually an **auth failure** on a scoped package. npm hides the existence of private/unauthenticated scopes.
 
-- Provenance signed but publish 404s → npm CLI too old for OIDC token exchange. Check `publish.yml` uses Node 23.
+- Provenance signed but publish 404s → npm CLI too old for OIDC token exchange. Check `publish.yml` uses Node 24 with npm 11.5.1 or newer.
 - Provenance also fails → Trusted Publisher config on npmjs.com doesn't match the workflow's OIDC claims. Verify the configured `workflow_ref` matches `publish.yml`.
 
 ### `403 Forbidden - Package name too similar to existing package`
