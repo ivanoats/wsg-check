@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.3](https://github.com/ivanoats/wsg-check/compare/v0.1.2...v0.1.3) (2026-04-26)
+
+
+### Fixed
+
+* gemini code review ([#147](https://github.com/ivanoats/wsg-check/issues/147)) ([90ad922](https://github.com/ivanoats/wsg-check/commit/90ad922c3651058c8658b83985af0853e22cd7f8))
+
+
+### Changed
+
+* add RELEASING.md runbook for npm release flow ([#143](https://github.com/ivanoats/wsg-check/issues/143)) ([316de25](https://github.com/ivanoats/wsg-check/commit/316de2577e170c012331fc56f1d0c30ca51e4939))
+
+
+### Dependencies
+
+* **deps-dev:** bump jsdom from 28.1.0 to 29.0.2 ([#146](https://github.com/ivanoats/wsg-check/issues/146)) ([efcc58e](https://github.com/ivanoats/wsg-check/commit/efcc58e7212bc1046d719030d813b8919c427616))
+* **deps:** bump @ark-ui/react in the production-minor-patch group ([#145](https://github.com/ivanoats/wsg-check/issues/145)) ([d3dee78](https://github.com/ivanoats/wsg-check/commit/d3dee78c0f072c0de70740f6d7cf1e637d4a2bba))
+* **deps:** bump googleapis/release-please-action ([#144](https://github.com/ivanoats/wsg-check/issues/144)) ([5bfa953](https://github.com/ivanoats/wsg-check/commit/5bfa95335207a79c285da029ee05c86a884b4185))
+
 ## [Unreleased]
 
 ### Added
