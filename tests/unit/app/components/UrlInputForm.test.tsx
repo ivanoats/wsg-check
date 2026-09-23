@@ -55,6 +55,7 @@ describe('UrlInputForm', () => {
     fetchMock.mockReset()
     pushMock.mockReset()
     vi.mocked(useRouter).mockReturnValue({
+      bfcacheId: 'test',
       push: pushMock,
       replace: vi.fn(),
       back: vi.fn(),

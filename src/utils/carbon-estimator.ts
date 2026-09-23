@@ -53,7 +53,9 @@ export function estimateCO2(bytes: number, isGreenHosted: boolean): number {
  */
 export async function checkGreenHosting(domain: string): Promise<boolean> {
   try {
-    const result = await (hosting.check(domain) as unknown as Promise<boolean>)
+    // The ESM export is callable; @types/tgwf__co2 describes the CommonJS API.
+    const check = hosting as unknown as (domain: string) => Promise<boolean>
+    const result = await check(domain)
     return Boolean(result)
   } catch {
     return false
