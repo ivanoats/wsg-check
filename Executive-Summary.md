@@ -40,11 +40,12 @@ This phase transforms wsg-check from a passive auditing tool into an active AI-p
 ## 3. Marketplace Positioning
 
 The market for "Green IT" tools is currently fragmented, placing wsg-check in a strategic spot:
-| Category | Competitors | wsg-check Position |
-|---|---|---|
-| Broad Performance | Lighthouse, PageSpeed | Lighthouse measures speed (which correlates to carbon), but wsg-check measures intent and guideline compliance. |
-| Carbon Estimators | Website Carbon, EcoGrader | These provide a "score" but no "fix." wsg-check is a developer tool meant for the workflow, not just a marketing badge. Unlike these tools, wsg-check now bundles its own CO2 estimate (via `@tgwf/co2` SWD v4) and green hosting check directly in the pipeline. |
-| Accessibility Tools | axe-core, WAVE | wsg-check is the green equivalent of axe-core. It targets the same "shift-left" philosophy where quality is checked during development. |
+
+| Category            | Competitors               | wsg-check Position                                                                                                                                                                                                                                                |
+| ------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Broad Performance   | Lighthouse, PageSpeed     | Lighthouse measures speed (which correlates to carbon), but wsg-check measures intent and guideline compliance.                                                                                                                                                   |
+| Carbon Estimators   | Website Carbon, EcoGrader | These provide a "score" but no "fix." wsg-check is a developer tool meant for the workflow, not just a marketing badge. Unlike these tools, wsg-check now bundles its own CO2 estimate (via `@tgwf/co2` SWD v4) and green hosting check directly in the pipeline. |
+| Accessibility Tools | axe-core, WAVE            | wsg-check is the green equivalent of axe-core. It targets the same "shift-left" philosophy where quality is checked during development.                                                                                                                           |
 
 ### The Competitive Edge
 

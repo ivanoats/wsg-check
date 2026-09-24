@@ -25,8 +25,7 @@
  * ```
  */
 export type Result<T, E extends Error = Error> =
-  | { readonly ok: true; readonly value: T }
-  | { readonly ok: false; readonly error: E }
+  { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E }
 
 /** Construct a successful `Result`. */
 export function ok<T>(value: T): { readonly ok: true; readonly value: T } {
