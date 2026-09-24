@@ -11,7 +11,7 @@ Records cover the main architectural choices evidenced by the inspected history,
 | 0001 | [Share a framework-independent analysis pipeline](adr/0001-shared-analysis-pipeline.md)         | 2026-02-20          | Accepted                      |
 | 0002 | [Use static page analysis and modeled carbon estimates](adr/0002-static-analysis-and-carbon.md) | 2026-02-21          | Accepted                      |
 | 0003 | [Read live W3C guideline data with a static fallback](adr/0003-live-guideline-source.md)        | 2026-02-22          | Superseded by ADR-0005        |
-| 0004 | [Carry reports through browser session storage](adr/0004-ephemeral-web-results.md)              | 2026-02-24          | Accepted                      |
+| 0004 | [Carry reports through browser session storage](adr/0004-ephemeral-web-results.md)              | 2026-02-25          | Accepted                      |
 | 0005 | [Pin WSG releases and use canonical slug identities](adr/0005-pin-wsg-spec.md)                  | 2026-09-24          | Accepted; supersedes ADR-0003 |
 | 0006 | [Keep unmatched checks visible but outside WSG scores](adr/0006-related-checks.md)              | 2026-09-24          | Accepted                      |
 | 0007 | [Report spec provenance independently of package versions](adr/0007-spec-provenance.md)         | 2026-09-24          | Accepted                      |
