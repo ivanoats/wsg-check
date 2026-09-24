@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0](https://github.com/ivanoats/wsg-check/compare/v0.1.2...v0.2.0) (2026-09-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* check results and recommendations report WSG slugs instead of numeric IDs, and overall and category scores no longer include the four related checks. ReportSummary.totalChecks counts WSG checks only; the new relatedChecks field counts the rest.
+* /api/guidelines and /api/guidelines/:id return slug IDs, a `number` field and a `spec` object instead of `source`. The old registry's numeric IDs are gone; only the checks' numeric IDs resolve, and they are deprecated.
+
+### Added
+
+* report checks under their July-2026 guidelines; unscored related checks ([#189](https://github.com/ivanoats/wsg-check/issues/189)) ([8b9a372](https://github.com/ivanoats/wsg-check/commit/8b9a37233f21e518c85d47b2247f0ff86dcb3ae8))
+* report the targeted WSG release and watch for new spec tags ([#190](https://github.com/ivanoats/wsg-check/issues/190)) ([aad2848](https://github.com/ivanoats/wsg-check/commit/aad28488260fa8df3758e8a63cf6a76e6bec1596))
+* target the WSG July-2026 release with slug guideline IDs ([#180](https://github.com/ivanoats/wsg-check/issues/180)) ([e0350ad](https://github.com/ivanoats/wsg-check/commit/e0350ad7def3e7fc971542e186fb3a97fc185002))
+
+
+### Fixed
+
+* **api:** fall back when WSG API uses slug IDs; document spec versioning ([#179](https://github.com/ivanoats/wsg-check/issues/179)) ([48ec49a](https://github.com/ivanoats/wsg-check/commit/48ec49a12bdf34289dce2eca11710969f239db97))
+* gemini code review ([#147](https://github.com/ivanoats/wsg-check/issues/147)) ([90ad922](https://github.com/ivanoats/wsg-check/commit/90ad922c3651058c8658b83985af0853e22cd7f8))
+* synchronous OPTIONS handlers and version-agnostic --version example ([#191](https://github.com/ivanoats/wsg-check/issues/191)) ([18685b5](https://github.com/ivanoats/wsg-check/commit/18685b5ac977756e8f2323c85b4c4fca0132e345))
+
+
+### Changed
+
+* add RELEASING.md runbook for npm release flow ([#143](https://github.com/ivanoats/wsg-check/issues/143)) ([316de25](https://github.com/ivanoats/wsg-check/commit/316de2577e170c012331fc56f1d0c30ca51e4939))
+* organize architecture docs and backfill decision records ([#196](https://github.com/ivanoats/wsg-check/issues/196)) ([1d59020](https://github.com/ivanoats/wsg-check/commit/1d590204deaaf6b8348e8430a82df1201cb26409))
+
+
+### Dependencies
+
+* **deps-dev:** bump jsdom from 28.1.0 to 29.0.2 ([#146](https://github.com/ivanoats/wsg-check/issues/146)) ([efcc58e](https://github.com/ivanoats/wsg-check/commit/efcc58e7212bc1046d719030d813b8919c427616))
+* **deps:** bump @ark-ui/react in the production-minor-patch group ([#145](https://github.com/ivanoats/wsg-check/issues/145)) ([d3dee78](https://github.com/ivanoats/wsg-check/commit/d3dee78c0f072c0de70740f6d7cf1e637d4a2bba))
+* **deps:** bump googleapis/release-please-action ([#144](https://github.com/ivanoats/wsg-check/issues/144)) ([5bfa953](https://github.com/ivanoats/wsg-check/commit/5bfa95335207a79c285da029ee05c86a884b4185))
+* **deps:** consolidate Dependabot PRs [#181](https://github.com/ivanoats/wsg-check/issues/181)-[#186](https://github.com/ivanoats/wsg-check/issues/186) ([#188](https://github.com/ivanoats/wsg-check/issues/188)) ([7de8abe](https://github.com/ivanoats/wsg-check/commit/7de8abefc535819ec3183476dd47df9c84cedf46))
+* **deps:** consolidate dependency PRs and apply current security fixes ([#178](https://github.com/ivanoats/wsg-check/issues/178)) ([7e42ac5](https://github.com/ivanoats/wsg-check/commit/7e42ac5d0f5e0c1df43cf9a0b03905fdc2e071a9))
+
 ## [Unreleased]
 
 ### Changed
