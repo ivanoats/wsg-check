@@ -21,10 +21,12 @@ describe('health/openapi routes', () => {
     expect(response.status).toBe(200)
     expect(body.status).toBe('ok')
     expect(body.service).toBe('wsg-check-api')
+    expect(body.version).toMatch(/^\d+\.\d+\.\d+/)
+    expect(body.specVersion).toBe('July-2026')
   })
 
-  it('OPTIONS /api/health returns CORS preflight response', async () => {
-    const response = await healthOptions()
+  it('OPTIONS /api/health returns CORS preflight response', () => {
+    const response = healthOptions()
 
     expect(response.status).toBe(204)
     expect(response.headers.get('Access-Control-Allow-Methods')).toContain('GET')

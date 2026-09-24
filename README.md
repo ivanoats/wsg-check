@@ -2,10 +2,11 @@
 
 [![CI](https://github.com/ivanoats/wsg-check/actions/workflows/ci.yml/badge.svg)](https://github.com/ivanoats/wsg-check/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/ivanoats/wsg-check/branch/main/graph/badge.svg)](https://codecov.io/gh/ivanoats/wsg-check)
+[![WSG July-2026](https://img.shields.io/badge/WSG-July--2026-2e7d32)](https://www.w3.org/TR/web-sustainability-guidelines/)
 
 A Web Sustainability Guidelines checker for websites. It checks a website against the [W3C Web Sustainability Guidelines](https://www.w3.org/TR/web-sustainability-guidelines/) and provides a report with a score and actionable recommendations.
 
-WSG-Check targets the **July-2026** release of the guidelines (Group Note Draft). See [SPEC_VERSIONING.md](./SPEC_VERSIONING.md) for how it tracks spec releases.
+WSG-Check targets the **July-2026** release of the guidelines (Group Note Draft). Every report records that release as `specVersion`, and `wsg-check --version` prints it, e.g. `0.2.0 (WSG July-2026)`. Scores are only comparable between reports with the same `specVersion`. See [SPEC_VERSIONING.md](./SPEC_VERSIONING.md) for how wsg-check tracks spec releases.
 
 Four checks have no guideline in that release: security headers, form validation, native form features and image alternative text. They still run, but appear in reports as **related checks** and are not included in the score.
 
@@ -46,7 +47,7 @@ WSG-Check exposes REST endpoints through Next.js Route Handlers.
 - `GET /api/check/:id` — Fetch a completed check result from in-memory store
 - `GET /api/guidelines` — List guidelines in the targeted WSG release, with the release in `spec`
 - `GET /api/guidelines/:id` — Get one guideline by slug (e.g. `minify-and-remove-unused-code`); legacy numeric IDs such as `3.3` still resolve
-- `GET /api/health` — Health endpoint
+- `GET /api/health` — Health endpoint; includes the package `version` and the targeted WSG release as `specVersion`
 - `GET /api/openapi` — OpenAPI 3.1 JSON specification
 
 All endpoints include CORS headers, shared error envelopes, and in-memory rate limiting.

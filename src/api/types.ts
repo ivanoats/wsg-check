@@ -45,4 +45,8 @@ export interface HealthResponseBody {
   readonly status: 'ok'
   readonly service: 'wsg-check-api'
   readonly timestamp: string
+  /** wsg-check package version. */
+  readonly version: string
+  /** WSG release the checks target, e.g. `"July-2026"`. */
+  readonly specVersion: string
 }

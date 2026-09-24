@@ -127,10 +127,12 @@ const ReportHeader = ({
   grade,
   score,
   url,
+  specVersion,
 }: {
   readonly grade: string
   readonly score: number
   readonly url: string
+  readonly specVersion: string
 }) => (
   <styled.div display="flex" gap="4" alignItems="center" mb="6">
     <span
@@ -164,6 +166,11 @@ const ReportHeader = ({
       <styled.p fontSize="sm" color="fg.muted" style={{ wordBreak: 'break-all' }}>
         {url}
       </styled.p>
+      {specVersion ? (
+        <styled.p fontSize="sm" color="fg.muted">
+          Checked against WSG {specVersion}
+        </styled.p>
+      ) : null}
     </styled.div>
   </styled.div>
 )
@@ -477,7 +484,12 @@ export const ResultsClient = ({ id }: ResultsClientProps) => {
         </Link>
       </styled.div>
 
-      <ReportHeader grade={report.grade} score={report.overallScore} url={report.url} />
+      <ReportHeader
+        grade={report.grade}
+        score={report.overallScore}
+        url={report.url}
+        specVersion={report.specVersion}
+      />
       <SummarySection summary={report.summary} />
       <CategoryScoresSection categories={report.categories} />
       <RecommendationsSection recommendations={report.recommendations} />

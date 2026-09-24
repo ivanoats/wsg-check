@@ -32,6 +32,7 @@ const MOCK_REPORT: SustainabilityReport = {
   duration: 1000,
   overallScore: 80,
   grade: 'B',
+  specVersion: 'July-2026',
   categories: [],
   checks: [],
   summary: {
@@ -107,6 +108,17 @@ describe('ResultsClient', () => {
     render(<ResultsClient id={validId} />)
 
     expect(screen.getByText('https://example.com')).toBeDefined()
+  })
+
+  it('names the WSG release the report was scored against', () => {
+    sessionStorageMock.setItem(
+      `wsg-check:result:${validId}`,
+      JSON.stringify({ id: validId, status: 'completed', report: MOCK_REPORT })
+    )
+
+    render(<ResultsClient id={validId} />)
+
+    expect(screen.getByText('Checked against WSG July-2026')).toBeDefined()
   })
 
   it('does not call fetch for an invalid id and shows not found message', async () => {

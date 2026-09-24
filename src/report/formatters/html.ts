@@ -249,6 +249,7 @@ export const formatHtml = (report: SustainabilityReport): string => {
   <div class="meta">
     <span><strong>URL:</strong> <a href="${safeHref(report.url)}" rel="noopener noreferrer">${esc(report.url)}</a></span>
     <span><strong>Date:</strong> ${esc(date)}</span>
+    <span><strong>WSG release:</strong> ${esc(report.specVersion)}</span>
     <span><strong>Duration:</strong> ${esc(formatDuration(report.duration))}</span>
   </div>
 

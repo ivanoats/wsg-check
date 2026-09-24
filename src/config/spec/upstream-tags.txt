@@ -1,0 +1,9 @@
+# Release tags in https://github.com/w3c/sustainableweb-wsg that have been
+# reviewed for wsg-check. The weekly "WSG spec watch" workflow opens an issue
+# for any upstream tag not listed here. Add a tag once it has been reviewed,
+# whether or not wsg-check moves to it (see SPEC_VERSIONING.md).
+Q1-2025
+Q2-2025
+Q3-2025
+Q4-2025
+July-2026
