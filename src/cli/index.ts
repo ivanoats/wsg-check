@@ -20,11 +20,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { Command } from 'commander'
 import { resolveConfig } from '../config/loader'
-import {
-  isLegacyGuidelineId,
-  isSameGuideline,
-  resolveGuidelineId,
-} from '../config/guidelines-registry'
+import { checkMatchesGuideline, isLegacyGuidelineId } from '../config/guidelines-registry'
 import { WSG_SPEC } from '../config/spec/index'
 import type { OutputFormat, WSGCategory } from '../config/types'
 import { WsgChecker } from '../core/index'
@@ -127,15 +123,44 @@ const buildCliFlags = (url: string, opts: CliOptions) => ({
 
 // ─── Check selector ───────────────────────────────────────────────────────────
 
-/** Warns for each legacy numeric guideline ID, naming the slug to use instead. */
+/** Every registered check, regardless of category. */
+const ALL_CHECKS: ReadonlyArray<CheckFnWithId> = [
+  ...performanceChecks,
+  ...semanticChecks,
+  ...sustainabilityChecks,
+  ...securityChecks,
+  ...uxDesignChecks,
+  ...hostingChecks,
+]
+
+/**
+ * Describes what replaces a legacy numeric ID, based on the checks registered
+ * under it: the slugs they implement, and whether any have no guideline in
+ * the targeted release (e.g. `2.17` covers downloadable documents, which has a
+ * slug, and alt text, which does not).
+ */
+const describeLegacyReplacement = (id: string): string => {
+  const checks = ALL_CHECKS.filter((check) => check.guidelineId === id)
+  const slugs = [
+    ...new Set(
+      checks.flatMap((check) => (check.guidelineSlug === null ? [] : [check.guidelineSlug]))
+    ),
+  ]
+  const release = `WSG ${WSG_SPEC.release}`
+  if (slugs.length === 0) return `it has no equivalent in ${release}`
+
+  const replacement = `use ${slugs.map((slug) => `"${slug}"`).join(', ')} (${release})`
+  return checks.some((check) => check.guidelineSlug === null)
+    ? `${replacement}; some of its checks have no ${release} guideline and run only under "${id}"`
+    : replacement
+}
+
+/** Warns for each legacy numeric guideline ID, naming what to use instead. */
 const warnOnLegacyGuidelineIds = (guidelines: readonly string[]): void => {
   for (const id of guidelines.filter(isLegacyGuidelineId)) {
-    const slug = resolveGuidelineId(id)
-    const replacement =
-      slug === undefined
-        ? `it has no equivalent in WSG ${WSG_SPEC.release}`
-        : `use "${slug}" (WSG ${WSG_SPEC.release})`
-    process.stderr.write(`Warning: numeric guideline ID "${id}" is deprecated; ${replacement}.\n`)
+    process.stderr.write(
+      `Warning: numeric guideline ID "${id}" is deprecated; ${describeLegacyReplacement(id)}.\n`
+    )
   }
 }
 
@@ -165,7 +190,7 @@ const selectChecks = (
   warnOnLegacyGuidelineIds(guidelines)
 
   return guidelines.length > 0
-    ? categoryChecks.filter((c) => guidelines.some((g) => isSameGuideline(g, c.guidelineId)))
+    ? categoryChecks.filter((c) => guidelines.some((g) => checkMatchesGuideline(c, g)))
     : categoryChecks
 }
 

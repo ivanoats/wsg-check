@@ -207,6 +207,19 @@ describe('runCheck', () => {
     )
   })
 
+  it('warns that legacy 2.17 also runs a check with no July-2026 guideline', async () => {
+    const mockCheck = await getMockCheck()
+    mockCheck.mockResolvedValue({ ok: true, value: PASSING_RUN_RESULT })
+
+    await runCheck('https://example.com', { guidelines: '2.17' })
+
+    const stderrOutput = stderrSpy.mock.calls.map((c: unknown[]) => c[0]).join('')
+    expect(stderrOutput).toContain(
+      'numeric guideline ID "2.17" is deprecated; use "reduce-the-impact-of-downloadable-and-physical-documents" (WSG July-2026); some of its checks have no WSG July-2026 guideline and run only under "2.17"'
+    )
+    expect(await getLastChecks()).toHaveLength(2)
+  })
+
   it('writes report to a file when --output is specified', async () => {
     const mockCheck = await getMockCheck()
     mockCheck.mockResolvedValue({ ok: true, value: PASSING_RUN_RESULT })

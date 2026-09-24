@@ -67,9 +67,14 @@ export const TESTABILITY_OVERLAY: ReadonlyMap<string, Testability> = new Map<str
 /**
  * Pre-2025 draft guideline numbers used by wsg-check's checks (and therefore
  * by `--guidelines` filters and reports), mapped to the July-2026 slug that
- * now covers the same scope. Kept so existing numeric IDs keep resolving;
+ * now covers the same scope. Used to look up a guideline by a legacy ID;
  * numeric IDs are deprecated as input because they are ambiguous across spec
  * releases.
+ *
+ * Do not use this map to decide which checks implement a guideline: `2.17`
+ * is shared by the alt-text check (no July-2026 guideline) and the
+ * downloadable-documents check. Each check declares its own slug instead
+ * (`CheckFnWithId.guidelineSlug`); see {@link checkMatchesGuideline}.
  */
 export const LEGACY_GUIDELINE_IDS: ReadonlyMap<string, string> = new Map([
   // ── User Experience Design ────────────────────────────────────────────────
@@ -109,9 +114,10 @@ export const LEGACY_GUIDELINE_IDS: ReadonlyMap<string, string> = new Map([
 ])
 
 /**
- * Pre-2025 draft numbers still used by checks whose guideline was removed from
+ * Pre-2025 draft numbers used only by checks whose guideline was removed from
  * the spec (form validation 3.10, security headers 3.15, minimal forms 2.19).
- * Their future is decided in step 2 of SPEC_VERSIONING.md.
+ * The options for these checks are in SPEC_VERSIONING.md §4; deciding is
+ * step 3 of §5.6.
  */
 export const UNMAPPED_LEGACY_IDS: ReadonlySet<string> = new Set(['2.19', '3.10', '3.15'])
 
@@ -158,14 +164,23 @@ export function isLegacyGuidelineId(id: string): boolean {
   return LEGACY_GUIDELINE_IDS.has(id) || UNMAPPED_LEGACY_IDS.has(id)
 }
 
+/** The guideline identity a check carries (see `CheckFnWithId`). */
+export interface GuidelineTaggedCheck {
+  readonly guidelineId: string
+  readonly guidelineSlug: string | null
+}
+
 /**
- * Returns `true` when two guideline IDs (slugs or legacy numbers) refer to the
- * same guideline. IDs that do not resolve only match themselves.
+ * Returns `true` when a check should run for a requested guideline ID.
+ *
+ * - A legacy numeric ID (e.g. `"3.3"`) matches exactly the checks registered
+ *   under that ID, as before slugs existed.
+ * - Anything else is treated as a slug and matches only checks that declare
+ *   that slug, so a slug never selects a check for a different guideline.
  */
-export function isSameGuideline(a: string, b: string): boolean {
-  if (a === b) return true
-  const resolved = resolveGuidelineId(a)
-  return resolved !== undefined && resolved === resolveGuidelineId(b)
+export function checkMatchesGuideline(check: GuidelineTaggedCheck, requested: string): boolean {
+  if (isLegacyGuidelineId(requested)) return check.guidelineId === requested
+  return check.guidelineSlug !== null && check.guidelineSlug === requested
 }
 
 /**

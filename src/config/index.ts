@@ -17,7 +17,7 @@ export {
   mapSpecToGuidelineEntries,
   resolveGuidelineId,
   isLegacyGuidelineId,
-  isSameGuideline,
+  checkMatchesGuideline,
   getGuidelineById,
   getGuidelinesByCategory,
   getGuidelinesByTestability,
@@ -25,6 +25,7 @@ export {
 
 export { WSG_SPEC, WSG_SPEC_DATA } from './spec/index'
 export type { WsgSpecInfo } from './spec/index'
+export type { GuidelineTaggedCheck } from './guidelines-registry'
 
 export { loadFromEnv, loadFromFile, resolveConfig } from './loader'
 export type { ResolvedConfig } from './loader'

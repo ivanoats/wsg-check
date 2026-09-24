@@ -32,4 +32,20 @@ describe('selectChecks', () => {
   it('returns no checks for an unknown guideline ID', () => {
     expect(selectChecks(['web-dev', 'ux', 'hosting'], ['no-such-guideline'])).toHaveLength(0)
   })
+
+  it('does not select the alt-text check for the downloadable-documents slug', () => {
+    // Alt text and downloadable documents both report legacy 2.17; only the
+    // documents check implements this July-2026 guideline.
+    const bySlug = selectChecks(
+      ['ux'],
+      ['reduce-the-impact-of-downloadable-and-physical-documents']
+    )
+    expect(bySlug).toHaveLength(1)
+    expect(bySlug[0]?.guidelineSlug).toBe(
+      'reduce-the-impact-of-downloadable-and-physical-documents'
+    )
+
+    const byLegacyId = selectChecks(['ux'], ['2.17'])
+    expect(byLegacyId).toHaveLength(2)
+  })
 })

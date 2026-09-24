@@ -173,5 +173,5 @@ Each spec bump gets one CHANGELOG entry (`feat!: target WSG July-2026`) that lin
 
 1. **Fix now (patch), done in this PR:** `fetchWsgGuidelines` rejects responses with non-numeric guideline IDs, so `/api/guidelines` falls back to the static registry. This stops the "everything is manual-only" regression.
 2. **Done:** vendor `July-2026`, generate the registry, and switch to slug IDs with a numeric alias table (`feat!:`). `/api/guidelines` now serves the vendored release and reports it in `spec`; the live `guidelines.json` fetch was removed.
-3. Remap checks per section 4 and decide what to do with the four orphaned checks.
-4. Add `specVersion` to the CLI, reports and API, plus the drift test and workflow.
+3. Remap checks per section 4 and decide what to do with the four orphaned checks. Each check already declares its July-2026 slug (`null` for the four orphans), so this step changes the IDs, names and links the checks report.
+4. Add `specVersion` to the CLI, reports and API, plus the tag-watcher workflow (5.5). The drift test is already in place.

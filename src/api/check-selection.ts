@@ -7,7 +7,7 @@ import {
   uxDesignChecks,
   hostingChecks,
 } from '../checks/index'
-import { isSameGuideline } from '../config/guidelines-registry'
+import { checkMatchesGuideline } from '../config/guidelines-registry'
 import type { WSGCategory } from '../config/index'
 
 const DEFAULT_CATEGORIES: ReadonlyArray<WSGCategory> = ['ux', 'web-dev', 'hosting']
@@ -31,6 +31,6 @@ export const selectChecks = (
   }
 
   return categoryChecks.filter((check) =>
-    guidelines.some((guideline) => isSameGuideline(guideline, check.guidelineId))
+    guidelines.some((guideline) => checkMatchesGuideline(check, guideline))
   )
 }

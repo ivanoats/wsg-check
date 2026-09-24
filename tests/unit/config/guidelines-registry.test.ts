@@ -8,7 +8,7 @@ import {
   getGuidelinesByCategory,
   getGuidelinesByTestability,
   isLegacyGuidelineId,
-  isSameGuideline,
+  checkMatchesGuideline,
   mapSpecToGuidelineEntries,
   resolveGuidelineId,
 } from '@/config/guidelines-registry'
@@ -24,6 +24,15 @@ import {
 } from '@/checks/index'
 
 const SLUGS = new Set(GUIDELINES_REGISTRY.map((g) => g.id))
+
+const ALL_CHECKS = [
+  ...performanceChecks,
+  ...semanticChecks,
+  ...sustainabilityChecks,
+  ...securityChecks,
+  ...uxDesignChecks,
+  ...hostingChecks,
+]
 
 describe('GUIDELINES_REGISTRY', () => {
   it('is a non-empty array', () => {
@@ -100,19 +109,38 @@ describe('spec drift guards', () => {
   })
 
   it('resolves every check guideline ID, or lists it as unmapped', () => {
-    const checks = [
-      ...performanceChecks,
-      ...semanticChecks,
-      ...sustainabilityChecks,
-      ...securityChecks,
-      ...uxDesignChecks,
-      ...hostingChecks,
-    ]
-    for (const check of checks) {
+    for (const check of ALL_CHECKS) {
       const known =
         resolveGuidelineId(check.guidelineId) !== undefined ||
         UNMAPPED_LEGACY_IDS.has(check.guidelineId)
       expect(known, `check guideline ID "${check.guidelineId}"`).toBe(true)
+    }
+  })
+})
+
+describe('check guideline slugs', () => {
+  it('only declares slugs that exist in the spec', () => {
+    for (const check of ALL_CHECKS) {
+      if (check.guidelineSlug !== null) expect(SLUGS).toContain(check.guidelineSlug)
+    }
+  })
+
+  it('leaves only the four checks without a July-2026 guideline unmapped', () => {
+    // form validation 3.10, security headers 3.15, minimal forms 2.19, alt text 2.17
+    const unmapped = ALL_CHECKS.filter((check) => check.guidelineSlug === null)
+    expect(unmapped.map((check) => check.guidelineId).sort()).toEqual([
+      '2.17',
+      '2.19',
+      '3.10',
+      '3.15',
+    ])
+  })
+
+  it('agrees with the legacy alias map for every check that has a slug', () => {
+    for (const check of ALL_CHECKS) {
+      if (check.guidelineSlug !== null) {
+        expect(LEGACY_GUIDELINE_IDS.get(check.guidelineId)).toBe(check.guidelineSlug)
+      }
     }
   })
 })
@@ -208,23 +236,42 @@ describe('isLegacyGuidelineId', () => {
   })
 })
 
-describe('isSameGuideline', () => {
-  it('matches a slug with its legacy ID in either order', () => {
-    expect(isSameGuideline('minify-and-remove-unused-code', '3.3')).toBe(true)
-    expect(isSameGuideline('3.3', 'minify-and-remove-unused-code')).toBe(true)
+describe('checkMatchesGuideline', () => {
+  const docs = {
+    guidelineId: '2.17',
+    guidelineSlug: 'reduce-the-impact-of-downloadable-and-physical-documents',
+  }
+  const altText = { guidelineId: '2.17', guidelineSlug: null }
+
+  it('matches a check by the slug it declares', () => {
+    expect(
+      checkMatchesGuideline(docs, 'reduce-the-impact-of-downloadable-and-physical-documents')
+    ).toBe(true)
   })
 
-  it('matches two legacy IDs that map to the same guideline', () => {
-    expect(isSameGuideline('3.4', '3.11')).toBe(true)
+  it('does not match a check whose legacy ID aliases to the slug but has no slug itself', () => {
+    expect(
+      checkMatchesGuideline(altText, 'reduce-the-impact-of-downloadable-and-physical-documents')
+    ).toBe(false)
   })
 
-  it('matches unresolvable IDs only to themselves', () => {
-    expect(isSameGuideline('3.15', '3.15')).toBe(true)
-    expect(isSameGuideline('3.15', '3.10')).toBe(false)
+  it('matches every check registered under a legacy ID', () => {
+    expect(checkMatchesGuideline(docs, '2.17')).toBe(true)
+    expect(checkMatchesGuideline(altText, '2.17')).toBe(true)
   })
 
-  it('does not match different guidelines', () => {
-    expect(isSameGuideline('3.3', '3.5')).toBe(false)
+  it('matches legacy IDs exactly, not via their slug', () => {
+    const metadata = {
+      guidelineId: '3.4',
+      guidelineSlug: 'structure-metadata-for-machine-readability',
+    }
+    // 3.11 (structured data) maps to the same slug but is a different check.
+    expect(checkMatchesGuideline(metadata, '3.11')).toBe(false)
+  })
+
+  it('does not match unknown IDs', () => {
+    expect(checkMatchesGuideline(docs, 'no-such-guideline')).toBe(false)
+    expect(checkMatchesGuideline(altText, 'no-such-guideline')).toBe(false)
   })
 })
 

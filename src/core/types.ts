@@ -62,13 +62,18 @@ export interface CheckResult {
 export type CheckFn = (page: PageData) => CheckResult | Promise<CheckResult>
 
 /**
- * A `CheckFn` with its WSG guideline ID attached as a static property.
+ * A `CheckFn` with its WSG guideline identity attached as static properties.
  *
- * Use `withGuidelineId` in `src/checks/index.ts` to create these.
- * The `guidelineId` property enables pre-execution filtering by guideline
- * (e.g. `--guidelines 3.1,4.2` in the CLI).
+ * Use `withGuidelineId` in `src/checks/index.ts` to create these. They enable
+ * pre-execution filtering by guideline (e.g. `--guidelines use-sustainable-hosting`
+ * in the CLI).
  */
-export type CheckFnWithId = CheckFn & { readonly guidelineId: string }
+export type CheckFnWithId = CheckFn & {
+  /** Legacy numeric ID the check reports under, e.g. `"3.3"`. */
+  readonly guidelineId: string
+  /** Slug of the guideline in the targeted WSG release; `null` if it has none. */
+  readonly guidelineSlug: string | null
+}
 
 // ─── Page data ────────────────────────────────────────────────────────────────
 
