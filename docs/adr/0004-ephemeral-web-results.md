@@ -1,7 +1,7 @@
 # ADR-0004: Carry reports through browser session storage
 
 - Status: Accepted
-- Historical implementation date: 2026-02-24 (commit date; not a claimed approval date)
+- Historical implementation date: 2026-02-25 (commit date; not a claimed approval date)
 - Recorded: 2026-09-24
 - Provenance: retrospectively reconstructed from the evidence below
 
