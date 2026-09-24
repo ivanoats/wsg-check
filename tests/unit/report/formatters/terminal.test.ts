@@ -210,4 +210,10 @@ describe('formatTerminal guideline labels and related checks', () => {
     const out = formatTerminal(makeReport({ results: [wsg] }), { colors: false })
     expect(out).not.toContain('Related Checks')
   })
+
+  it('lists recommendation resources under the recommendation', () => {
+    const withLink = { ...related, resources: ['https://developer.mozilla.org/docs/Web/HTML'] }
+    const out = formatTerminal(makeReport({ results: [withLink] }), { colors: false })
+    expect(out).toContain('     https://developer.mozilla.org/docs/Web/HTML')
+  })
 })

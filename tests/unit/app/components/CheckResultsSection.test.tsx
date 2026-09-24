@@ -160,7 +160,7 @@ describe('CheckResultsSection', () => {
     expect(screen.getByRole('button', { name: /toggle related \(not scored\)/i })).toBeDefined()
   })
 
-  it('shows the WSG display number instead of the slug', async () => {
+  it('shows the WSG display number instead of the slug', () => {
     const checks = [
       makeCheck({
         guidelineId: 'minify-and-remove-unused-code',
@@ -170,7 +170,7 @@ describe('CheckResultsSection', () => {
     ]
     render(<CheckResultsSection checks={checks} />)
     const trigger = screen.getByRole('button', { name: /toggle web-dev/i })
-    await act(async () => {
+    act(() => {
       fireEvent.focus(trigger)
       fireEvent.click(trigger)
     })

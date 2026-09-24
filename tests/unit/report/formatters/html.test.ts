@@ -202,4 +202,12 @@ describe('formatHtml guideline labels and related checks', () => {
   it('omits the related section when there are no related checks', () => {
     expect(formatHtml(makeReport({ results: [wsg] }))).not.toContain('Related Checks')
   })
+
+  it('links recommendation resources', () => {
+    const withLink = { ...related, resources: ['https://developer.mozilla.org/docs/Web/HTML'] }
+    const html = formatHtml(makeReport({ results: [withLink] }))
+    expect(html).toContain(
+      '<ul class="rec-links"><li><a href="https://developer.mozilla.org/docs/Web/HTML"'
+    )
+  })
 })

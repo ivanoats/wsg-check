@@ -208,4 +208,10 @@ describe('formatMarkdown guideline labels and related checks', () => {
     const md = formatMarkdown(makeReport({ results: [related] }))
     expect(md).toContain('**[Security headers]** _(medium impact, fail, related, not scored)_')
   })
+
+  it('lists recommendation resources under the recommendation', () => {
+    const withLink = { ...related, resources: ['https://developer.mozilla.org/docs/Web/HTTP'] }
+    const md = formatMarkdown(makeReport({ results: [withLink] }))
+    expect(md).toContain('   - https://developer.mozilla.org/docs/Web/HTTP')
+  })
 })
