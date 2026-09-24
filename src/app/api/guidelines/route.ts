@@ -7,7 +7,7 @@ import type { GuidelineListResponseBody } from '@/api/types'
 
 export const runtime = 'nodejs'
 
-export const OPTIONS = async (): Promise<Response> => optionsResponse()
+export const OPTIONS = (): Response => optionsResponse()
 
 export const GET = async (request: NextRequest): Promise<Response> => {
   const rateLimited = await enforceRateLimit(request)

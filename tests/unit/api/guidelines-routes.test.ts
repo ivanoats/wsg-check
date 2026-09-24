@@ -11,8 +11,10 @@ vi.mock('@/api/guidelines', () => ({
   findGuidelineById: findGuidelineByIdMock,
 }))
 
-const { GET: listGuidelines } = await import('@/app/api/guidelines/route')
-const { GET: getGuideline } = await import('@/app/api/guidelines/[id]/route')
+const { GET: listGuidelines, OPTIONS: listGuidelinesOptions } =
+  await import('@/app/api/guidelines/route')
+const { GET: getGuideline, OPTIONS: getGuidelineOptions } =
+  await import('@/app/api/guidelines/[id]/route')
 
 describe('guidelines routes', () => {
   beforeEach(() => {
@@ -61,5 +63,12 @@ describe('guidelines routes', () => {
     expect(findGuidelineByIdMock).toHaveBeenCalledWith('use-sustainable-hosting')
     expect(body.guideline.id).toBe('use-sustainable-hosting')
     expect(body.spec.release).toBe('July-2026')
+  })
+
+  it('OPTIONS on both guideline routes returns a CORS preflight response', () => {
+    for (const response of [listGuidelinesOptions(), getGuidelineOptions()]) {
+      expect(response.status).toBe(204)
+      expect(response.headers.get('Access-Control-Allow-Methods')).toContain('OPTIONS')
+    }
   })
 })
