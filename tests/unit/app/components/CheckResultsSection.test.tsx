@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { CheckResultsSection } from '@/app/components/CheckResultsSection'
 import type { CheckResult } from '@/core/types'
 
@@ -78,10 +78,8 @@ describe('CheckResultsSection', () => {
     render(<CheckResultsSection checks={SAMPLE_CHECKS} />)
     const webDevButton = screen.getByRole('button', { name: /toggle web-dev/i })
     expect(webDevButton.getAttribute('aria-expanded')).toBe('false')
-    act(() => {
-      fireEvent.focus(webDevButton) // transition Accordion machine to 'focused' state
-      fireEvent.click(webDevButton)
-    })
+    fireEvent.focus(webDevButton) // transition Accordion machine to 'focused' state
+    fireEvent.click(webDevButton)
     await waitFor(() => {
       expect(webDevButton.getAttribute('aria-expanded')).toBe('true')
     })
@@ -90,10 +88,8 @@ describe('CheckResultsSection', () => {
   it('other groups remain collapsed when one group is expanded', async () => {
     render(<CheckResultsSection checks={SAMPLE_CHECKS} />)
     const webDevButton = screen.getByRole('button', { name: /toggle web-dev/i })
-    act(() => {
-      fireEvent.focus(webDevButton)
-      fireEvent.click(webDevButton)
-    })
+    fireEvent.focus(webDevButton)
+    fireEvent.click(webDevButton)
     await waitFor(() => {
       expect(webDevButton.getAttribute('aria-expanded')).toBe('true')
     })
@@ -174,10 +170,8 @@ describe('CheckResultsSection', () => {
     ]
     render(<CheckResultsSection checks={checks} />)
     const trigger = screen.getByRole('button', { name: /toggle web-dev/i })
-    act(() => {
-      fireEvent.focus(trigger)
-      fireEvent.click(trigger)
-    })
+    fireEvent.focus(trigger)
+    fireEvent.click(trigger)
     expect(screen.getByText('(3.2)')).toBeDefined()
     expect(screen.queryByText('(minify-and-remove-unused-code)')).toBeNull()
   })
