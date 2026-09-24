@@ -4,15 +4,15 @@ How wsg-check tracks the [W3C Web Sustainability Guidelines](https://www.w3.org/
 
 Source for everything below: the spec repository [`w3c/sustainableweb-wsg`](https://github.com/w3c/sustainableweb-wsg), compared at its release tags. Numbers such as `3.2` are the **position** of a guideline inside its section at a given release.
 
-## 1. Which spec wsg-check targets today
+## 1. Which spec wsg-check targeted before pinning a release
 
-wsg-check does not target one spec version. It mixes three:
+This section describes wsg-check before it pinned the July-2026 release (step 2 in 5.6). It did not target one spec version. It mixed three:
 
-| Where                                                          | Baseline                                                       | Evidence                                                                                                                                           |
-| -------------------------------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/config/guidelines-registry.ts` (static fallback, 72 rows) | Pre-2025 draft (the WSG 1.0 era)                               | Titles such as "Undertake Systemic Impacts Mapping" left `guidelines.json` in March 2025. None of the 72 titles match the Q4-2025 release.         |
-| `src/checks/*` (guideline IDs and `@see` links)                | Mostly the pre-2025 draft, a few later anchors                 | 32 of 35 check files link to anchors that no longer exist in the spec, e.g. `#optimise-browser-caching`, `#code-security`, `#compress-your-files`. |
-| `src/config/wsg-api-*.ts` (live API client + types)            | Q4-2025 schema (types written against the 2026-01-16 snapshot) | Types expect numeric `id`, `benefits`, `GRI`, `resources`. The overlay lists IDs `3.21`–`3.26`, which do not exist in any tagged release.          |
+| Where                                                          | Baseline                                                       | Evidence                                                                                                                                                                                                                                                                                                                                        |
+| -------------------------------------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/config/guidelines-registry.ts` (static fallback, 72 rows) | Its own numbering, only partly from the pre-2025 draft         | Titles such as "Undertake Systemic Impacts Mapping" left `guidelines.json` in March 2025. Other titles, such as "Consider Dark Mode" and "Use Edge Computing", never appeared in the spec. Its numbers also differ from the checks' (registry `3.9` is render-blocking; the check uses `3.8`). None of the 72 titles match the Q4-2025 release. |
+| `src/checks/*` (guideline IDs and `@see` links)                | Mostly the pre-2025 draft, a few later anchors                 | 32 of 35 check files link to anchors that no longer exist in the spec, e.g. `#optimise-browser-caching`, `#code-security`, `#compress-your-files`.                                                                                                                                                                                              |
+| `src/config/wsg-api-*.ts` (live API client + types)            | Q4-2025 schema (types written against the 2026-01-16 snapshot) | Types expect numeric `id`, `benefits`, `GRI`, `resources`. The overlay uses the registry's own numbering (e.g. `3.21`–`3.26`), which no tagged release uses.                                                                                                                                                                                    |
 
 ## 2. Spec releases
 
@@ -133,15 +133,16 @@ The four checks with no guideline need a decision. They can be dropped, kept as 
 
 ### 5.1 Pin one spec release and vendor it
 
-- Commit the tagged `guidelines.json` to the repo, e.g. `src/config/spec/wsg-July-2026.json`, together with its tag and upstream commit (`071d86c`).
+- Commit the tagged `guidelines.json` to the repo, e.g. `src/config/spec/wsg-july-2026.json`, together with its tag and upstream commit (`071d86c`).
 - Generate `GUIDELINES_REGISTRY` from that file, keeping `TESTABILITY_OVERLAY` as the only hand-written part, so the registry and the spec cannot drift apart.
-- Stop serving live data from `guidelines.json` on `main`. It changes without notice, as the July 2026 schema change showed. Instead, use the live fetch in CI to detect drift (5.4).
+- Stop serving live data from `guidelines.json` on `main`. It changes without notice, as the July 2026 schema change showed. Detect drift with the tag watcher in 5.5 instead.
 
 ### 5.2 Make the slug the canonical guideline ID
 
 - Slugs are the spec's own IDs, and they match the `#anchor` in the TR URL, so `specUrl` never goes stale.
 - Positional numbers (`3.2`) change whenever a guideline is added or removed. Derive them from array order for display only.
 - Keep an alias table (`3.3` → `minify-and-remove-unused-code`, …) so existing `--guidelines 3.3` CLI arguments and `/api/guidelines/3.3` calls still resolve, and print a deprecation warning.
+- Build the aliases from the checks' numbering only. The old registry's numbers are dropped: they disagree with the checks' numbers, and several of its guidelines never existed in the spec.
 - Replace hand-typed `RESOURCES` URLs in checks with `specUrl` from the registry.
 
 ### 5.3 Report the spec version everywhere
@@ -166,11 +167,11 @@ Each spec bump gets one CHANGELOG entry (`feat!: target WSG July-2026`) that lin
 ### 5.5 Automate drift detection
 
 - A weekly scheduled workflow runs `git ls-remote --tags https://github.com/w3c/sustainableweb-wsg` and opens an issue when a new tag appears.
-- A unit test asserts that every `guidelineId` in `src/checks/index.ts` exists in the vendored spec, and that every overlay key does too. With that test in place, this drift could not have happened silently.
+- A unit test asserts that every `guidelineId` in `src/checks/index.ts` exists in the vendored spec, and that every overlay key does too. With that test in place, this drift could not have happened silently. (Added in step 2: `tests/unit/config/guidelines-registry.test.ts`.)
 
 ### 5.6 Suggested order of work
 
 1. **Fix now (patch), done in this PR:** `fetchWsgGuidelines` rejects responses with non-numeric guideline IDs, so `/api/guidelines` falls back to the static registry. This stops the "everything is manual-only" regression.
-2. Vendor `July-2026`, generate the registry, and switch to slug IDs with a numeric alias table (`feat!:`).
+2. **Done:** vendor `July-2026`, generate the registry, and switch to slug IDs with a numeric alias table (`feat!:`). `/api/guidelines` now serves the vendored release and reports it in `spec`; the live `guidelines.json` fetch was removed.
 3. Remap checks per section 4 and decide what to do with the four orphaned checks.
 4. Add `specVersion` to the CLI, reports and API, plus the drift test and workflow.

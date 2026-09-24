@@ -8,7 +8,10 @@ vi.mock('next/navigation')
 
 const SAMPLE_GUIDELINES: ReadonlyArray<GuidelineEntry> = [
   {
-    id: '2.1',
+    id: 'identify-assess-disclose-review-and-mitigate-sustainability-impacts',
+    number: '2.1',
+    specUrl:
+      'https://www.w3.org/TR/web-sustainability-guidelines/#identify-assess-disclose-review-and-mitigate-sustainability-impacts',
     title: 'Undertake Systemic Impacts Mapping',
     section: 'User Experience Design',
     category: 'ux',
@@ -16,7 +19,9 @@ const SAMPLE_GUIDELINES: ReadonlyArray<GuidelineEntry> = [
     description: 'Identify environmental and social impacts.',
   },
   {
-    id: '3.1',
+    id: 'minify-and-remove-unused-code',
+    number: '3.1',
+    specUrl: 'https://www.w3.org/TR/web-sustainability-guidelines/#minify-and-remove-unused-code',
     title: 'Minify Your HTML, CSS, and JavaScript',
     section: 'Web Development',
     category: 'web-dev',
@@ -24,7 +29,10 @@ const SAMPLE_GUIDELINES: ReadonlyArray<GuidelineEntry> = [
     description: 'Reduce asset sizes via minification.',
   },
   {
-    id: '4.1',
+    id: 'use-content-delivery-networks-cdns-when-beneficial',
+    number: '4.1',
+    specUrl:
+      'https://www.w3.org/TR/web-sustainability-guidelines/#use-content-delivery-networks-cdns-when-beneficial',
     title: 'Use a Content Delivery Network',
     section: 'Hosting',
     category: 'hosting',
@@ -92,22 +100,29 @@ describe('GuidelinesFilter', () => {
     })
   })
 
-  it('renders guideline IDs', () => {
+  it('filters by text search on the guideline slug', async () => {
+    render(<GuidelinesFilter guidelines={SAMPLE_GUIDELINES} />)
+    fireEvent.change(screen.getByRole('searchbox', { name: /search guidelines/i }), {
+      target: { value: 'unused-code' },
+    })
+    await waitFor(() => {
+      expect(screen.getByText('Minify Your HTML, CSS, and JavaScript')).toBeDefined()
+      expect(screen.getByText(/showing 1 of 3/i)).toBeDefined()
+    })
+  })
+
+  it('renders guideline numbers', () => {
     render(<GuidelinesFilter guidelines={SAMPLE_GUIDELINES} />)
     expect(screen.getByText('2.1')).toBeDefined()
     expect(screen.getByText('3.1')).toBeDefined()
     expect(screen.getByText('4.1')).toBeDefined()
   })
 
-  it('renders a W3C spec link when specUrl is present', () => {
-    const withSpecUrl = [
-      {
-        ...SAMPLE_GUIDELINES[0],
-        specUrl: 'https://www.w3.org/TR/web-sustainability-guidelines/#2.1',
-      },
-    ]
-    render(<GuidelinesFilter guidelines={withSpecUrl} />)
-    const link = screen.getByRole('link', { name: /w3c spec for guideline 2\.1/i })
-    expect((link as HTMLAnchorElement).href).toContain('w3.org')
+  it('renders a W3C spec link for each guideline', () => {
+    render(<GuidelinesFilter guidelines={SAMPLE_GUIDELINES} />)
+    const link = screen.getByRole('link', { name: /w3c spec for guideline 3\.1/i })
+    expect((link as HTMLAnchorElement).href).toBe(
+      'https://www.w3.org/TR/web-sustainability-guidelines/#minify-and-remove-unused-code'
+    )
   })
 })

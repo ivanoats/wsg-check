@@ -22,4 +22,14 @@ describe('selectChecks', () => {
     expect(checks.length).toBeGreaterThan(0)
     expect(checks.every((check) => check.guidelineId === '3.1')).toBe(true)
   })
+
+  it('filters by guideline slug, matching checks that still use legacy IDs', () => {
+    const checks = selectChecks(['web-dev'], ['minify-and-remove-unused-code'])
+    expect(checks.length).toBeGreaterThan(0)
+    expect(checks.every((check) => check.guidelineId === '3.3')).toBe(true)
+  })
+
+  it('returns no checks for an unknown guideline ID', () => {
+    expect(selectChecks(['web-dev', 'ux', 'hosting'], ['no-such-guideline'])).toHaveLength(0)
+  })
 })

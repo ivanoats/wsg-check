@@ -176,6 +176,37 @@ describe('runCheck', () => {
     expect(checks.every((c) => c.guidelineId === '3.1')).toBe(true)
   })
 
+  it('filters checks by guideline slug, including checks with legacy IDs', async () => {
+    const mockCheck = await getMockCheck()
+    mockCheck.mockResolvedValue({ ok: true, value: PASSING_RUN_RESULT })
+
+    const code = await runCheck('https://example.com', {
+      guidelines: 'structure-metadata-for-machine-readability',
+    })
+
+    expect(code).toBe(0)
+    const ids = new Set((await getLastChecks()).map((c) => c.guidelineId))
+    // Legacy 3.4 (metadata) and 3.11 (structured data) both map to this slug.
+    expect(ids).toEqual(new Set(['3.4', '3.11']))
+    const stderrOutput = stderrSpy.mock.calls.map((c: unknown[]) => c[0]).join('')
+    expect(stderrOutput).not.toContain('deprecated')
+  })
+
+  it('warns when --guidelines uses deprecated numeric IDs', async () => {
+    const mockCheck = await getMockCheck()
+    mockCheck.mockResolvedValue({ ok: true, value: PASSING_RUN_RESULT })
+
+    await runCheck('https://example.com', { guidelines: '3.3,3.15' })
+
+    const stderrOutput = stderrSpy.mock.calls.map((c: unknown[]) => c[0]).join('')
+    expect(stderrOutput).toContain(
+      'numeric guideline ID "3.3" is deprecated; use "minify-and-remove-unused-code" (WSG July-2026)'
+    )
+    expect(stderrOutput).toContain(
+      'numeric guideline ID "3.15" is deprecated; it has no equivalent in WSG July-2026'
+    )
+  })
+
   it('writes report to a file when --output is specified', async () => {
     const mockCheck = await getMockCheck()
     mockCheck.mockResolvedValue({ ok: true, value: PASSING_RUN_RESULT })

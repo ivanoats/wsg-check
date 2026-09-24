@@ -20,6 +20,12 @@ import { pathToFileURL, fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { Command } from 'commander'
 import { resolveConfig } from '../config/loader'
+import {
+  isLegacyGuidelineId,
+  isSameGuideline,
+  resolveGuidelineId,
+} from '../config/guidelines-registry'
+import { WSG_SPEC } from '../config/spec/index'
 import type { OutputFormat, WSGCategory } from '../config/types'
 import { WsgChecker } from '../core/index'
 import type { CheckFnWithId } from '../core/types'
@@ -144,9 +150,23 @@ const selectChecks = (
     ...(categories.has('hosting') ? [...hostingChecks] : []),
   ]
 
+  warnOnLegacyGuidelineIds(guidelines)
+
   return guidelines.length > 0
-    ? categoryChecks.filter((c) => guidelines.includes(c.guidelineId))
+    ? categoryChecks.filter((c) => guidelines.some((g) => isSameGuideline(g, c.guidelineId)))
     : categoryChecks
+}
+
+/** Warns for each legacy numeric guideline ID, naming the slug to use instead. */
+const warnOnLegacyGuidelineIds = (guidelines: readonly string[]): void => {
+  guidelines.filter(isLegacyGuidelineId).forEach((id) => {
+    const slug = resolveGuidelineId(id)
+    const replacement =
+      slug === undefined
+        ? `it has no equivalent in WSG ${WSG_SPEC.release}`
+        : `use "${slug}" (WSG ${WSG_SPEC.release})`
+    process.stderr.write(`Warning: numeric guideline ID "${id}" is deprecated; ${replacement}.\n`)
+  })
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -238,7 +258,10 @@ export const buildProgram = (): Command => {
       '-c, --categories <list>',
       'comma-separated categories to run: ux,web-dev,hosting (business: planned, no checks yet)'
     )
-    .option('-g, --guidelines <list>', 'comma-separated guideline IDs to run (e.g. 3.1,3.2)')
+    .option(
+      '-g, --guidelines <list>',
+      'comma-separated guideline IDs to run (e.g. minify-and-remove-unused-code)'
+    )
     .option(
       '--fail-threshold <score>',
       'exit with code 1 if score is below this value (0-100)',

@@ -20,22 +20,22 @@ describe('guidelines routes', () => {
     enforceRateLimitMock.mockResolvedValue(null)
   })
 
-  it('GET /api/guidelines returns list and source', async () => {
-    loadGuidelinesMock.mockResolvedValue({
-      source: 'w3c-api',
-      guidelines: [{ id: '3.1' }],
+  it('GET /api/guidelines returns list and spec release', async () => {
+    loadGuidelinesMock.mockReturnValue({
+      spec: { release: 'July-2026' },
+      guidelines: [{ id: 'use-sustainable-hosting' }],
     })
 
     const response = await listGuidelines({} as NextRequest)
     const body = await response.json()
 
     expect(response.status).toBe(200)
-    expect(body.source).toBe('w3c-api')
+    expect(body.spec.release).toBe('July-2026')
     expect(body.guidelines).toHaveLength(1)
   })
 
   it('GET /api/guidelines/:id returns 404 when missing', async () => {
-    findGuidelineByIdMock.mockResolvedValue({ source: 'static-fallback' })
+    findGuidelineByIdMock.mockReturnValue({ spec: { release: 'July-2026' } })
 
     const response = await getGuideline({} as NextRequest, {
       params: Promise.resolve({ id: '9.9' }),
@@ -47,18 +47,19 @@ describe('guidelines routes', () => {
   })
 
   it('GET /api/guidelines/:id returns guideline details when found', async () => {
-    findGuidelineByIdMock.mockResolvedValue({
-      source: 'static-fallback',
-      guideline: { id: '3.1', title: 'Guideline' },
+    findGuidelineByIdMock.mockReturnValue({
+      spec: { release: 'July-2026' },
+      guideline: { id: 'use-sustainable-hosting', title: 'Guideline' },
     })
 
     const response = await getGuideline({} as NextRequest, {
-      params: Promise.resolve({ id: '3.1' }),
+      params: Promise.resolve({ id: 'use-sustainable-hosting' }),
     })
     const body = await response.json()
 
     expect(response.status).toBe(200)
-    expect(body.guideline.id).toBe('3.1')
-    expect(body.source).toBe('static-fallback')
+    expect(findGuidelineByIdMock).toHaveBeenCalledWith('use-sustainable-hosting')
+    expect(body.guideline.id).toBe('use-sustainable-hosting')
+    expect(body.spec.release).toBe('July-2026')
   })
 })
