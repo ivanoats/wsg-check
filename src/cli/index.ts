@@ -127,6 +127,18 @@ const buildCliFlags = (url: string, opts: CliOptions) => ({
 
 // ─── Check selector ───────────────────────────────────────────────────────────
 
+/** Warns for each legacy numeric guideline ID, naming the slug to use instead. */
+const warnOnLegacyGuidelineIds = (guidelines: readonly string[]): void => {
+  for (const id of guidelines.filter(isLegacyGuidelineId)) {
+    const slug = resolveGuidelineId(id)
+    const replacement =
+      slug === undefined
+        ? `it has no equivalent in WSG ${WSG_SPEC.release}`
+        : `use "${slug}" (WSG ${WSG_SPEC.release})`
+    process.stderr.write(`Warning: numeric guideline ID "${id}" is deprecated; ${replacement}.\n`)
+  }
+}
+
 /**
  * Selects and optionally filters check functions from the available check
  * arrays based on category selection and requested guideline IDs.
@@ -155,18 +167,6 @@ const selectChecks = (
   return guidelines.length > 0
     ? categoryChecks.filter((c) => guidelines.some((g) => isSameGuideline(g, c.guidelineId)))
     : categoryChecks
-}
-
-/** Warns for each legacy numeric guideline ID, naming the slug to use instead. */
-const warnOnLegacyGuidelineIds = (guidelines: readonly string[]): void => {
-  guidelines.filter(isLegacyGuidelineId).forEach((id) => {
-    const slug = resolveGuidelineId(id)
-    const replacement =
-      slug === undefined
-        ? `it has no equivalent in WSG ${WSG_SPEC.release}`
-        : `use "${slug}" (WSG ${WSG_SPEC.release})`
-    process.stderr.write(`Warning: numeric guideline ID "${id}" is deprecated; ${replacement}.\n`)
-  })
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────

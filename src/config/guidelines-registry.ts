@@ -67,9 +67,9 @@ export const TESTABILITY_OVERLAY: ReadonlyMap<string, Testability> = new Map<str
 /**
  * Pre-2025 draft guideline numbers used by wsg-check's checks (and therefore
  * by `--guidelines` filters and reports), mapped to the July-2026 slug that
- * now covers the same scope. Kept so existing numeric IDs keep resolving.
- *
- * @deprecated Numeric IDs are ambiguous across spec releases; use slugs.
+ * now covers the same scope. Kept so existing numeric IDs keep resolving;
+ * numeric IDs are deprecated as input because they are ambiguous across spec
+ * releases.
  */
 export const LEGACY_GUIDELINE_IDS: ReadonlyMap<string, string> = new Map([
   // ── User Experience Design ────────────────────────────────────────────────
