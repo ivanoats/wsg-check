@@ -10,7 +10,7 @@ wsg-check does not target one spec version. It mixes three:
 
 | Where                                                          | Baseline                                                       | Evidence                                                                                                                                           |
 | -------------------------------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/config/guidelines-registry.ts` (static fallback, 71 rows) | Pre-2025 draft (the WSG 1.0 era)                               | Titles such as "Undertake Systemic Impacts Mapping" left `guidelines.json` in March 2025. None of the 71 titles match the Q4-2025 release.         |
+| `src/config/guidelines-registry.ts` (static fallback, 72 rows) | Pre-2025 draft (the WSG 1.0 era)                               | Titles such as "Undertake Systemic Impacts Mapping" left `guidelines.json` in March 2025. None of the 72 titles match the Q4-2025 release.         |
 | `src/checks/*` (guideline IDs and `@see` links)                | Mostly the pre-2025 draft, a few later anchors                 | 32 of 35 check files link to anchors that no longer exist in the spec, e.g. `#optimise-browser-caching`, `#code-security`, `#compress-your-files`. |
 | `src/config/wsg-api-*.ts` (live API client + types)            | Q4-2025 schema (types written against the 2026-01-16 snapshot) | Types expect numeric `id`, `benefits`, `GRI`, `resources`. The overlay lists IDs `3.21`–`3.26`, which do not exist in any tagged release.          |
 
