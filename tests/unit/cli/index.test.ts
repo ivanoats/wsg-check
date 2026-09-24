@@ -99,7 +99,7 @@ describe('isEntryPoint', () => {
   })
 
   it('does not match when there is no script path (node --eval)', () => {
-    expect(isEntryPoint(pathToFileURL(script).href, undefined)).toBe(false)
+    expect(isEntryPoint(pathToFileURL(script).href)).toBe(false)
   })
 
   it('does not match when the script path does not exist', () => {

@@ -316,7 +316,7 @@ export const buildProgram = (): Command => {
  *
  * Exported for testing.
  */
-export const isEntryPoint = (moduleUrl: string, scriptPath: string | undefined): boolean => {
+export const isEntryPoint = (moduleUrl: string, scriptPath?: string): boolean => {
   if (scriptPath === undefined) return false
   try {
     return realpathSync(fileURLToPath(moduleUrl)) === realpathSync(scriptPath)
