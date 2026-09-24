@@ -7,6 +7,9 @@ import {
 import type { ComplementaryTool } from '@/report/recommendations'
 import type { CheckResult } from '@/core/types'
 
+const GOALS = 'set-goals-based-on-performance-and-energy-impact'
+const DEFER = 'defer-the-loading-of-non-critical-resources'
+
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
 const makeCheckResult = (overrides: Partial<CheckResult> = {}): CheckResult => ({
@@ -116,7 +119,7 @@ describe('buildRecommendations', () => {
     it('appends a PageSpeed Insights link for guideline 3.1 when pageUrl is provided', () => {
       const results = [
         makeCheckResult({
-          guidelineId: '3.1',
+          guidelineId: GOALS,
           status: 'fail',
           recommendation: 'Reduce page weight.',
           resources: ['https://www.w3.org/TR/web-sustainability-guidelines/#performance-goals'],
@@ -128,10 +131,10 @@ describe('buildRecommendations', () => {
       )
     })
 
-    it('appends a PageSpeed Insights link for guideline 3.8 when pageUrl is provided', () => {
+    it('appends a PageSpeed Insights link for guideline 3.7 when pageUrl is provided', () => {
       const results = [
         makeCheckResult({
-          guidelineId: '3.8',
+          guidelineId: DEFER,
           status: 'fail',
           recommendation: 'Add defer to scripts.',
           resources: [
@@ -147,7 +150,7 @@ describe('buildRecommendations', () => {
 
     it('URL-encodes the page URL in the PageSpeed Insights link', () => {
       const results = [
-        makeCheckResult({ guidelineId: '3.1', status: 'warn', recommendation: 'Reduce size.' }),
+        makeCheckResult({ guidelineId: GOALS, status: 'warn', recommendation: 'Reduce size.' }),
       ]
       const recs = buildRecommendations(results, 'https://example.com/path?q=1')
       const psLink = (recs[0].resources ?? []).find((r) =>
@@ -161,7 +164,7 @@ describe('buildRecommendations', () => {
     it('preserves existing resources and appends the CWV link', () => {
       const results = [
         makeCheckResult({
-          guidelineId: '3.1',
+          guidelineId: GOALS,
           status: 'fail',
           recommendation: 'Reduce page weight.',
           resources: ['https://www.w3.org/TR/web-sustainability-guidelines/#performance-goals'],
@@ -175,7 +178,7 @@ describe('buildRecommendations', () => {
 
     it('adds a PageSpeed Insights link even when the check has no existing resources', () => {
       const results = [
-        makeCheckResult({ guidelineId: '3.1', status: 'fail', recommendation: 'Reduce size.' }),
+        makeCheckResult({ guidelineId: GOALS, status: 'fail', recommendation: 'Reduce size.' }),
       ]
       const recs = buildRecommendations(results, 'https://example.com')
       expect(recs[0].resources).toHaveLength(1)
@@ -184,7 +187,7 @@ describe('buildRecommendations', () => {
 
     it('does NOT append a PageSpeed Insights link when pageUrl is omitted', () => {
       const results = [
-        makeCheckResult({ guidelineId: '3.1', status: 'fail', recommendation: 'Reduce size.' }),
+        makeCheckResult({ guidelineId: GOALS, status: 'fail', recommendation: 'Reduce size.' }),
       ]
       const recs = buildRecommendations(results) // no pageUrl
       expect(recs[0].resources).toBeUndefined()
@@ -247,11 +250,11 @@ describe('COMPLEMENTARY_TOOLS', () => {
 // ─── CWV_GUIDELINE_IDS ────────────────────────────────────────────────────────
 
 describe('CWV_GUIDELINE_IDS', () => {
-  it('includes guideline 3.1 (Set Performance Budgets)', () => {
-    expect(CWV_GUIDELINE_IDS).toContain('3.1')
+  it('includes 3.1 (Set goals based on performance and energy impact)', () => {
+    expect(CWV_GUIDELINE_IDS).toContain(GOALS)
   })
 
-  it('includes guideline 3.8 (Resolve Render Blocking Content)', () => {
-    expect(CWV_GUIDELINE_IDS).toContain('3.8')
+  it('includes 3.7 (Defer the loading of non-critical resources)', () => {
+    expect(CWV_GUIDELINE_IDS).toContain(DEFER)
   })
 })

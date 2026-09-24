@@ -148,6 +148,20 @@ describe('fromRunResult', () => {
       expect(report.summary.notApplicable).toBe(2)
       expect(report.summary.totalChecks).toBe(2)
     })
+
+    it('counts related checks separately from WSG checks', () => {
+      const results = [
+        makeCheckResult({ status: 'pass' }),
+        makeCheckResult({ status: 'fail', related: true }),
+        makeCheckResult({ status: 'warn', related: true }),
+      ]
+      const report = fromRunResult(makeRunResult({ results }))
+      expect(report.summary.totalChecks).toBe(1)
+      expect(report.summary.passed).toBe(1)
+      expect(report.summary.failed).toBe(0)
+      expect(report.summary.warnings).toBe(0)
+      expect(report.summary.relatedChecks).toBe(2)
+    })
   })
 
   describe('recommendations', () => {

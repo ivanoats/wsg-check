@@ -7,6 +7,8 @@ A Web Sustainability Guidelines checker for websites. It checks a website agains
 
 WSG-Check targets the **July-2026** release of the guidelines (Group Note Draft). See [SPEC_VERSIONING.md](./SPEC_VERSIONING.md) for how it tracks spec releases.
 
+Four checks have no guideline in that release: security headers, form validation, native form features and image alternative text. They still run, but appear in reports as **related checks** and are not included in the score.
+
 ## Quick Start
 
 ```bash
@@ -189,7 +191,9 @@ The Core Module is the application-layer heart introduced in **Phase 3**. It con
 
 ```typescript
 interface CheckResult {
-  guidelineId: string // e.g. "3.2"
+  guidelineId: string // WSG slug, e.g. "minify-and-remove-unused-code"
+  guidelineNumber?: string // display number in the targeted release, e.g. "3.2"
+  related?: boolean // true for related checks, which are reported but not scored
   status: 'pass' | 'fail' | 'warn' | 'info' | 'not-applicable'
   score: number // 0–100
   impact: 'high' | 'medium' | 'low'
@@ -353,13 +357,13 @@ The Checks Module contains the individual WSG guideline check functions introduc
 
 ### Phase 4.1 — Performance & Efficiency Checks
 
-| Check                 | File                 | WSG Guideline                             | Impact |
-| --------------------- | -------------------- | ----------------------------------------- | ------ |
-| `checkMinification`   | `minification.ts`    | 3.3 Minify Your HTML, CSS, and JavaScript | medium |
-| `checkRenderBlocking` | `render-blocking.ts` | 3.9 Resolve Render Blocking Content       | high   |
-| `checkPageWeight`     | `page-weight.ts`     | 3.1 Set Performance Budgets               | medium |
+| Check                 | File                 | Guideline (WSG July-2026)                            | Impact |
+| --------------------- | -------------------- | ---------------------------------------------------- | ------ |
+| `checkMinification`   | `minification.ts`    | 3.2 Minify and remove unused code                    | medium |
+| `checkRenderBlocking` | `render-blocking.ts` | 3.7 Defer the loading of non-critical resources      | high   |
+| `checkPageWeight`     | `page-weight.ts`     | 3.1 Set goals based on performance and energy impact | medium |
 
-#### `checkMinification` — WSG 3.3
+#### `checkMinification` — WSG 3.2
 
 Detects signals of unminified HTML in the served response using two heuristics applied to the raw HTML body:
 
@@ -368,7 +372,7 @@ Detects signals of unminified HTML in the served response using two heuristics a
 
 > **Note:** External CSS and JS file content is not fetched during static analysis, so minification of those assets cannot be verified in this phase.
 
-#### `checkRenderBlocking` — WSG 3.9
+#### `checkRenderBlocking` — WSG 3.7
 
 Checks for two common sources of render-blocking behaviour:
 
@@ -396,15 +400,15 @@ Checks the HTML document size and total referenced resource count against sustai
 
 ### Phase 4.2 — Semantic & Standards Checks
 
-| Check                    | File                    | WSG Guideline                                  | Impact |
-| ------------------------ | ----------------------- | ---------------------------------------------- | ------ |
-| `checkSemanticHtml`      | `semantic-html.ts`      | 3.8 Use HTML Elements Correctly                | medium |
-| `checkAccessibilityAids` | `accessibility-aids.ts` | 3.10 Provide Code-Based Way-Finding Mechanisms | medium |
-| `checkFormValidation`    | `form-validation.ts`    | 3.12 Validate Forms                            | medium |
-| `checkMetadata`          | `metadata.ts`           | 3.4 Use Metadata Correctly                     | low    |
-| `checkStructuredData`    | `metadata.ts`           | 3.13 Use Metadata, Microdata, and Schema.org   | low    |
+| Check                    | File                    | Guideline (WSG July-2026)                          | Impact |
+| ------------------------ | ----------------------- | -------------------------------------------------- | ------ |
+| `checkSemanticHtml`      | `semantic-html.ts`      | 3.6 Ensure code follows good semantic practices    | medium |
+| `checkAccessibilityAids` | `accessibility-aids.ts` | 2.4 Design efficient and streamlined user journeys | medium |
+| `checkFormValidation`    | `form-validation.ts`    | Related: Form validation (not scored)              | medium |
+| `checkMetadata`          | `metadata.ts`           | 3.8 Structure metadata for machine readability     | low    |
+| `checkStructuredData`    | `metadata.ts`           | 3.8 Structure metadata for machine readability     | low    |
 
-#### `checkSemanticHtml` — WSG 3.8
+#### `checkSemanticHtml` — WSG 3.6
 
 Validates semantic HTML structure across three areas:
 
@@ -412,7 +416,7 @@ Validates semantic HTML structure across three areas:
 2. **Heading hierarchy** — headings must not skip levels (e.g., `h1 → h3`), and the page should have exactly one `<h1>`.
 3. **Native elements over custom implementations** — detects `<div role="button">` and similar patterns that should use native `<button>`, `<a>`, or `<input>` elements instead.
 
-#### `checkAccessibilityAids` — WSG 3.10
+#### `checkAccessibilityAids` — WSG 2.4
 
 Checks for way-finding mechanisms that allow keyboard and screen-reader users to navigate efficiently:
 
@@ -426,7 +430,7 @@ Checks for way-finding mechanisms that allow keyboard and screen-reader users to
 | Skip link and `<main>` both present | `pass`           | 100   |
 | No navigation structure             | `not-applicable` | —     |
 
-#### `checkFormValidation` — WSG 3.12
+#### `checkFormValidation` — Related `form-validation` (not scored)
 
 Checks that form inputs use accessible and efficient HTML patterns:
 
@@ -440,7 +444,7 @@ Checks that form inputs use accessible and efficient HTML patterns:
 | All labelled, autocomplete used     | `pass`           | 100   |
 | No form inputs found                | `not-applicable` | —     |
 
-#### `checkMetadata` — WSG 3.4
+#### `checkMetadata` — WSG 3.8
 
 Validates essential page metadata that enables accurate search-engine previews and social-media cards:
 
@@ -450,7 +454,7 @@ Validates essential page metadata that enables accurate search-engine previews a
 
 Missing title or description → `fail`; missing Open Graph only → `warn`.
 
-#### `checkStructuredData` — WSG 3.13
+#### `checkStructuredData` — WSG 3.8
 
 Checks for Schema.org JSON-LD structured data that enables rich search results, reducing the number of clicks users need to find information:
 
@@ -459,22 +463,22 @@ Checks for Schema.org JSON-LD structured data that enables rich search results, 
 
 ### Phase 4.3 — Sustainability-Specific Checks
 
-| Check                         | File                          | WSG Guideline                                | Impact |
-| ----------------------------- | ----------------------------- | -------------------------------------------- | ------ |
-| `checkCssRedundancy`          | `redundancy.ts`               | 3.5 Avoid Redundancy and Duplication in Code | medium |
-| `checkThirdParty`             | `third-party.ts`              | 3.6 Third-Party Assessment                   | high   |
-| `checkPreferenceMediaQueries` | `preference-media-queries.ts` | 3.12 Preference Media Queries                | medium |
-| `checkResponsiveDesign`       | `responsive-design.ts`        | 3.13 Responsive Web Design                   | medium |
-| `checkSustainableJs`          | `sustainable-js.ts`           | 3.14 Standards-Based JavaScript              | medium |
+| Check                         | File                          | Guideline (WSG July-2026)                                       | Impact |
+| ----------------------------- | ----------------------------- | --------------------------------------------------------------- | ------ |
+| `checkCssRedundancy`          | `redundancy.ts`               | 3.4 Avoid redundancy and duplication in code                    | medium |
+| `checkThirdParty`             | `third-party.ts`              | 3.5 Treat third parties the same as first parties               | high   |
+| `checkPreferenceMediaQueries` | `preference-media-queries.ts` | 3.9 Use media queries that support sustainability goals         | medium |
+| `checkResponsiveDesign`       | `responsive-design.ts`        | 3.10 Ensure layouts work for different devices and requirements | medium |
+| `checkSustainableJs`          | `sustainable-js.ts`           | 3.11 Use sustainable JavaScript and APIs                        | medium |
 
-#### `checkCssRedundancy` — WSG 3.5
+#### `checkCssRedundancy` — WSG 3.4
 
 Detects CSS redundancy signals observable from the HTML document:
 
 1. **Repeated inline `style` attribute values** — when the same `style="…"` value appears 3+ times it should be extracted into a reusable CSS class.
 2. **Multiple inline `<style>` blocks** — more than one `<style>` element should be consolidated into a single external stylesheet for caching.
 
-#### `checkThirdParty` — WSG 3.6
+#### `checkThirdParty` — WSG 3.5
 
 Counts third-party scripts loaded by the page. Each third-party script adds a network round-trip, may set tracking cookies, and can load additional sub-resources beyond the author's control.
 
@@ -484,15 +488,15 @@ Counts third-party scripts loaded by the page. Each third-party script adds a ne
 | 1–5 third-party scripts | `warn` | 50    |
 | 6+ third-party scripts  | `fail` | 0     |
 
-#### `checkPreferenceMediaQueries` — WSG 3.12
+#### `checkPreferenceMediaQueries` — WSG 3.9
 
 Checks for `prefers-color-scheme`, `prefers-reduced-motion`, and `prefers-reduced-data` CSS media queries. Dark mode reduces energy consumption on OLED screens by up to 47% ([Google research](https://support.google.com/pixelphone/answer/7158589)) and improves accessibility.
 
-#### `checkResponsiveDesign` — WSG 3.13
+#### `checkResponsiveDesign` — WSG 3.10
 
 Checks for a `<meta name="viewport">` tag, responsive images (any `<img>` with `srcset`), and at least one CSS media query in inline styles or style blocks.
 
-#### `checkSustainableJs` — WSG 3.14
+#### `checkSustainableJs` — WSG 3.11
 
 Detects signals of unnecessary JavaScript: external script count, `document.write()` usage, and large inline script blocks.
 
@@ -506,15 +510,15 @@ Detects signals of unnecessary JavaScript: external script count, `document.writ
 
 ### Phase 4.4 — Security & Maintenance Checks
 
-| Check                  | File                  | WSG Guideline                               | Impact |
-| ---------------------- | --------------------- | ------------------------------------------- | ------ |
-| `checkSecurityHeaders` | `security-headers.ts` | 3.15 Code Security                          | high   |
-| `checkDependencyCount` | `dependency-count.ts` | 3.16 Reducing Third-Party Dependencies      | high   |
-| `checkExpectedFiles`   | `expected-files.ts`   | 3.17 Expected Files Present                 | medium |
-| `checkBeneficialFiles` | `expected-files.ts`   | 3.17 Beneficial Files Present               | low    |
-| `checkHtmlVersion`     | `html-version.ts`     | 3.19 Use the Latest Stable Language Version | medium |
+| Check                  | File                  | Guideline (WSG July-2026)                         | Impact |
+| ---------------------- | --------------------- | ------------------------------------------------- | ------ |
+| `checkSecurityHeaders` | `security-headers.ts` | Related: Security headers (not scored)            | high   |
+| `checkDependencyCount` | `dependency-count.ts` | 3.12 Use dependencies sparingly and maintain them | high   |
+| `checkExpectedFiles`   | `expected-files.ts`   | 3.13 Include expected and beneficial files        | medium |
+| `checkBeneficialFiles` | `expected-files.ts`   | 3.13 Include expected and beneficial files        | low    |
+| `checkHtmlVersion`     | `html-version.ts`     | 3.15 Use the latest stable language version       | medium |
 
-#### `checkSecurityHeaders` — WSG 3.15
+#### `checkSecurityHeaders` — Related `security-headers` (not scored)
 
 Checks that the page is served with five recommended HTTP security headers. From a sustainability perspective, compromised pages cause unnecessary traffic (spam, malware distribution) and erode user trust.
 
@@ -526,7 +530,7 @@ Headers checked: `Content-Security-Policy`, `Strict-Transport-Security`, `X-Fram
 | 1–2 headers missing   | `warn` | 50    |
 | 3+ headers missing    | `fail` | 0     |
 
-#### `checkDependencyCount` — WSG 3.16
+#### `checkDependencyCount` — WSG 3.12
 
 Counts the total number of third-party resources (scripts, stylesheets, images, fonts, media) loaded by the page. Each external dependency adds network round-trips and attack surface.
 
@@ -536,7 +540,7 @@ Counts the total number of third-party resources (scripts, stylesheets, images, 
 | 1–9 third-party resources | `warn` | 50    |
 | 10+ third-party resources | `fail` | 0     |
 
-#### `checkExpectedFiles` — WSG 3.17 (Expected)
+#### `checkExpectedFiles` — WSG 3.13 (Expected)
 
 Checks that the page's HTML `<head>` links to three standard files that browsers and search engines rely on:
 
@@ -546,7 +550,7 @@ Checks that the page's HTML `<head>` links to three standard files that browsers
 
 Missing all three → `fail`; partially missing → `warn`.
 
-#### `checkBeneficialFiles` — WSG 3.17 (Beneficial)
+#### `checkBeneficialFiles` — WSG 3.13 (Beneficial)
 
 Encourages voluntary disclosure files that improve transparency:
 
@@ -556,7 +560,7 @@ Encourages voluntary disclosure files that improve transparency:
 
 All missing → `warn` (these are nice-to-have, not required, so the maximum severity is `warn`).
 
-#### `checkHtmlVersion` — WSG 3.19
+#### `checkHtmlVersion` — WSG 3.15
 
 Checks that the document uses the HTML5 standard and avoids deprecated elements:
 
@@ -565,21 +569,21 @@ Checks that the document uses the HTML5 standard and avoids deprecated elements:
 
 ### Phase 5.1 — UX Design Checks (Section 2)
 
-| Check                        | File                        | WSG Guideline                                             | Impact |
-| ---------------------------- | --------------------------- | --------------------------------------------------------- | ------ |
-| `checkNonEssentialContent`   | `non-essential-content.ts`  | 2.9 Respect the Visitor's Attention                       | medium |
-| `checkNavigationStructure`   | `navigation-structure.ts`   | 2.8 Ensure Navigation and Way-Finding Are Well-Structured | medium |
-| `checkDeceptivePatterns`     | `deceptive-patterns.ts`     | 2.10 Avoid Manipulative Patterns                          | medium |
-| `checkOptimizedMedia`        | `optimized-media.ts`        | 2.7 Avoid Unnecessary or an Overabundance of Assets       | high   |
-| `checkLazyLoading`           | `lazy-loading.ts`           | 2.11 Avoid Bloated or Unnecessary Content                 | medium |
-| `checkAnimationControl`      | `animation-control.ts`      | 2.15 Use Animations Responsibly                           | medium |
-| `checkWebTypography`         | `web-typography.ts`         | 2.16 Ensure Content Is Readable Without Custom Fonts      | medium |
-| `checkAltText`               | `alt-text.ts`               | 2.17 Provide Suitable Alternatives to Web Assets          | high   |
-| `checkFontStackFallbacks`    | `font-stack-fallbacks.ts`   | 2.16 Ensure Content Is Readable Without Custom Fonts      | low    |
-| `checkMinimalForms`          | `minimal-forms.ts`          | 2.19 Support Native User Interface Features               | low    |
-| `checkDownloadableDocuments` | `downloadable-documents.ts` | 2.17 Provide Suitable Alternatives to Web Assets          | low    |
+| Check                        | File                        | Guideline (WSG July-2026)                                     | Impact |
+| ---------------------------- | --------------------------- | ------------------------------------------------------------- | ------ |
+| `checkNonEssentialContent`   | `non-essential-content.ts`  | 2.5 Design to assist and not to distract                      | medium |
+| `checkNavigationStructure`   | `navigation-structure.ts`   | 2.4 Design efficient and streamlined user journeys            | medium |
+| `checkDeceptivePatterns`     | `deceptive-patterns.ts`     | 2.6 Avoid being manipulative or deceptive                     | medium |
+| `checkOptimizedMedia`        | `optimized-media.ts`        | 2.9 Optimize media to reduce resource use                     | high   |
+| `checkLazyLoading`           | `lazy-loading.ts`           | 2.9 Optimize media to reduce resource use                     | medium |
+| `checkAnimationControl`      | `animation-control.ts`      | 2.10 Ensure animation is proportionate and easy to control    | medium |
+| `checkWebTypography`         | `web-typography.ts`         | 2.11 Use optimized web typography                             | medium |
+| `checkAltText`               | `alt-text.ts`               | Related: Image alternative text (not scored)                  | high   |
+| `checkFontStackFallbacks`    | `font-stack-fallbacks.ts`   | 2.11 Use optimized web typography                             | low    |
+| `checkMinimalForms`          | `minimal-forms.ts`          | Related: Native form features (not scored)                    | low    |
+| `checkDownloadableDocuments` | `downloadable-documents.ts` | 2.13 Reduce the impact of downloadable and physical documents | low    |
 
-#### `checkNonEssentialContent` — WSG 2.9
+#### `checkNonEssentialContent` — WSG 2.5
 
 Detects two non-essential content patterns that waste bandwidth and consume user attention:
 
@@ -588,7 +592,7 @@ Detects two non-essential content patterns that waste bandwidth and consume user
 
 Auto-playing media is scored as `fail`; modals/popups alone as `warn`. JavaScript-injected overlays are not detectable from static HTML.
 
-#### `checkNavigationStructure` — WSG 2.8
+#### `checkNavigationStructure` — WSG 2.4
 
 Validates that the page has clear navigation structure to help visitors find content quickly:
 
@@ -597,7 +601,7 @@ Validates that the page has clear navigation structure to help visitors find con
 
 Missing nav landmark → `fail`; nav present but no breadcrumbs → `warn`.
 
-#### `checkDeceptivePatterns` — WSG 2.10
+#### `checkDeceptivePatterns` — WSG 2.6
 
 Uses heuristic pattern matching to detect common dark-pattern indicators:
 
@@ -606,7 +610,7 @@ Uses heuristic pattern matching to detect common dark-pattern indicators:
 
 Both conditions return `warn` (50) with a note that manual review is recommended.
 
-#### `checkOptimizedMedia` — WSG 2.7
+#### `checkOptimizedMedia` — WSG 2.9
 
 Checks that images use modern, efficient formats and include explicit dimensions:
 
@@ -620,7 +624,7 @@ Checks that images use modern, efficient formats and include explicit dimensions
 | Modern formats used, some lack dimensions    | `warn`           | 50    |
 | All images in modern formats with dimensions | `pass`           | 100   |
 
-#### `checkLazyLoading` — WSG 2.11
+#### `checkLazyLoading` — WSG 2.9
 
 Verifies that below-the-fold images use `loading="lazy"` to defer downloading. Allows the first image (likely the LCP/hero image) to remain eagerly loaded.
 
@@ -632,7 +636,7 @@ Verifies that below-the-fold images use `loading="lazy"` to defer downloading. A
 | 2+ images, some lazy but not all non-first images | `warn`           | 50    |
 | All non-first images use `loading="lazy"`         | `pass`           | 100   |
 
-#### `checkAnimationControl` — WSG 2.15
+#### `checkAnimationControl` — WSG 2.10
 
 Scans inline `<style>` blocks for CSS animation declarations (`@keyframes`, `animation:`, `transition:`) and checks whether a `prefers-reduced-motion` media query is also present to guard them.
 
@@ -644,7 +648,7 @@ Scans inline `<style>` blocks for CSS animation declarations (`@keyframes`, `ani
 
 > **Note:** External stylesheets are not analysed; a guard in a linked stylesheet will not be detected.
 
-#### `checkWebTypography` — WSG 2.16
+#### `checkWebTypography` — WSG 2.11
 
 Checks font delivery for efficiency and readability:
 
@@ -654,17 +658,17 @@ Checks font delivery for efficiency and readability:
 
 Not using WOFF2 at all → `fail`; other issues → `warn`.
 
-#### `checkAltText` — WSG 2.17
+#### `checkAltText` — Related `image-alt-text` (not scored)
 
 Verifies that all `<img>` elements have an `alt` attribute. Empty `alt=""` is accepted for decorative images (screen readers skip them). Missing `alt` → `fail`.
 
-#### `checkFontStackFallbacks` — WSG 2.16
+#### `checkFontStackFallbacks` — WSG 2.11
 
 Scans inline `<style>` blocks for `font-family` declarations and checks that each includes a generic family keyword (`serif`, `sans-serif`, `monospace`, etc.) or a known system font as a fallback.
 
 Any declaration without a fallback → `warn`. External stylesheets are not analysed.
 
-#### `checkMinimalForms` — WSG 2.19
+#### `checkMinimalForms` — Related `native-form-features` (not scored)
 
 Audits form design for sustainability and accessibility:
 
@@ -679,22 +683,22 @@ Audits form design for sustainability and accessibility:
 | Some issues (field count, `inputmode`) | `warn`           | 50    |
 | All signals present                    | `pass`           | 100   |
 
-#### `checkDownloadableDocuments` — WSG 2.17
+#### `checkDownloadableDocuments` — WSG 2.13
 
 Detects `<a href>` links pointing to downloadable document formats: `.pdf`, `.docx`, `.doc`, `.pptx`, `.ppt`, `.xlsx`, `.xls`, `.zip`, `.rar`, `.tar`, `.gz`. Each document link found → `warn`, with recommendations to provide HTML alternatives and disclose file format and size in link text.
 
 ### Phase 5.2 — Hosting & Infrastructure Checks (Section 4)
 
-| Check                     | File                     | WSG Guideline                                | Impact |
-| ------------------------- | ------------------------ | -------------------------------------------- | ------ |
-| `checkSustainableHosting` | `sustainable-hosting.ts` | 4.1 Choose a Sustainable Hosting Provider    | high   |
-| `checkCaching`            | `caching.ts`             | 4.2 Optimise Browser Caching                 | high   |
-| `checkOfflineAccess`      | `offline-access.ts`      | 4.2 Optimise Browser Caching (Offline / PWA) | medium |
-| `checkCompression`        | `compression.ts`         | 4.3 Compress Your Files                      | high   |
-| `checkErrorPages`         | `error-pages.ts`         | 4.4 Create a Performant 404 Page             | medium |
-| `checkRedirects`          | `redirects.ts`           | 4.4 Avoid Unnecessary or Excessive Redirects | medium |
-| `checkCdnUsage`           | `cdn-usage.ts`           | 4.10 Use a Content Delivery Network          | medium |
-| `checkDataRefresh`        | `data-refresh.ts`        | 4.7 Ensure Appropriate Data Refresh Rates    | medium |
+| Check                     | File                     | Guideline (WSG July-2026)                                 | Impact |
+| ------------------------- | ------------------------ | --------------------------------------------------------- | ------ |
+| `checkSustainableHosting` | `sustainable-hosting.ts` | 4.1 Use sustainable hosting                               | high   |
+| `checkCaching`            | `caching.ts`             | 4.2 Optimize caching and support offline access           | high   |
+| `checkOfflineAccess`      | `offline-access.ts`      | 4.2 Optimize caching and support offline access           | medium |
+| `checkCompression`        | `compression.ts`         | 4.3 Reduce data transfer with compression                 | high   |
+| `checkErrorPages`         | `error-pages.ts`         | 4.4 Setup necessary error pages and redirection links     | medium |
+| `checkRedirects`          | `redirects.ts`           | 4.4 Setup necessary error pages and redirection links     | medium |
+| `checkCdnUsage`           | `cdn-usage.ts`           | 4.10 Use Content Delivery Networks (CDNs) when beneficial | medium |
+| `checkDataRefresh`        | `data-refresh.ts`        | 4.7 Define the frequency of data refreshes                | medium |
 
 #### `checkSustainableHosting` — WSG 4.1
 

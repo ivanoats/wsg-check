@@ -170,3 +170,48 @@ describe('formatMarkdown', () => {
     expect(md).toContain('Yes')
   })
 })
+
+describe('formatMarkdown guideline labels and related checks', () => {
+  const wsg = makeCheckResult({
+    guidelineId: 'minify-and-remove-unused-code',
+    guidelineName: 'Minify and remove unused code',
+    guidelineNumber: '3.2',
+  })
+  const related = makeCheckResult({
+    guidelineId: 'security-headers',
+    guidelineName: 'Security headers',
+    related: true,
+    status: 'fail',
+    score: 0,
+    recommendation: 'Add a CSP header.',
+  })
+
+  it('shows the WSG display number, not the slug, in the check table', () => {
+    const md = formatMarkdown(makeReport({ results: [wsg] }))
+    expect(md).toContain('| 3.2 | Minify and remove unused code |')
+    expect(md).not.toContain('| minify-and-remove-unused-code |')
+  })
+
+  it('lists related checks in their own not-scored section', () => {
+    const md = formatMarkdown(makeReport({ results: [wsg, related] }))
+    const checkResults = md.slice(md.indexOf('## Check Results'), md.indexOf('## Related Checks'))
+    expect(checkResults).not.toContain('Security headers')
+    expect(md).toContain('## Related Checks (not scored)')
+    expect(md).toContain('| Security headers |')
+  })
+
+  it('omits the related section when there are no related checks', () => {
+    expect(formatMarkdown(makeReport({ results: [wsg] }))).not.toContain('## Related Checks')
+  })
+
+  it('labels related recommendations as not scored', () => {
+    const md = formatMarkdown(makeReport({ results: [related] }))
+    expect(md).toContain('**[Security headers]** _(medium impact, fail, related, not scored)_')
+  })
+
+  it('lists recommendation resources under the recommendation', () => {
+    const withLink = { ...related, resources: ['https://developer.mozilla.org/docs/Web/HTTP'] }
+    const md = formatMarkdown(makeReport({ results: [withLink] }))
+    expect(md).toContain('   - https://developer.mozilla.org/docs/Web/HTTP')
+  })
+})

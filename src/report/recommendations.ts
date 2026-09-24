@@ -6,8 +6,9 @@
  * `CheckResult` objects.
  *
  * Enhancements over the Phase 6.1 stub in `types.ts`:
- *   - For WSG 3.1 (Set Performance Budgets) and WSG 3.8 (Resolve Render
- *     Blocking Content): a parameterised Google PageSpeed Insights link is
+ *   - For WSG 3.1 (Set goals based on performance and energy impact) and
+ *     WSG 3.7 (Defer the loading of non-critical resources), numbered as in
+ *     the July-2026 release: a parameterised Google PageSpeed Insights link is
  *     appended to `resources` so that the reader knows where to obtain live
  *     Core Web Vitals data, which static analysis cannot measure.
  *   - Exports `COMPLEMENTARY_TOOLS`: structured references to external tools
@@ -72,16 +73,19 @@ export const COMPLEMENTARY_TOOLS: ReadonlyArray<ComplementaryTool> = [
 // ─── CWV-sensitive guidelines ─────────────────────────────────────────────────
 
 /**
- * WSG guideline IDs for which static analysis cannot measure Core Web Vitals.
+ * WSG guideline slugs for which static analysis cannot measure Core Web Vitals.
  *
  * For recommendations derived from these guidelines a Google PageSpeed Insights
  * link — parameterised with the analysed page URL — is appended to `resources`
  * to direct the reader to live CWV data.
  *
- * - `'3.1'` – Set Performance Budgets
- * - `'3.8'` – Resolve Render Blocking Content
+ * - 3.1 – Set goals based on performance and energy impact
+ * - 3.7 – Defer the loading of non-critical resources
  */
-export const CWV_GUIDELINE_IDS: ReadonlyArray<string> = ['3.1', '3.8']
+export const CWV_GUIDELINE_IDS: ReadonlyArray<string> = [
+  'set-goals-based-on-performance-and-energy-impact',
+  'defer-the-loading-of-non-critical-resources',
+]
 
 // ─── Sorting helpers ──────────────────────────────────────────────────────────
 
@@ -100,9 +104,10 @@ const STATUS_ORDER: Record<'fail' | 'warn', number> = { fail: 0, warn: 1 }
  *
  * - Only `'fail'` and `'warn'` results that carry a `recommendation` string
  *   are included.
- * - Results are sorted: `high` impact first, then `medium`, then `low`.
- *   Within the same impact tier, `fail` results precede `warn`.
- * - For guidelines in {@link CWV_GUIDELINE_IDS} (3.1 and 3.8), a
+ * - Results are sorted: WSG checks before related (unscored) checks, then
+ *   `high` impact first, then `medium`, then `low`. Within the same impact
+ *   tier, `fail` results precede `warn`.
+ * - For guidelines in {@link CWV_GUIDELINE_IDS} (3.1 and 3.7), a
  *   parameterised Google PageSpeed Insights URL is appended to `resources` so
  *   that the reader knows where to get live Core Web Vitals data that static
  *   analysis cannot provide.
@@ -121,6 +126,8 @@ export const buildRecommendations = (
         (r.status === 'fail' || r.status === 'warn') && typeof r.recommendation === 'string'
     )
     .sort((a, b) => {
+      const relatedDiff = Number(a.related === true) - Number(b.related === true)
+      if (relatedDiff !== 0) return relatedDiff
       const impactDiff = IMPACT_ORDER[a.impact] - IMPACT_ORDER[b.impact]
       if (impactDiff !== 0) return impactDiff
       return STATUS_ORDER[a.status] - STATUS_ORDER[b.status]
@@ -139,6 +146,8 @@ export const buildRecommendations = (
       return {
         guidelineId: r.guidelineId,
         guidelineName: r.guidelineName,
+        ...(r.guidelineNumber === undefined ? {} : { guidelineNumber: r.guidelineNumber }),
+        ...(r.related === true ? { related: true } : {}),
         status: r.status,
         impact: r.impact,
         recommendation: r.recommendation,

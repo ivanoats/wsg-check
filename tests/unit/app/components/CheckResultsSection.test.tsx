@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent, act } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { CheckResultsSection } from '@/app/components/CheckResultsSection'
 import type { CheckResult } from '@/core/types'
 
@@ -78,21 +78,21 @@ describe('CheckResultsSection', () => {
     render(<CheckResultsSection checks={SAMPLE_CHECKS} />)
     const webDevButton = screen.getByRole('button', { name: /toggle web-dev/i })
     expect(webDevButton.getAttribute('aria-expanded')).toBe('false')
-    await act(async () => {
-      fireEvent.focus(webDevButton) // transition Accordion machine to 'focused' state
-      fireEvent.click(webDevButton)
+    fireEvent.focus(webDevButton) // transition Accordion machine to 'focused' state
+    fireEvent.click(webDevButton)
+    await waitFor(() => {
+      expect(webDevButton.getAttribute('aria-expanded')).toBe('true')
     })
-    expect(webDevButton.getAttribute('aria-expanded')).toBe('true')
   })
 
   it('other groups remain collapsed when one group is expanded', async () => {
     render(<CheckResultsSection checks={SAMPLE_CHECKS} />)
     const webDevButton = screen.getByRole('button', { name: /toggle web-dev/i })
-    await act(async () => {
-      fireEvent.focus(webDevButton)
-      fireEvent.click(webDevButton)
+    fireEvent.focus(webDevButton)
+    fireEvent.click(webDevButton)
+    await waitFor(() => {
+      expect(webDevButton.getAttribute('aria-expanded')).toBe('true')
     })
-    expect(webDevButton.getAttribute('aria-expanded')).toBe('true')
     // web-dev is now open, ux should still be closed
     const uxButton = screen.getByRole('button', { name: /toggle ux/i })
     expect(uxButton.getAttribute('aria-expanded')).toBe('false')
@@ -143,5 +143,36 @@ describe('CheckResultsSection', () => {
     )
     expect(duplicateKeyWarning).toBe(false)
     consoleSpy.mockRestore()
+  })
+
+  it('puts related checks in their own not-scored group', () => {
+    const checks = [
+      makeCheck({ guidelineId: 'minify-and-remove-unused-code', guidelineNumber: '3.2' }),
+      makeCheck({
+        guidelineId: 'security-headers',
+        guidelineName: 'Security headers',
+        related: true,
+        category: 'web-dev',
+      }),
+    ]
+    render(<CheckResultsSection checks={checks} />)
+    expect(screen.getByRole('button', { name: /toggle web-dev/i })).toBeDefined()
+    expect(screen.getByRole('button', { name: /toggle related \(not scored\)/i })).toBeDefined()
+  })
+
+  it('shows the WSG display number instead of the slug', () => {
+    const checks = [
+      makeCheck({
+        guidelineId: 'minify-and-remove-unused-code',
+        guidelineName: 'Minify and remove unused code',
+        guidelineNumber: '3.2',
+      }),
+    ]
+    render(<CheckResultsSection checks={checks} />)
+    const trigger = screen.getByRole('button', { name: /toggle web-dev/i })
+    fireEvent.focus(trigger)
+    fireEvent.click(trigger)
+    expect(screen.getByText('(3.2)')).toBeDefined()
+    expect(screen.queryByText('(minify-and-remove-unused-code)')).toBeNull()
   })
 })

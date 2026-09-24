@@ -100,37 +100,111 @@ import { checkErrorPages } from './error-pages'
 import { checkRedirects } from './redirects'
 import { checkCdnUsage } from './cdn-usage'
 import { checkDataRefresh } from './data-refresh'
-import type { CheckFn, CheckFnWithId, PageData } from '../core/types'
+import type { CheckFn, CheckFnWithId, CheckResult, PageData } from '../core/types'
+import { getGuidelineById } from '../config/guidelines-registry'
+import type { GuidelineEntry } from '../config/types'
+import { CheckError, type CheckErrorIdentity } from '../utils/errors'
+
+/** A check with no guideline in the targeted WSG release, reported but not scored. */
+interface RelatedCheck {
+  /** Stable ID used in results and `--guidelines`, e.g. `"security-headers"`. */
+  readonly id: string
+  /** Human-readable name shown in reports. */
+  readonly name: string
+}
+
+/** Links into the WSG spec are rewritten from the registry, never trusted from checks. */
+const SPEC_LINK_PREFIX = 'https://www.w3.org/TR/web-sustainability-guidelines/#'
 
 /**
- * Wraps a check function in a new function with its guideline identity
- * attached, producing a `CheckFnWithId`: the legacy numeric `guidelineId`
- * the check reports under, and the `guidelineSlug` of the guideline it
- * implements in the targeted WSG release (`null` when the spec no longer has
- * one). The slug is declared per check because some legacy IDs are shared by
- * checks for different guidelines (e.g. alt text and downloadable documents
- * both report `2.17`).
+ * Rewrites a result's guideline identity: the slug, title, number and spec
+ * link of its July-2026 guideline, or the related-check ID and name.
+ */
+const reportAs = (result: CheckResult, identity: GuidelineEntry | RelatedCheck): CheckResult => {
+  const { resources = [], ...rest } = result
+  const otherResources = resources.filter((url) => !url.startsWith(SPEC_LINK_PREFIX))
+
+  if ('specUrl' in identity) {
+    return {
+      ...rest,
+      guidelineId: identity.id,
+      guidelineName: identity.title,
+      guidelineNumber: identity.number,
+      resources: [identity.specUrl, ...otherResources],
+    }
+  }
+
+  return {
+    ...rest,
+    guidelineId: identity.id,
+    guidelineName: identity.name,
+    related: true,
+    ...(otherResources.length > 0 ? { resources: otherResources } : {}),
+  }
+}
+
+/** Looks up a slug, failing at load time if a check names a guideline the spec lacks. */
+const guidelineFor = (slug: string): GuidelineEntry => {
+  const guideline = getGuidelineById(slug)
+  if (guideline?.id !== slug) {
+    throw new Error(`Check registered with unknown WSG guideline slug "${slug}"`)
+  }
+  return guideline
+}
+
+/**
+ * Wraps a check so its results report the check's guideline identity, and
+ * attaches that identity as static properties for pre-execution filtering:
  *
- * A new wrapper function is created for each call so that the original `fn`
- * is never mutated (avoids the no-param-reassign anti-pattern).
+ * - `guidelineId`: the legacy numeric ID the check was registered under.
+ * - `guidelineSlug`: the July-2026 guideline the check implements.
+ * - `relatedId`: set instead of a slug for related (unscored) checks.
+ *
+ * The identity is declared per check because some legacy IDs are shared by
+ * checks for different guidelines (alt text and downloadable documents both
+ * used `2.17`). A new wrapper is created for each call so the original `fn` is
+ * never mutated.
  */
 const withGuidelineId = (
   fn: CheckFn,
   guidelineId: string,
-  guidelineSlug: string | null
+  target: string | RelatedCheck
 ): CheckFnWithId => {
-  const wrapped = (page: PageData): ReturnType<CheckFn> => fn(page)
-  return Object.assign(wrapped, { guidelineId, guidelineSlug })
+  const identity = typeof target === 'string' ? guidelineFor(target) : target
+  const related = typeof target !== 'string'
+  const errorIdentity: CheckErrorIdentity =
+    'specUrl' in identity
+      ? {
+          guidelineName: identity.title,
+          guidelineNumber: identity.number,
+          resources: [identity.specUrl],
+        }
+      : { guidelineName: identity.name, related: true }
+
+  const wrapped = async (page: PageData): Promise<CheckResult> => {
+    try {
+      return reportAs(await fn(page), identity)
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : 'The check threw a non-Error value'
+      throw new CheckError(message, identity.id, cause, errorIdentity)
+    }
+  }
+
+  return Object.assign(wrapped, {
+    guidelineId,
+    guidelineSlug: related ? null : identity.id,
+    relatedId: related ? identity.id : null,
+  })
 }
 
 /**
  * All Phase 4.1 Performance & Efficiency checks bundled for convenience.
  *
- * | Check                | WSG Guideline | Testability |
- * | -------------------- | ------------- | ----------- |
- * | `checkMinification`  | 3.3           | automated   |
- * | `checkRenderBlocking`| 3.8           | automated   |
- * | `checkPageWeight`    | 3.1           | automated   |
+ * | Check                 | July-2026 | Testability |
+ * | --------------------- | --------- | ----------- |
+ * | `checkMinification`   | 3.2       | automated   |
+ * | `checkRenderBlocking` | 3.7       | automated   |
+ * | `checkPageWeight`     | 3.1       | automated   |
  */
 export const performanceChecks: ReadonlyArray<CheckFnWithId> = [
   withGuidelineId(checkMinification, '3.3', 'minify-and-remove-unused-code'),
@@ -141,18 +215,18 @@ export const performanceChecks: ReadonlyArray<CheckFnWithId> = [
 /**
  * All Phase 4.2 Semantic & Standards checks bundled for convenience.
  *
- * | Check                  | WSG Guideline | Testability     |
- * | ---------------------- | ------------- | --------------- |
- * | `checkSemanticHtml`    | 3.7           | automated       |
- * | `checkAccessibilityAids` | 3.9         | automated       |
- * | `checkFormValidation`  | 3.10          | semi-automated  |
- * | `checkMetadata`        | 3.4           | automated       |
- * | `checkStructuredData`  | 3.11          | automated       |
+ * | Check                    | July-2026            | Testability    |
+ * | ------------------------ | -------------------- | -------------- |
+ * | `checkSemanticHtml`      | 3.6                  | automated      |
+ * | `checkAccessibilityAids` | 2.4                  | automated      |
+ * | `checkFormValidation`    | related (not scored) | semi-automated |
+ * | `checkMetadata`          | 3.8                  | automated      |
+ * | `checkStructuredData`    | 3.8                  | automated      |
  */
 export const semanticChecks: ReadonlyArray<CheckFnWithId> = [
   withGuidelineId(checkSemanticHtml, '3.7', 'ensure-code-follows-good-semantic-practices'),
   withGuidelineId(checkAccessibilityAids, '3.9', 'design-efficient-and-streamlined-user-journeys'),
-  withGuidelineId(checkFormValidation, '3.10', null),
+  withGuidelineId(checkFormValidation, '3.10', { id: 'form-validation', name: 'Form validation' }),
   withGuidelineId(checkMetadata, '3.4', 'structure-metadata-for-machine-readability'),
   withGuidelineId(checkStructuredData, '3.11', 'structure-metadata-for-machine-readability'),
 ]
@@ -160,13 +234,13 @@ export const semanticChecks: ReadonlyArray<CheckFnWithId> = [
 /**
  * All Phase 4.3 Sustainability-Specific checks bundled for convenience.
  *
- * | Check                        | WSG Guideline | Testability |
- * | ---------------------------- | ------------- | ----------- |
- * | `checkCssRedundancy`         | 3.5           | automated   |
- * | `checkThirdParty`            | 3.6           | automated   |
- * | `checkPreferenceMediaQueries`| 3.12          | automated   |
- * | `checkResponsiveDesign`      | 3.13          | automated   |
- * | `checkSustainableJs`         | 3.14          | automated   |
+ * | Check                         | July-2026 | Testability |
+ * | ----------------------------- | --------- | ----------- |
+ * | `checkCssRedundancy`          | 3.4       | automated   |
+ * | `checkThirdParty`             | 3.5       | automated   |
+ * | `checkPreferenceMediaQueries` | 3.9       | automated   |
+ * | `checkResponsiveDesign`       | 3.10      | automated   |
+ * | `checkSustainableJs`          | 3.11      | automated   |
  */
 export const sustainabilityChecks: ReadonlyArray<CheckFnWithId> = [
   withGuidelineId(checkCssRedundancy, '3.5', 'avoid-redundancy-and-duplication-in-code'),
@@ -187,19 +261,22 @@ export const sustainabilityChecks: ReadonlyArray<CheckFnWithId> = [
 /**
  * All Phase 4.4 Security & Maintenance checks bundled for convenience.
  *
- * | Check                   | WSG Guideline | Testability |
- * | ----------------------- | ------------- | ----------- |
- * | `checkSecurityHeaders`  | 3.15          | automated   |
- * | `checkDependencyCount`  | 3.16          | automated   |
- * | `checkExpectedFiles`    | 3.17          | automated   |
- * | `checkBeneficialFiles`  | 3.17          | automated   |
- * | `checkHtmlVersion`      | 3.19          | automated   |
+ * | Check                  | July-2026            | Testability |
+ * | ---------------------- | -------------------- | ----------- |
+ * | `checkSecurityHeaders` | related (not scored) | automated   |
+ * | `checkDependencyCount` | 3.12                 | automated   |
+ * | `checkExpectedFiles`   | 3.13                 | automated   |
+ * | `checkBeneficialFiles` | 3.13                 | automated   |
+ * | `checkHtmlVersion`     | 3.15                 | automated   |
  *
  * `checkExpectedFiles` and `checkBeneficialFiles` both implement different
  * aspects of WSG 3.17 (required files vs. beneficial optional files).
  */
 export const securityChecks: ReadonlyArray<CheckFnWithId> = [
-  withGuidelineId(checkSecurityHeaders, '3.15', null),
+  withGuidelineId(checkSecurityHeaders, '3.15', {
+    id: 'security-headers',
+    name: 'Security headers',
+  }),
   withGuidelineId(checkDependencyCount, '3.16', 'use-dependencies-sparingly-and-maintain-them'),
   withGuidelineId(checkExpectedFiles, '3.17', 'include-expected-and-beneficial-files'),
   withGuidelineId(checkBeneficialFiles, '3.17', 'include-expected-and-beneficial-files'),
@@ -209,19 +286,19 @@ export const securityChecks: ReadonlyArray<CheckFnWithId> = [
 /**
  * All Phase 5.1 UX Design checks bundled for convenience.
  *
- * | Check                        | WSG Guideline | Testability     |
- * | ---------------------------- | ------------- | --------------- |
- * | `checkNonEssentialContent`   | 2.9           | automated       |
- * | `checkNavigationStructure`   | 2.8           | automated       |
- * | `checkDeceptivePatterns`     | 2.10          | automated       |
- * | `checkOptimizedMedia`        | 2.7           | automated       |
- * | `checkLazyLoading`           | 2.11          | automated       |
- * | `checkAnimationControl`      | 2.15          | automated       |
- * | `checkWebTypography`         | 2.16          | automated       |
- * | `checkAltText`               | 2.17          | automated       |
- * | `checkFontStackFallbacks`    | 2.16          | automated       |
- * | `checkMinimalForms`          | 2.19          | automated       |
- * | `checkDownloadableDocuments` | 2.17          | semi-automated  |
+ * | Check                        | July-2026            | Testability    |
+ * | ---------------------------- | -------------------- | -------------- |
+ * | `checkNonEssentialContent`   | 2.5                  | automated      |
+ * | `checkNavigationStructure`   | 2.4                  | automated      |
+ * | `checkDeceptivePatterns`     | 2.6                  | automated      |
+ * | `checkOptimizedMedia`        | 2.9                  | automated      |
+ * | `checkLazyLoading`           | 2.9                  | automated      |
+ * | `checkAnimationControl`      | 2.10                 | automated      |
+ * | `checkWebTypography`         | 2.11                 | automated      |
+ * | `checkAltText`               | related (not scored) | automated      |
+ * | `checkFontStackFallbacks`    | 2.11                 | automated      |
+ * | `checkMinimalForms`          | related (not scored) | automated      |
+ * | `checkDownloadableDocuments` | 2.13                 | semi-automated |
  *
  * `checkWebTypography` and `checkFontStackFallbacks` both implement WSG 2.16
  * (typography-related aspects of sustainable design).
@@ -244,9 +321,12 @@ export const uxDesignChecks: ReadonlyArray<CheckFnWithId> = [
     'ensure-animation-is-proportionate-and-easy-to-control'
   ),
   withGuidelineId(checkWebTypography, '2.16', 'use-optimized-web-typography'),
-  withGuidelineId(checkAltText, '2.17', null),
+  withGuidelineId(checkAltText, '2.17', { id: 'image-alt-text', name: 'Image alternative text' }),
   withGuidelineId(checkFontStackFallbacks, '2.16', 'use-optimized-web-typography'),
-  withGuidelineId(checkMinimalForms, '2.19', null),
+  withGuidelineId(checkMinimalForms, '2.19', {
+    id: 'native-form-features',
+    name: 'Native form features',
+  }),
   withGuidelineId(
     checkDownloadableDocuments,
     '2.17',
@@ -257,16 +337,16 @@ export const uxDesignChecks: ReadonlyArray<CheckFnWithId> = [
 /**
  * All Phase 5.2 Hosting & Infrastructure checks bundled for convenience.
  *
- * | Check                      | WSG Guideline | Testability     |
- * | -------------------------- | ------------- | --------------- |
- * | `checkSustainableHosting`  | 4.1           | automated       |
- * | `checkCaching`             | 4.2           | automated       |
- * | `checkOfflineAccess`       | 4.2           | automated       |
- * | `checkCompression`         | 4.3           | automated       |
- * | `checkErrorPages`          | 4.4           | semi-automated  |
- * | `checkRedirects`           | 4.4           | automated       |
- * | `checkCdnUsage`            | 4.10          | automated       |
- * | `checkDataRefresh`         | 4.7           | automated       |
+ * | Check                     | July-2026 | Testability    |
+ * | ------------------------- | --------- | -------------- |
+ * | `checkSustainableHosting` | 4.1       | automated      |
+ * | `checkCaching`            | 4.2       | automated      |
+ * | `checkOfflineAccess`      | 4.2       | automated      |
+ * | `checkCompression`        | 4.3       | automated      |
+ * | `checkErrorPages`         | 4.4       | semi-automated |
+ * | `checkRedirects`          | 4.4       | automated      |
+ * | `checkCdnUsage`           | 4.10      | automated      |
+ * | `checkDataRefresh`        | 4.7       | automated      |
  *
  * `checkCaching` and `checkOfflineAccess` both implement WSG 4.2
  * (caching/offline strategies — two separate aspects of the same guideline).

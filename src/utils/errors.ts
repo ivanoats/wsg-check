@@ -80,17 +80,39 @@ export class ConfigError extends Error {
 }
 
 /**
+ * How a failing check reports itself, so its failure result carries the same
+ * guideline title, display number and spec link as a successful result.
+ */
+export interface CheckErrorIdentity {
+  readonly guidelineName?: string
+  readonly guidelineNumber?: string
+  readonly resources?: readonly string[]
+  /** `true` when the failing check is a related (unscored) check. */
+  readonly related?: boolean
+}
+
+/**
  * Thrown when an individual WSG check encounters an unexpected runtime error.
  * Allows the check runner to catch and record the failure gracefully rather
  * than propagating it and aborting all remaining checks.
  */
 export class CheckError extends Error {
   readonly guidelineId: string
+  readonly identity: CheckErrorIdentity
+  /** `true` when the failing check is a related (unscored) check. */
+  readonly related: boolean
 
-  constructor(message: string, guidelineId: string, cause?: unknown) {
+  constructor(
+    message: string,
+    guidelineId: string,
+    cause?: unknown,
+    identity: CheckErrorIdentity = {}
+  ) {
     super(message)
     this.name = 'CheckError'
     this.guidelineId = guidelineId
+    this.identity = identity
+    this.related = identity.related === true
     if (cause !== undefined) {
       this.cause = cause
     }

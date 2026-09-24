@@ -116,8 +116,8 @@ export const LEGACY_GUIDELINE_IDS: ReadonlyMap<string, string> = new Map([
 /**
  * Pre-2025 draft numbers used only by checks whose guideline was removed from
  * the spec (form validation 3.10, security headers 3.15, minimal forms 2.19).
- * The options for these checks are in SPEC_VERSIONING.md §4; deciding is
- * step 3 of §5.6.
+ * These checks now run as related (unscored) checks; see `relatedId` on
+ * `CheckFnWithId`.
  */
 export const UNMAPPED_LEGACY_IDS: ReadonlySet<string> = new Set(['2.19', '3.10', '3.15'])
 
@@ -168,6 +168,7 @@ export function isLegacyGuidelineId(id: string): boolean {
 export interface GuidelineTaggedCheck {
   readonly guidelineId: string
   readonly guidelineSlug: string | null
+  readonly relatedId: string | null
 }
 
 /**
@@ -175,12 +176,13 @@ export interface GuidelineTaggedCheck {
  *
  * - A legacy numeric ID (e.g. `"3.3"`) matches exactly the checks registered
  *   under that ID, as before slugs existed.
- * - Anything else is treated as a slug and matches only checks that declare
- *   that slug, so a slug never selects a check for a different guideline.
+ * - Anything else matches checks that declare it as their slug or as their
+ *   related-check ID, so a slug never selects a check for a different
+ *   guideline.
  */
 export function checkMatchesGuideline(check: GuidelineTaggedCheck, requested: string): boolean {
   if (isLegacyGuidelineId(requested)) return check.guidelineId === requested
-  return check.guidelineSlug !== null && check.guidelineSlug === requested
+  return requested === check.guidelineSlug || requested === check.relatedId
 }
 
 /**

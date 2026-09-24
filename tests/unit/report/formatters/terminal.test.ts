@@ -182,3 +182,38 @@ describe('formatTerminal', () => {
     expect(out).toContain('800ms')
   })
 })
+
+describe('formatTerminal guideline labels and related checks', () => {
+  const wsg = makeCheckResult({
+    guidelineId: 'minify-and-remove-unused-code',
+    guidelineName: 'Minify and remove unused code',
+    guidelineNumber: '3.2',
+  })
+  const related = makeCheckResult({
+    guidelineId: 'image-alt-text',
+    guidelineName: 'Image alternative text',
+    related: true,
+    status: 'warn',
+    score: 50,
+    recommendation: 'Add alt text.',
+  })
+
+  it('shows the display number and a separate related section', () => {
+    const out = formatTerminal(makeReport({ results: [wsg, related] }), { colors: false })
+    expect(out).toContain('3.2    Minify and remove unused code')
+    expect(out).toContain('Related Checks (not scored)')
+    expect(out.indexOf('Image alternative text', out.indexOf('Related Checks'))).toBeGreaterThan(-1)
+    expect(out).toContain('Image alternative text (warn, related, not scored)')
+  })
+
+  it('omits the related section when there are no related checks', () => {
+    const out = formatTerminal(makeReport({ results: [wsg] }), { colors: false })
+    expect(out).not.toContain('Related Checks')
+  })
+
+  it('lists recommendation resources under the recommendation', () => {
+    const withLink = { ...related, resources: ['https://developer.mozilla.org/docs/Web/HTML'] }
+    const out = formatTerminal(makeReport({ results: [withLink] }), { colors: false })
+    expect(out).toContain('     https://developer.mozilla.org/docs/Web/HTML')
+  })
+})

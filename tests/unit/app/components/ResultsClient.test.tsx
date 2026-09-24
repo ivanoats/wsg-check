@@ -34,7 +34,14 @@ const MOCK_REPORT: SustainabilityReport = {
   grade: 'B',
   categories: [],
   checks: [],
-  summary: { totalChecks: 0, passed: 0, failed: 0, warnings: 0, notApplicable: 0 },
+  summary: {
+    totalChecks: 0,
+    passed: 0,
+    failed: 0,
+    warnings: 0,
+    notApplicable: 0,
+    relatedChecks: 0,
+  },
   recommendations: [],
   metadata: { pageWeight: 0, requestCount: 0, thirdPartyCount: 0 },
   methodology: { analysisType: 'static', disclaimer: 'Test disclaimer' },
@@ -52,7 +59,7 @@ describe('ResultsClient', () => {
     vi.restoreAllMocks()
   })
 
-  it('renders report immediately from sessionStorage without calling fetch', async () => {
+  it('renders report immediately from sessionStorage without calling fetch', () => {
     sessionStorageMock.setItem(
       `wsg-check:result:${validId}`,
       JSON.stringify({ id: validId, status: 'completed', report: MOCK_REPORT })
@@ -68,7 +75,7 @@ describe('ResultsClient', () => {
   it('fetches from API when sessionStorage is empty and renders the report', async () => {
     fetchMock.mockResolvedValue({
       ok: true,
-      json: async () => ({ id: validId, status: 'completed', report: MOCK_REPORT }),
+      json: () => Promise.resolve({ id: validId, status: 'completed', report: MOCK_REPORT }),
     })
 
     render(<ResultsClient id={validId} />)
@@ -91,7 +98,7 @@ describe('ResultsClient', () => {
     })
   })
 
-  it('shows the checked URL in the report header', async () => {
+  it('shows the checked URL in the report header', () => {
     sessionStorageMock.setItem(
       `wsg-check:result:${validId}`,
       JSON.stringify({ id: validId, status: 'completed', report: MOCK_REPORT })

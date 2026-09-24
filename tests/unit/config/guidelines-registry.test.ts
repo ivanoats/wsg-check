@@ -240,8 +240,9 @@ describe('checkMatchesGuideline', () => {
   const docs = {
     guidelineId: '2.17',
     guidelineSlug: 'reduce-the-impact-of-downloadable-and-physical-documents',
+    relatedId: null,
   }
-  const altText = { guidelineId: '2.17', guidelineSlug: null }
+  const altText = { guidelineId: '2.17', guidelineSlug: null, relatedId: 'image-alt-text' }
 
   it('matches a check by the slug it declares', () => {
     expect(
@@ -264,9 +265,15 @@ describe('checkMatchesGuideline', () => {
     const metadata = {
       guidelineId: '3.4',
       guidelineSlug: 'structure-metadata-for-machine-readability',
+      relatedId: null,
     }
     // 3.11 (structured data) maps to the same slug but is a different check.
     expect(checkMatchesGuideline(metadata, '3.11')).toBe(false)
+  })
+
+  it('matches a related check by its related ID', () => {
+    expect(checkMatchesGuideline(altText, 'image-alt-text')).toBe(true)
+    expect(checkMatchesGuideline(docs, 'image-alt-text')).toBe(false)
   })
 
   it('does not match unknown IDs', () => {

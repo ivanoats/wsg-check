@@ -135,25 +135,26 @@ const ALL_CHECKS: ReadonlyArray<CheckFnWithId> = [
 
 /**
  * Describes what replaces a legacy numeric ID, based on the checks registered
- * under it: the slugs they implement, and whether any have no guideline in
- * the targeted release (e.g. `2.17` covers downloadable documents, which has a
- * slug, and alt text, which does not).
+ * under it: the WSG slugs they implement and the IDs of any related
+ * (unscored) checks. For example, `2.17` covers downloadable documents (a WSG
+ * guideline) and alt text (a related check).
  */
 const describeLegacyReplacement = (id: string): string => {
   const checks = ALL_CHECKS.filter((check) => check.guidelineId === id)
-  const slugs = [
-    ...new Set(
-      checks.flatMap((check) => (check.guidelineSlug === null ? [] : [check.guidelineSlug]))
-    ),
-  ]
-  const release = `WSG ${WSG_SPEC.release}`
-  if (slugs.length === 0) return `it has no equivalent in ${release}`
+  const quoted = (ids: ReadonlyArray<string | null>): string =>
+    [...new Set(ids.filter((value): value is string => value !== null))]
+      .map((value) => JSON.stringify(value))
+      .join(', ')
 
-  const quotedSlugs = slugs.map((slug) => JSON.stringify(slug)).join(', ')
-  const replacement = `use ${quotedSlugs} (${release})`
-  return checks.some((check) => check.guidelineSlug === null)
-    ? `${replacement}; some of its checks have no ${release} guideline and run only under "${id}"`
-    : replacement
+  const release = `WSG ${WSG_SPEC.release}`
+  const slugs = quoted(checks.map((check) => check.guidelineSlug))
+  const relatedIds = quoted(checks.map((check) => check.relatedId))
+
+  const parts = [
+    ...(slugs === '' ? [] : [`use ${slugs} (${release})`]),
+    ...(relatedIds === '' ? [] : [`use ${relatedIds} (related check, not scored)`]),
+  ]
+  return parts.length === 0 ? `it has no equivalent in ${release}` : parts.join('; ')
 }
 
 /** Warns for each legacy numeric guideline ID, naming what to use instead. */

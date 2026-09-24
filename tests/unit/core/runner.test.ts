@@ -38,9 +38,7 @@ function throwingCheck(guidelineId: string): CheckFn {
 }
 
 function rejectingCheck(guidelineId: string): CheckFn {
-  return async () => {
-    throw new Error(`Async failure for ${guidelineId}`)
-  }
+  return () => Promise.reject(new Error(`Async failure for ${guidelineId}`))
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -95,9 +93,9 @@ describe('CheckRunner', () => {
       order.push('slow')
       return makeResult({ guidelineId: 'slow' })
     }
-    const fastCheck: CheckFn = async () => {
+    const fastCheck: CheckFn = () => {
       order.push('fast')
-      return makeResult({ guidelineId: 'fast' })
+      return Promise.resolve(makeResult({ guidelineId: 'fast' }))
     }
 
     const runner = new CheckRunner()
@@ -137,6 +135,56 @@ describe('CheckRunner', () => {
     expect(result.message).toContain('Something went wrong')
   })
 
+  it('marks the fail result as related when the CheckError says so', async () => {
+    const runner = new CheckRunner()
+    const relatedCheck: CheckFn = () => {
+      throw new CheckError('Boom', 'security-headers', undefined, { related: true })
+    }
+    runner.register(relatedCheck)
+    const [result] = await runner.run(PAGE_DATA)
+
+    expect(result.guidelineId).toBe('security-headers')
+    expect(result.related).toBe(true)
+  })
+
+  it('reports the guideline title, number and spec link carried by the CheckError', async () => {
+    const runner = new CheckRunner()
+    const failingCheck: CheckFn = () => {
+      throw new CheckError('Boom', 'minify-and-remove-unused-code', undefined, {
+        guidelineName: 'Minify and remove unused code',
+        guidelineNumber: '3.2',
+        resources: ['https://example.com/spec#minify'],
+      })
+    }
+    runner.register(failingCheck)
+    const [result] = await runner.run(PAGE_DATA)
+
+    expect(result).toMatchObject({
+      guidelineId: 'minify-and-remove-unused-code',
+      guidelineName: 'Minify and remove unused code',
+      guidelineNumber: '3.2',
+      resources: ['https://example.com/spec#minify'],
+      status: 'fail',
+    })
+  })
+
+  it('falls back to the guideline ID as the name when the CheckError has no identity', async () => {
+    const runner = new CheckRunner()
+    runner.register(throwingCheck('3.5'))
+    const [result] = await runner.run(PAGE_DATA)
+
+    expect(result.guidelineName).toBe('3.5')
+    expect(result.guidelineNumber).toBeUndefined()
+    expect(result.resources).toBeUndefined()
+  })
+
+  it('does not mark an ordinary CheckError failure as related', async () => {
+    const runner = new CheckRunner()
+    runner.register(throwingCheck('3.5'))
+    const [result] = await runner.run(PAGE_DATA)
+    expect(result.related).toBeUndefined()
+  })
+
   it('converts an async rejection into a fail result', async () => {
     const runner = new CheckRunner()
     runner.register(rejectingCheck('3.6'))
@@ -160,9 +208,7 @@ describe('CheckRunner', () => {
   })
 
   it('uses a generic guidelineId for a non-CheckError rejection', async () => {
-    const unknownRejection: CheckFn = async () => {
-      throw new Error('Some generic error')
-    }
+    const unknownRejection: CheckFn = () => Promise.reject(new Error('Some generic error'))
     const runner = new CheckRunner()
     runner.register(unknownRejection)
     const [result] = await runner.run(PAGE_DATA)
@@ -172,7 +218,8 @@ describe('CheckRunner', () => {
 
   it('handles a mix of sync and async checks', async () => {
     const syncCheck: CheckFn = () => makeResult({ guidelineId: 'sync', status: 'pass' })
-    const asyncCheck: CheckFn = async () => makeResult({ guidelineId: 'async', status: 'warn' })
+    const asyncCheck: CheckFn = () =>
+      Promise.resolve(makeResult({ guidelineId: 'async', status: 'warn' }))
 
     const runner = new CheckRunner()
     runner.registerAll([syncCheck, asyncCheck])

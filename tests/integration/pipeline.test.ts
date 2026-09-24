@@ -63,6 +63,16 @@ const {
   uxDesignChecks,
   hostingChecks,
 } = await import('@/checks/index')
+const { getGuidelineById } = await import('@/config/guidelines-registry')
+
+const ALL_CHECKS = [
+  ...performanceChecks,
+  ...semanticChecks,
+  ...sustainabilityChecks,
+  ...securityChecks,
+  ...uxDesignChecks,
+  ...hostingChecks,
+]
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -381,5 +391,58 @@ describe('Full pipeline integration — WsgChecker.check()', () => {
     expect(report).toHaveProperty('categories')
     expect(report).toHaveProperty('recommendations')
     expect(report).toHaveProperty('metadata')
+  })
+
+  // ── Guideline identity (WSG July-2026) ───────────────────────────────────
+
+  it('reports every result under its July-2026 guideline or as a related check', async () => {
+    setupMocks(GOOD_HTML)
+    const result = await buildChecker().check('https://example.com')
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+
+    const specLinkPrefix = 'https://www.w3.org/TR/web-sustainability-guidelines/#'
+    expect(result.value.results).toHaveLength(ALL_CHECKS.length)
+
+    result.value.results.forEach((checkResult, i) => {
+      const check = ALL_CHECKS[i]
+      const specLinks = (checkResult.resources ?? []).filter((url) =>
+        url.startsWith(specLinkPrefix)
+      )
+
+      if (check.guidelineSlug === null) {
+        expect(checkResult.related).toBe(true)
+        expect(checkResult.guidelineId).toBe(check.relatedId)
+        expect(checkResult.guidelineNumber).toBeUndefined()
+        expect(specLinks).toEqual([])
+        return
+      }
+
+      const guideline = getGuidelineById(check.guidelineSlug)
+      expect(checkResult.related).toBeUndefined()
+      expect(checkResult).toMatchObject({
+        guidelineId: guideline?.id,
+        guidelineName: guideline?.title,
+        guidelineNumber: guideline?.number,
+      })
+      expect(specLinks).toEqual([guideline?.specUrl])
+    })
+  })
+
+  it('reports exactly the four related checks as not scored', async () => {
+    setupMocks(GOOD_HTML)
+    const result = await buildChecker().check('https://example.com')
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+
+    const relatedIds = result.value.results
+      .filter((r) => r.related === true)
+      .map((r) => r.guidelineId)
+    expect(relatedIds.sort((a, b) => a.localeCompare(b))).toEqual([
+      'form-validation',
+      'image-alt-text',
+      'native-form-features',
+      'security-headers',
+    ])
   })
 })

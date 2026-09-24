@@ -55,10 +55,14 @@ export const scoreToGrade = (score: number): Grade => {
  * the most consequential improvements appear first.
  */
 export interface Recommendation {
-  /** The WSG guideline ID this recommendation targets, e.g. `"3.1"`. */
+  /** The guideline this recommendation targets (see `CheckResult.guidelineId`). */
   readonly guidelineId: string
   /** Human-readable guideline name. */
   readonly guidelineName: string
+  /** Display number in the targeted WSG release, e.g. `"3.2"`. */
+  readonly guidelineNumber?: string
+  /** `true` when it comes from a related (unscored) check. */
+  readonly related?: boolean
   /**
    * Outcome of the underlying check.
    * Only `'fail'` and `'warn'` checks produce recommendations.
@@ -136,7 +140,7 @@ export interface ReportMethodology {
 
 /** Aggregate check-status counts for the summary section of the report. */
 export interface ReportSummary {
-  /** Total number of checks that were run. */
+  /** Number of WSG checks that were run (related checks are counted separately). */
   readonly totalChecks: number
   /** Checks with status `'pass'`. */
   readonly passed: number
@@ -146,6 +150,8 @@ export interface ReportSummary {
   readonly warnings: number
   /** Checks with status `'not-applicable'` or `'info'`. */
   readonly notApplicable: number
+  /** Number of related (unscored) checks that were run. */
+  readonly relatedChecks: number
 }
 
 // ─── Sustainability Report ────────────────────────────────────────────────────
@@ -208,8 +214,9 @@ const summariseResults = (results: ReadonlyArray<CheckResult>): ReportSummary =>
   let failed = 0
   let warnings = 0
   let notApplicable = 0
+  const wsgResults = results.filter((r) => r.related !== true)
 
-  for (const r of results) {
+  for (const r of wsgResults) {
     if (r.status === 'pass') passed++
     else if (r.status === 'fail') failed++
     else if (r.status === 'warn') warnings++
@@ -217,11 +224,12 @@ const summariseResults = (results: ReadonlyArray<CheckResult>): ReportSummary =>
   }
 
   return {
-    totalChecks: results.length,
+    totalChecks: wsgResults.length,
     passed,
     failed,
     warnings,
     notApplicable,
+    relatedChecks: results.length - wsgResults.length,
   }
 }
 
