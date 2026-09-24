@@ -91,7 +91,7 @@ Use `--fail-threshold` to fail your pipeline when a site's sustainability score 
 - name: Check sustainability
   run: npx @sustainablewebsites/wsg-check https://example.com --fail-threshold 60 --format json --output wsg-report.json
 - name: Upload report
-  uses: actions/upload-artifact@v7
+  uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
   with:
     name: wsg-report
     path: wsg-report.json
