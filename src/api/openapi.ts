@@ -62,7 +62,7 @@ export const OPENAPI_SPEC = {
     },
     '/api/guidelines': {
       get: {
-        summary: 'List all WSG guidelines',
+        summary: 'List all guidelines in the targeted WSG release',
         responses: {
           '200': { description: 'Guideline list' },
           '429': { description: 'Rate limit exceeded' },
@@ -71,7 +71,7 @@ export const OPENAPI_SPEC = {
     },
     '/api/guidelines/{id}': {
       get: {
-        summary: 'Get a single guideline by ID',
+        summary: 'Get a single guideline by slug (legacy numeric IDs also resolve)',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
         responses: {
           '200': { description: 'Guideline details' },

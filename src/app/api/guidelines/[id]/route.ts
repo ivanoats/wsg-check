@@ -11,14 +11,14 @@ interface RouteContext {
   readonly params: Promise<{ readonly id: string }>
 }
 
-export const OPTIONS = async (): Promise<Response> => optionsResponse()
+export const OPTIONS = (): Response => optionsResponse()
 
 export const GET = async (request: NextRequest, context: RouteContext): Promise<Response> => {
   const rateLimited = await enforceRateLimit(request)
   if (rateLimited !== null) return rateLimited
 
   const params = await context.params
-  const result = await findGuidelineById(params.id)
+  const result = findGuidelineById(params.id)
 
   if (result.guideline === undefined) {
     return errorJson(404, 'NOT_FOUND', `Guideline "${params.id}" was not found.`)
@@ -26,7 +26,7 @@ export const GET = async (request: NextRequest, context: RouteContext): Promise<
 
   const response: GuidelineDetailResponseBody = {
     guideline: result.guideline,
-    source: result.source,
+    spec: result.spec,
   }
 
   return okJson(response)

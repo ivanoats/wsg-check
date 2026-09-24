@@ -44,6 +44,7 @@ const matchesFilters = (
   if (search) {
     const lowerQuery = search.toLowerCase()
     return (
+      g.number.includes(lowerQuery) ||
       g.id.includes(lowerQuery) ||
       g.title.toLowerCase().includes(lowerQuery) ||
       g.description.toLowerCase().includes(lowerQuery)
@@ -125,7 +126,7 @@ const FilterControls = ({
 const GuidelineBadges = ({ g }: { readonly g: GuidelineEntry }) => (
   <styled.div display="flex" gap="2" alignItems="center" flexWrap="wrap">
     <styled.span fontSize="xs" fontWeight="bold" color="fg.muted" fontFamily="mono">
-      {g.id}
+      {g.number}
     </styled.span>
     <styled.span
       fontSize="xs"
@@ -165,18 +166,16 @@ const GuidelineCard = ({ g }: { readonly g: GuidelineEntry }) => (
       mb="1"
     >
       <GuidelineBadges g={g} />
-      {g.specUrl && (
-        <a
-          href={g.specUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={link()}
-          style={{ flexShrink: 0, fontSize: '0.75rem' }}
-          aria-label={`W3C spec for guideline ${g.id}`}
-        >
-          W3C ↗
-        </a>
-      )}
+      <a
+        href={g.specUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={link()}
+        style={{ flexShrink: 0, fontSize: '0.75rem' }}
+        aria-label={`W3C spec for guideline ${g.number}`}
+      >
+        W3C ↗
+      </a>
     </styled.div>
     <styled.h2 fontSize="sm" fontWeight="semibold" color="fg.default" mb="1">
       {g.title}

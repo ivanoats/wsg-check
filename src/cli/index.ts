@@ -20,6 +20,8 @@ import { pathToFileURL, fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { Command } from 'commander'
 import { resolveConfig } from '../config/loader'
+import { checkMatchesGuideline, isLegacyGuidelineId } from '../config/guidelines-registry'
+import { WSG_SPEC } from '../config/spec/index'
 import type { OutputFormat, WSGCategory } from '../config/types'
 import { WsgChecker } from '../core/index'
 import type { CheckFnWithId } from '../core/types'
@@ -121,6 +123,48 @@ const buildCliFlags = (url: string, opts: CliOptions) => ({
 
 // ─── Check selector ───────────────────────────────────────────────────────────
 
+/** Every registered check, regardless of category. */
+const ALL_CHECKS: ReadonlyArray<CheckFnWithId> = [
+  ...performanceChecks,
+  ...semanticChecks,
+  ...sustainabilityChecks,
+  ...securityChecks,
+  ...uxDesignChecks,
+  ...hostingChecks,
+]
+
+/**
+ * Describes what replaces a legacy numeric ID, based on the checks registered
+ * under it: the slugs they implement, and whether any have no guideline in
+ * the targeted release (e.g. `2.17` covers downloadable documents, which has a
+ * slug, and alt text, which does not).
+ */
+const describeLegacyReplacement = (id: string): string => {
+  const checks = ALL_CHECKS.filter((check) => check.guidelineId === id)
+  const slugs = [
+    ...new Set(
+      checks.flatMap((check) => (check.guidelineSlug === null ? [] : [check.guidelineSlug]))
+    ),
+  ]
+  const release = `WSG ${WSG_SPEC.release}`
+  if (slugs.length === 0) return `it has no equivalent in ${release}`
+
+  const quotedSlugs = slugs.map((slug) => JSON.stringify(slug)).join(', ')
+  const replacement = `use ${quotedSlugs} (${release})`
+  return checks.some((check) => check.guidelineSlug === null)
+    ? `${replacement}; some of its checks have no ${release} guideline and run only under "${id}"`
+    : replacement
+}
+
+/** Warns for each legacy numeric guideline ID, naming what to use instead. */
+const warnOnLegacyGuidelineIds = (guidelines: readonly string[]): void => {
+  for (const id of guidelines.filter(isLegacyGuidelineId)) {
+    process.stderr.write(
+      `Warning: numeric guideline ID "${id}" is deprecated; ${describeLegacyReplacement(id)}.\n`
+    )
+  }
+}
+
 /**
  * Selects and optionally filters check functions from the available check
  * arrays based on category selection and requested guideline IDs.
@@ -144,8 +188,10 @@ const selectChecks = (
     ...(categories.has('hosting') ? [...hostingChecks] : []),
   ]
 
+  warnOnLegacyGuidelineIds(guidelines)
+
   return guidelines.length > 0
-    ? categoryChecks.filter((c) => guidelines.includes(c.guidelineId))
+    ? categoryChecks.filter((c) => guidelines.some((g) => checkMatchesGuideline(c, g)))
     : categoryChecks
 }
 
@@ -238,7 +284,10 @@ export const buildProgram = (): Command => {
       '-c, --categories <list>',
       'comma-separated categories to run: ux,web-dev,hosting (business: planned, no checks yet)'
     )
-    .option('-g, --guidelines <list>', 'comma-separated guideline IDs to run (e.g. 3.1,3.2)')
+    .option(
+      '-g, --guidelines <list>',
+      'comma-separated guideline IDs to run (e.g. minify-and-remove-unused-code)'
+    )
     .option(
       '--fail-threshold <score>',
       'exit with code 1 if score is below this value (0-100)',

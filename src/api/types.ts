@@ -1,5 +1,5 @@
 import type { SustainabilityReport } from '../report/index'
-import type { GuidelineEntry, WSGCategory } from '../config/index'
+import type { GuidelineEntry, WSGCategory, WsgSpecInfo } from '../config/index'
 
 export type ApiErrorCode =
   | 'BAD_REQUEST'
@@ -36,12 +36,14 @@ export interface CheckResultLookupBody {
 
 export interface GuidelineListResponseBody {
   readonly guidelines: ReadonlyArray<GuidelineEntry>
-  readonly source: 'w3c-api' | 'static-fallback'
+  /** The WSG release the guidelines come from. */
+  readonly spec: WsgSpecInfo
 }
 
 export interface GuidelineDetailResponseBody {
   readonly guideline: GuidelineEntry
-  readonly source: 'w3c-api' | 'static-fallback'
+  /** The WSG release the guideline comes from. */
+  readonly spec: WsgSpecInfo
 }
 
 export interface HealthResponseBody {

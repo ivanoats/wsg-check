@@ -5,6 +5,8 @@
 
 A Web Sustainability Guidelines checker for websites. It checks a website against the [W3C Web Sustainability Guidelines](https://www.w3.org/TR/web-sustainability-guidelines/) and provides a report with a score and actionable recommendations.
 
+WSG-Check targets the **July-2026** release of the guidelines (Group Note Draft). See [SPEC_VERSIONING.md](./SPEC_VERSIONING.md) for how it tracks spec releases.
+
 ## Quick Start
 
 ```bash
@@ -40,8 +42,8 @@ WSG-Check exposes REST endpoints through Next.js Route Handlers.
 
 - `POST /api/check` — Run an on-demand sustainability check
 - `GET /api/check/:id` — Fetch a completed check result from in-memory store
-- `GET /api/guidelines` — List guidelines (W3C API first, static fallback)
-- `GET /api/guidelines/:id` — Get one guideline by ID
+- `GET /api/guidelines` — List guidelines in the targeted WSG release, with the release in `spec`
+- `GET /api/guidelines/:id` — Get one guideline by slug (e.g. `minify-and-remove-unused-code`); legacy numeric IDs such as `3.3` still resolve
 - `GET /api/health` — Health endpoint
 - `GET /api/openapi` — OpenAPI 3.1 JSON specification
 
@@ -926,17 +928,17 @@ npx @sustainablewebsites/wsg-check https://example.com --fail-threshold 70
 
 ### Options
 
-| Option                 | Alias | Description                                                                                     | Default           |
-| ---------------------- | ----- | ----------------------------------------------------------------------------------------------- | ----------------- |
-| `--format <format>`    | `-f`  | Output format: `terminal`, `json`, `markdown`, `html`                                           | `terminal`        |
-| `--output <path>`      | `-o`  | Write report to a file instead of stdout                                                        | _(stdout)_        |
-| `--categories <list>`  | `-c`  | Comma-separated categories: `ux,web-dev,hosting` (`business` planned — no automated checks yet) | all               |
-| `--guidelines <list>`  | `-g`  | Comma-separated guideline IDs to run, e.g. `3.1,3.2` (filters checks by WSG guideline ID)       | all               |
-| `--fail-threshold <n>` |       | Exit code 1 if overall score < _n_ (0–100)                                                      | `0`               |
-| `--verbose`            | `-v`  | Enable verbose logging                                                                          | `false`           |
-| `--config <path>`      |       | Path to `wsg-check.config.json` or `.wsgcheckrc.json`                                           | _(auto-discover)_ |
-| `--version`            |       | Print version and exit                                                                          |                   |
-| `--help`               |       | Print help and exit                                                                             |                   |
+| Option                 | Alias | Description                                                                                                             | Default           |
+| ---------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| `--format <format>`    | `-f`  | Output format: `terminal`, `json`, `markdown`, `html`                                                                   | `terminal`        |
+| `--output <path>`      | `-o`  | Write report to a file instead of stdout                                                                                | _(stdout)_        |
+| `--categories <list>`  | `-c`  | Comma-separated categories: `ux,web-dev,hosting` (`business` planned — no automated checks yet)                         | all               |
+| `--guidelines <list>`  | `-g`  | Comma-separated guideline slugs to run, e.g. `minify-and-remove-unused-code` (numeric IDs such as `3.3` are deprecated) | all               |
+| `--fail-threshold <n>` |       | Exit code 1 if overall score < _n_ (0–100)                                                                              | `0`               |
+| `--verbose`            | `-v`  | Enable verbose logging                                                                                                  | `false`           |
+| `--config <path>`      |       | Path to `wsg-check.config.json` or `.wsgcheckrc.json`                                                                   | _(auto-discover)_ |
+| `--version`            |       | Print version and exit                                                                                                  |                   |
+| `--help`               |       | Print help and exit                                                                                                     |                   |
 
 ### CI integration
 

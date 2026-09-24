@@ -103,15 +103,24 @@ import { checkDataRefresh } from './data-refresh'
 import type { CheckFn, CheckFnWithId, PageData } from '../core/types'
 
 /**
- * Wraps a check function in a new function with the `guidelineId` property
- * attached, producing a `CheckFnWithId`.
+ * Wraps a check function in a new function with its guideline identity
+ * attached, producing a `CheckFnWithId`: the legacy numeric `guidelineId`
+ * the check reports under, and the `guidelineSlug` of the guideline it
+ * implements in the targeted WSG release (`null` when the spec no longer has
+ * one). The slug is declared per check because some legacy IDs are shared by
+ * checks for different guidelines (e.g. alt text and downloadable documents
+ * both report `2.17`).
  *
  * A new wrapper function is created for each call so that the original `fn`
  * is never mutated (avoids the no-param-reassign anti-pattern).
  */
-const withGuidelineId = (fn: CheckFn, guidelineId: string): CheckFnWithId => {
+const withGuidelineId = (
+  fn: CheckFn,
+  guidelineId: string,
+  guidelineSlug: string | null
+): CheckFnWithId => {
   const wrapped = (page: PageData): ReturnType<CheckFn> => fn(page)
-  return Object.assign(wrapped, { guidelineId })
+  return Object.assign(wrapped, { guidelineId, guidelineSlug })
 }
 
 /**
@@ -124,9 +133,9 @@ const withGuidelineId = (fn: CheckFn, guidelineId: string): CheckFnWithId => {
  * | `checkPageWeight`    | 3.1           | automated   |
  */
 export const performanceChecks: ReadonlyArray<CheckFnWithId> = [
-  withGuidelineId(checkMinification, '3.3'),
-  withGuidelineId(checkRenderBlocking, '3.8'),
-  withGuidelineId(checkPageWeight, '3.1'),
+  withGuidelineId(checkMinification, '3.3', 'minify-and-remove-unused-code'),
+  withGuidelineId(checkRenderBlocking, '3.8', 'defer-the-loading-of-non-critical-resources'),
+  withGuidelineId(checkPageWeight, '3.1', 'set-goals-based-on-performance-and-energy-impact'),
 ]
 
 /**
@@ -141,11 +150,11 @@ export const performanceChecks: ReadonlyArray<CheckFnWithId> = [
  * | `checkStructuredData`  | 3.11          | automated       |
  */
 export const semanticChecks: ReadonlyArray<CheckFnWithId> = [
-  withGuidelineId(checkSemanticHtml, '3.7'),
-  withGuidelineId(checkAccessibilityAids, '3.9'),
-  withGuidelineId(checkFormValidation, '3.10'),
-  withGuidelineId(checkMetadata, '3.4'),
-  withGuidelineId(checkStructuredData, '3.11'),
+  withGuidelineId(checkSemanticHtml, '3.7', 'ensure-code-follows-good-semantic-practices'),
+  withGuidelineId(checkAccessibilityAids, '3.9', 'design-efficient-and-streamlined-user-journeys'),
+  withGuidelineId(checkFormValidation, '3.10', null),
+  withGuidelineId(checkMetadata, '3.4', 'structure-metadata-for-machine-readability'),
+  withGuidelineId(checkStructuredData, '3.11', 'structure-metadata-for-machine-readability'),
 ]
 
 /**
@@ -160,11 +169,19 @@ export const semanticChecks: ReadonlyArray<CheckFnWithId> = [
  * | `checkSustainableJs`         | 3.14          | automated   |
  */
 export const sustainabilityChecks: ReadonlyArray<CheckFnWithId> = [
-  withGuidelineId(checkCssRedundancy, '3.5'),
-  withGuidelineId(checkThirdParty, '3.6'),
-  withGuidelineId(checkPreferenceMediaQueries, '3.12'),
-  withGuidelineId(checkResponsiveDesign, '3.13'),
-  withGuidelineId(checkSustainableJs, '3.14'),
+  withGuidelineId(checkCssRedundancy, '3.5', 'avoid-redundancy-and-duplication-in-code'),
+  withGuidelineId(checkThirdParty, '3.6', 'treat-third-parties-the-same-as-first-parties'),
+  withGuidelineId(
+    checkPreferenceMediaQueries,
+    '3.12',
+    'use-media-queries-that-support-sustainability-goals'
+  ),
+  withGuidelineId(
+    checkResponsiveDesign,
+    '3.13',
+    'ensure-layouts-work-for-different-devices-and-requirements'
+  ),
+  withGuidelineId(checkSustainableJs, '3.14', 'use-sustainable-javascript-and-apis'),
 ]
 
 /**
@@ -182,11 +199,11 @@ export const sustainabilityChecks: ReadonlyArray<CheckFnWithId> = [
  * aspects of WSG 3.17 (required files vs. beneficial optional files).
  */
 export const securityChecks: ReadonlyArray<CheckFnWithId> = [
-  withGuidelineId(checkSecurityHeaders, '3.15'),
-  withGuidelineId(checkDependencyCount, '3.16'),
-  withGuidelineId(checkExpectedFiles, '3.17'),
-  withGuidelineId(checkBeneficialFiles, '3.17'),
-  withGuidelineId(checkHtmlVersion, '3.19'),
+  withGuidelineId(checkSecurityHeaders, '3.15', null),
+  withGuidelineId(checkDependencyCount, '3.16', 'use-dependencies-sparingly-and-maintain-them'),
+  withGuidelineId(checkExpectedFiles, '3.17', 'include-expected-and-beneficial-files'),
+  withGuidelineId(checkBeneficialFiles, '3.17', 'include-expected-and-beneficial-files'),
+  withGuidelineId(checkHtmlVersion, '3.19', 'use-the-latest-stable-language-version'),
 ]
 
 /**
@@ -212,17 +229,29 @@ export const securityChecks: ReadonlyArray<CheckFnWithId> = [
  * (providing text alternatives to non-text content).
  */
 export const uxDesignChecks: ReadonlyArray<CheckFnWithId> = [
-  withGuidelineId(checkNonEssentialContent, '2.9'),
-  withGuidelineId(checkNavigationStructure, '2.8'),
-  withGuidelineId(checkDeceptivePatterns, '2.10'),
-  withGuidelineId(checkOptimizedMedia, '2.7'),
-  withGuidelineId(checkLazyLoading, '2.11'),
-  withGuidelineId(checkAnimationControl, '2.15'),
-  withGuidelineId(checkWebTypography, '2.16'),
-  withGuidelineId(checkAltText, '2.17'),
-  withGuidelineId(checkFontStackFallbacks, '2.16'),
-  withGuidelineId(checkMinimalForms, '2.19'),
-  withGuidelineId(checkDownloadableDocuments, '2.17'),
+  withGuidelineId(checkNonEssentialContent, '2.9', 'design-to-assist-and-not-to-distract'),
+  withGuidelineId(
+    checkNavigationStructure,
+    '2.8',
+    'design-efficient-and-streamlined-user-journeys'
+  ),
+  withGuidelineId(checkDeceptivePatterns, '2.10', 'avoid-being-manipulative-or-deceptive'),
+  withGuidelineId(checkOptimizedMedia, '2.7', 'optimize-media-to-reduce-resource-use'),
+  withGuidelineId(checkLazyLoading, '2.11', 'optimize-media-to-reduce-resource-use'),
+  withGuidelineId(
+    checkAnimationControl,
+    '2.15',
+    'ensure-animation-is-proportionate-and-easy-to-control'
+  ),
+  withGuidelineId(checkWebTypography, '2.16', 'use-optimized-web-typography'),
+  withGuidelineId(checkAltText, '2.17', null),
+  withGuidelineId(checkFontStackFallbacks, '2.16', 'use-optimized-web-typography'),
+  withGuidelineId(checkMinimalForms, '2.19', null),
+  withGuidelineId(
+    checkDownloadableDocuments,
+    '2.17',
+    'reduce-the-impact-of-downloadable-and-physical-documents'
+  ),
 ]
 
 /**
@@ -245,12 +274,12 @@ export const uxDesignChecks: ReadonlyArray<CheckFnWithId> = [
  * (error handling and redirect hygiene).
  */
 export const hostingChecks: ReadonlyArray<CheckFnWithId> = [
-  withGuidelineId(checkSustainableHosting, '4.1'),
-  withGuidelineId(checkCaching, '4.2'),
-  withGuidelineId(checkOfflineAccess, '4.2'),
-  withGuidelineId(checkCompression, '4.3'),
-  withGuidelineId(checkErrorPages, '4.4'),
-  withGuidelineId(checkRedirects, '4.4'),
-  withGuidelineId(checkCdnUsage, '4.10'),
-  withGuidelineId(checkDataRefresh, '4.7'),
+  withGuidelineId(checkSustainableHosting, '4.1', 'use-sustainable-hosting'),
+  withGuidelineId(checkCaching, '4.2', 'optimize-caching-and-support-offline-access'),
+  withGuidelineId(checkOfflineAccess, '4.2', 'optimize-caching-and-support-offline-access'),
+  withGuidelineId(checkCompression, '4.3', 'reduce-data-transfer-with-compression'),
+  withGuidelineId(checkErrorPages, '4.4', 'setup-necessary-error-pages-and-redirection-links'),
+  withGuidelineId(checkRedirects, '4.4', 'setup-necessary-error-pages-and-redirection-links'),
+  withGuidelineId(checkCdnUsage, '4.10', 'use-content-delivery-networks-cdns-when-beneficial'),
+  withGuidelineId(checkDataRefresh, '4.7', 'define-the-frequency-of-data-refreshes'),
 ]

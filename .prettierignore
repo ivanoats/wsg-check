@@ -2,3 +2,6 @@
 # samples with intentionally non-standard formatting and must not be touched
 # by Prettier.
 .github/
+
+# Vendored W3C WSG spec data — kept byte-identical to upstream release tags.
+src/config/spec/*.json

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { styled } from 'styled-system/jsx'
 import { link } from 'styled-system/recipes'
 import { GUIDELINES_REGISTRY } from '@/config/guidelines-registry'
+import { WSG_SPEC } from '@/config/spec/index'
 import { GuidelinesFilter } from '../components/GuidelinesFilter'
 
 export const metadata: Metadata = {
@@ -32,7 +33,7 @@ export default function GuidelinesPage() {
         >
           W3C Web Sustainability Guidelines
         </a>{' '}
-        . Filter by category, testability level, or search by keyword.
+        ({WSG_SPEC.release} release). Filter by category, testability level, or search by keyword.
       </styled.p>
 
       <GuidelinesFilter guidelines={GUIDELINES_REGISTRY} />
