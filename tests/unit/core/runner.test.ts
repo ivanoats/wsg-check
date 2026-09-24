@@ -38,9 +38,7 @@ function throwingCheck(guidelineId: string): CheckFn {
 }
 
 function rejectingCheck(guidelineId: string): CheckFn {
-  return async () => {
-    throw new Error(`Async failure for ${guidelineId}`)
-  }
+  return () => Promise.reject(new Error(`Async failure for ${guidelineId}`))
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -95,9 +93,9 @@ describe('CheckRunner', () => {
       order.push('slow')
       return makeResult({ guidelineId: 'slow' })
     }
-    const fastCheck: CheckFn = async () => {
+    const fastCheck: CheckFn = () => {
       order.push('fast')
-      return makeResult({ guidelineId: 'fast' })
+      return Promise.resolve(makeResult({ guidelineId: 'fast' }))
     }
 
     const runner = new CheckRunner()
@@ -210,9 +208,7 @@ describe('CheckRunner', () => {
   })
 
   it('uses a generic guidelineId for a non-CheckError rejection', async () => {
-    const unknownRejection: CheckFn = async () => {
-      throw new Error('Some generic error')
-    }
+    const unknownRejection: CheckFn = () => Promise.reject(new Error('Some generic error'))
     const runner = new CheckRunner()
     runner.register(unknownRejection)
     const [result] = await runner.run(PAGE_DATA)
@@ -222,7 +218,8 @@ describe('CheckRunner', () => {
 
   it('handles a mix of sync and async checks', async () => {
     const syncCheck: CheckFn = () => makeResult({ guidelineId: 'sync', status: 'pass' })
-    const asyncCheck: CheckFn = async () => makeResult({ guidelineId: 'async', status: 'warn' })
+    const asyncCheck: CheckFn = () =>
+      Promise.resolve(makeResult({ guidelineId: 'async', status: 'warn' }))
 
     const runner = new CheckRunner()
     runner.registerAll([syncCheck, asyncCheck])
