@@ -128,7 +128,7 @@ describe('check guideline slugs', () => {
   it('leaves only the four checks without a July-2026 guideline unmapped', () => {
     // form validation 3.10, security headers 3.15, minimal forms 2.19, alt text 2.17
     const unmapped = ALL_CHECKS.filter((check) => check.guidelineSlug === null)
-    expect(unmapped.map((check) => check.guidelineId).sort()).toEqual([
+    expect(unmapped.map((check) => check.guidelineId).sort((a, b) => a.localeCompare(b))).toEqual([
       '2.17',
       '2.19',
       '3.10',

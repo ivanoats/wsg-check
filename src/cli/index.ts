@@ -149,7 +149,8 @@ const describeLegacyReplacement = (id: string): string => {
   const release = `WSG ${WSG_SPEC.release}`
   if (slugs.length === 0) return `it has no equivalent in ${release}`
 
-  const replacement = `use ${slugs.map((slug) => `"${slug}"`).join(', ')} (${release})`
+  const quotedSlugs = slugs.map((slug) => JSON.stringify(slug)).join(', ')
+  const replacement = `use ${quotedSlugs} (${release})`
   return checks.some((check) => check.guidelineSlug === null)
     ? `${replacement}; some of its checks have no ${release} guideline and run only under "${id}"`
     : replacement
