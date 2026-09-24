@@ -177,7 +177,7 @@ const withGuidelineId = (
     try {
       return reportAs(await fn(page), identity)
     } catch (cause) {
-      const message = cause instanceof Error ? cause.message : String(cause)
+      const message = cause instanceof Error ? cause.message : 'The check threw a non-Error value'
       throw new CheckError(message, identity.id, cause, related)
     }
   }
