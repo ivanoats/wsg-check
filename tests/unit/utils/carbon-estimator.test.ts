@@ -10,9 +10,7 @@ vi.mock('@tgwf/co2', () => ({
     constructor(_options: unknown) {} // eslint-disable-line @typescript-eslint/no-unused-vars
     perByte = mockPerByte
   },
-  hosting: {
-    check: mockHostingCheck,
-  },
+  hosting: mockHostingCheck,
 }))
 
 // Import after vi.mock so mocks are in place
@@ -99,7 +97,7 @@ describe('checkGreenHosting', () => {
     expect(result).toBe(false)
   })
 
-  it('passes the domain to hosting.check', async () => {
+  it('passes the domain to hosting', async () => {
     mockHostingCheck.mockResolvedValueOnce(false)
     await checkGreenHosting('example.com')
     expect(mockHostingCheck).toHaveBeenCalledWith('example.com')
