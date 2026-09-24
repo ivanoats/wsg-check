@@ -1,6 +1,8 @@
 # WSG Spec Versioning
 
-How wsg-check tracks the [W3C Web Sustainability Guidelines](https://www.w3.org/TR/web-sustainability-guidelines/) (WSG), what changed in the spec since wsg-check was built, and a proposal for versioning wsg-check alongside the spec.
+How wsg-check tracks the [W3C Web Sustainability Guidelines](https://www.w3.org/TR/web-sustainability-guidelines/) (WSG), what changed in the spec since wsg-check was built, and the implemented policy for versioning wsg-check alongside the spec.
+
+The September 2026 changes are implemented on `main` but unreleased since v0.1.2. See the [architecture overview](docs/architecture.md) and [decision log](docs/adl.md), especially ADRs 0003 and 0005–0007. Sections 1–4 preserve the migration analysis; section 5 describes the implemented policy.
 
 Source for everything below: the spec repository [`w3c/sustainableweb-wsg`](https://github.com/w3c/sustainableweb-wsg), compared at its release tags. Numbers such as `3.2` are the **position** of a guideline inside its section at a given release.
 
@@ -42,7 +44,7 @@ The spec repo tags quarterly-ish snapshots:
 - Impact ratings (people / planet / prosperity, timeframe, related standards) are now only `data-*` attributes on each guideline's `<section>` in `index.html`. They are not in the JSON.
 - Accessibility, security and privacy are now cross-cutting **considerations** (tags on each guideline), not guidelines of their own.
 
-**Live impact on wsg-check:** the fetch still succeeds, so `GET /api/guidelines` serves the new data instead of the static fallback. Every guideline gets a slug-based ID and, because the `TESTABILITY_OVERLAY` keys no longer match, every guideline is reported as `manual-only`. `GET /api/guidelines/3.3` misses the live data and falls back to the pre-2025 static entry.
+**Historical impact before the pinned-spec migration:** the fetch still succeeds, so `GET /api/guidelines` serves the new data instead of the static fallback. Every guideline gets a slug-based ID and, because the `TESTABILITY_OVERLAY` keys no longer match, every guideline is reported as `manual-only`. `GET /api/guidelines/3.3` misses the live data and falls back to the pre-2025 static entry.
 
 ### 3.2 Guideline changes, Q4-2025 → July-2026
 
@@ -91,47 +93,47 @@ Every other guideline kept its title and slug but most were **renumbered**, beca
 
 ## 4. What this means for each check
 
-The current check ID is the one passed to `withGuidelineId` in `src/checks/index.ts`.
+The legacy check ID is the numeric compatibility ID passed to `withGuidelineId` in `src/checks/index.ts`; current reported IDs are slugs or related-check IDs.
 
-| Check                                           | Current ID | July-2026 guideline                                                                                |
-| ----------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------- |
-| `checkPageWeight`                               | 3.1        | 3.1 `set-goals-based-on-performance-and-energy-impact`                                             |
-| `checkMinification`                             | 3.3        | 3.2 `minify-and-remove-unused-code`                                                                |
-| `checkCssRedundancy`                            | 3.5        | 3.4 `avoid-redundancy-and-duplication-in-code`                                                     |
-| `checkThirdParty`                               | 3.6        | 3.5 `treat-third-parties-the-same-as-first-parties`                                                |
-| `checkSemanticHtml`                             | 3.7        | 3.6 `ensure-code-follows-good-semantic-practices`                                                  |
-| `checkRenderBlocking`                           | 3.8        | 3.7 `defer-the-loading-of-non-critical-resources`                                                  |
-| `checkMetadata`, `checkStructuredData`          | 3.4, 3.11  | 3.8 `structure-metadata-for-machine-readability`                                                   |
-| `checkPreferenceMediaQueries`                   | 3.12       | 3.9 `use-media-queries-that-support-sustainability-goals`                                          |
-| `checkResponsiveDesign`                         | 3.13       | 3.10 `ensure-layouts-work-for-different-devices-and-requirements`                                  |
-| `checkSustainableJs`                            | 3.14       | 3.11 `use-sustainable-javascript-and-apis`                                                         |
-| `checkDependencyCount`                          | 3.16       | 3.12 `use-dependencies-sparingly-and-maintain-them`                                                |
-| `checkExpectedFiles`, `checkBeneficialFiles`    | 3.17       | 3.13 `include-expected-and-beneficial-files`                                                       |
-| `checkHtmlVersion`                              | 3.19       | 3.15 `use-the-latest-stable-language-version`                                                      |
-| `checkNavigationStructure`                      | 2.8        | 2.4 `design-efficient-and-streamlined-user-journeys`                                               |
-| `checkAccessibilityAids`                        | 3.9        | 2.4 `design-efficient-and-streamlined-user-journeys` (content discovery)                           |
-| `checkNonEssentialContent`                      | 2.9        | 2.5 `design-to-assist-and-not-to-distract`                                                         |
-| `checkDeceptivePatterns`                        | 2.10       | 2.6 `avoid-being-manipulative-or-deceptive`                                                        |
-| `checkOptimizedMedia`, `checkLazyLoading`       | 2.7, 2.11  | 2.9 `optimize-media-to-reduce-resource-use`                                                        |
-| `checkAnimationControl`                         | 2.15       | 2.10 `ensure-animation-is-proportionate-and-easy-to-control`                                       |
-| `checkWebTypography`, `checkFontStackFallbacks` | 2.16       | 2.11 `use-optimized-web-typography`                                                                |
-| `checkDownloadableDocuments`                    | 2.17       | 2.13 `reduce-the-impact-of-downloadable-and-physical-documents`                                    |
-| `checkSustainableHosting`                       | 4.1        | 4.1 `use-sustainable-hosting`                                                                      |
-| `checkCaching`, `checkOfflineAccess`            | 4.2        | 4.2 `optimize-caching-and-support-offline-access`                                                  |
-| `checkCompression`                              | 4.3        | 4.3 `reduce-data-transfer-with-compression`                                                        |
-| `checkErrorPages`, `checkRedirects`             | 4.4        | 4.4 `setup-necessary-error-pages-and-redirection-links`                                            |
-| `checkDataRefresh`                              | 4.7        | 4.7 `define-the-frequency-of-data-refreshes`                                                       |
-| `checkCdnUsage`                                 | 4.10       | 4.10 `use-content-delivery-networks-cdns-when-beneficial`                                          |
-| `checkSecurityHeaders`                          | 3.15       | **No guideline.** Security is now a consideration only.                                            |
-| `checkFormValidation`                           | 3.10       | **No guideline.** Removed.                                                                         |
-| `checkMinimalForms`                             | 2.19       | **No guideline.** Removed.                                                                         |
-| `checkAltText`                                  | 2.17       | **No guideline.** "Offer suitable alternatives" was removed. Accessibility is now a consideration. |
+| Check                                           | Legacy ID | July-2026 guideline                                                                                |
+| ----------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------- |
+| `checkPageWeight`                               | 3.1       | 3.1 `set-goals-based-on-performance-and-energy-impact`                                             |
+| `checkMinification`                             | 3.3       | 3.2 `minify-and-remove-unused-code`                                                                |
+| `checkCssRedundancy`                            | 3.5       | 3.4 `avoid-redundancy-and-duplication-in-code`                                                     |
+| `checkThirdParty`                               | 3.6       | 3.5 `treat-third-parties-the-same-as-first-parties`                                                |
+| `checkSemanticHtml`                             | 3.7       | 3.6 `ensure-code-follows-good-semantic-practices`                                                  |
+| `checkRenderBlocking`                           | 3.8       | 3.7 `defer-the-loading-of-non-critical-resources`                                                  |
+| `checkMetadata`, `checkStructuredData`          | 3.4, 3.11 | 3.8 `structure-metadata-for-machine-readability`                                                   |
+| `checkPreferenceMediaQueries`                   | 3.12      | 3.9 `use-media-queries-that-support-sustainability-goals`                                          |
+| `checkResponsiveDesign`                         | 3.13      | 3.10 `ensure-layouts-work-for-different-devices-and-requirements`                                  |
+| `checkSustainableJs`                            | 3.14      | 3.11 `use-sustainable-javascript-and-apis`                                                         |
+| `checkDependencyCount`                          | 3.16      | 3.12 `use-dependencies-sparingly-and-maintain-them`                                                |
+| `checkExpectedFiles`, `checkBeneficialFiles`    | 3.17      | 3.13 `include-expected-and-beneficial-files`                                                       |
+| `checkHtmlVersion`                              | 3.19      | 3.15 `use-the-latest-stable-language-version`                                                      |
+| `checkNavigationStructure`                      | 2.8       | 2.4 `design-efficient-and-streamlined-user-journeys`                                               |
+| `checkAccessibilityAids`                        | 3.9       | 2.4 `design-efficient-and-streamlined-user-journeys` (content discovery)                           |
+| `checkNonEssentialContent`                      | 2.9       | 2.5 `design-to-assist-and-not-to-distract`                                                         |
+| `checkDeceptivePatterns`                        | 2.10      | 2.6 `avoid-being-manipulative-or-deceptive`                                                        |
+| `checkOptimizedMedia`, `checkLazyLoading`       | 2.7, 2.11 | 2.9 `optimize-media-to-reduce-resource-use`                                                        |
+| `checkAnimationControl`                         | 2.15      | 2.10 `ensure-animation-is-proportionate-and-easy-to-control`                                       |
+| `checkWebTypography`, `checkFontStackFallbacks` | 2.16      | 2.11 `use-optimized-web-typography`                                                                |
+| `checkDownloadableDocuments`                    | 2.17      | 2.13 `reduce-the-impact-of-downloadable-and-physical-documents`                                    |
+| `checkSustainableHosting`                       | 4.1       | 4.1 `use-sustainable-hosting`                                                                      |
+| `checkCaching`, `checkOfflineAccess`            | 4.2       | 4.2 `optimize-caching-and-support-offline-access`                                                  |
+| `checkCompression`                              | 4.3       | 4.3 `reduce-data-transfer-with-compression`                                                        |
+| `checkErrorPages`, `checkRedirects`             | 4.4       | 4.4 `setup-necessary-error-pages-and-redirection-links`                                            |
+| `checkDataRefresh`                              | 4.7       | 4.7 `define-the-frequency-of-data-refreshes`                                                       |
+| `checkCdnUsage`                                 | 4.10      | 4.10 `use-content-delivery-networks-cdns-when-beneficial`                                          |
+| `checkSecurityHeaders`                          | 3.15      | **No guideline.** Security is now a consideration only.                                            |
+| `checkFormValidation`                           | 3.10      | **No guideline.** Removed.                                                                         |
+| `checkMinimalForms`                             | 2.19      | **No guideline.** Removed.                                                                         |
+| `checkAltText`                                  | 2.17      | **No guideline.** "Offer suitable alternatives" was removed. Accessibility is now a consideration. |
 
 The four checks with no guideline needed a decision. The options were to drop them, keep them as unscored related checks (outside the WSG score), or re-home them where a criterion partly fits. For example, _Beneficial files_ in 3.13 names `security.txt`, and _Alternative browsing_ in 3.10 covers assistive technology.
 
 **Decision (step 3):** keep them as related checks. They run and appear in their own "Related checks (not scored)" report section, under the IDs `security-headers`, `form-validation`, `native-form-features` and `image-alt-text`. They are left out of every score.
 
-## 5. Proposal: versioning wsg-check alongside the spec
+## 5. Implemented policy: versioning wsg-check alongside the spec
 
 ### 5.1 Pin one spec release and vendor it
 
@@ -171,9 +173,9 @@ Each spec bump gets one CHANGELOG entry (`feat!: target WSG July-2026`) that lin
 - The weekly `WSG spec watch` workflow (`.github/workflows/wsg-spec-watch.yml`) lists the tags in https://github.com/w3c/sustainableweb-wsg and opens an issue for each tag missing from `src/config/spec/upstream-tags.txt`, unless one already exists. After reviewing a release, add its tag to that file, whether or not wsg-check moves to it. A unit test checks that the vendored release is listed.
 - A unit test asserts that every `guidelineId` in `src/checks/index.ts` exists in the vendored spec, and that every overlay key does too. With that test in place, this drift could not have happened silently. (Added in step 2: `tests/unit/config/guidelines-registry.test.ts`.)
 
-### 5.6 Suggested order of work
+### 5.6 Implementation history
 
-1. **Fix now (patch), done in this PR:** `fetchWsgGuidelines` rejects responses with non-numeric guideline IDs, so `/api/guidelines` falls back to the static registry. This stops the "everything is manual-only" regression.
+1. **Fix applied before pinning:** `fetchWsgGuidelines` rejects responses with non-numeric guideline IDs, so `/api/guidelines` falls back to the static registry. This stops the "everything is manual-only" regression.
 2. **Done:** vendor `July-2026`, generate the registry, and switch to slug IDs with a numeric alias table (`feat!:`). `/api/guidelines` now serves the vendored release and reports it in `spec`; the live `guidelines.json` fetch was removed.
 3. **Done:** remap checks per section 4 and decide what to do with the four orphaned checks. Results now report the July-2026 slug, title, display number and spec link, set when each check is registered in `src/checks/index.ts`. The four orphans run as unscored related checks (see §4).
 4. **Done:** `specVersion` in the CLI, reports and API (5.3), plus the tag-watcher workflow (5.5). The drift test is already in place.
