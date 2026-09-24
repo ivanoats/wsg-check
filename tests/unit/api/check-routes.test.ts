@@ -82,7 +82,7 @@ describe('check routes', () => {
   })
 
   it('GET /api/check/:id returns 404 when result not found', async () => {
-    vi.mocked(findCheckResult).mockReturnValue(undefined)
+    vi.mocked(findCheckResult).mockReset()
 
     const request = {} as NextRequest
     const response = await GET(request, { params: Promise.resolve({ id: 'missing' }) })
