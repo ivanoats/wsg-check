@@ -2,12 +2,7 @@ import type { SustainabilityReport } from '../report/index'
 import type { GuidelineEntry, WSGCategory, WsgSpecInfo } from '../config/index'
 
 export type ApiErrorCode =
-  | 'BAD_REQUEST'
-  | 'UNAUTHORIZED'
-  | 'FORBIDDEN'
-  | 'NOT_FOUND'
-  | 'RATE_LIMITED'
-  | 'INTERNAL_ERROR'
+  'BAD_REQUEST' | 'UNAUTHORIZED' | 'FORBIDDEN' | 'NOT_FOUND' | 'RATE_LIMITED' | 'INTERNAL_ERROR'
 
 export interface ApiErrorBody {
   readonly error: ApiErrorCode
