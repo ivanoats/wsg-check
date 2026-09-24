@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.1](https://github.com/ivanoats/wsg-check/compare/v0.2.0...v0.2.1) (2026-09-24)
+
+
+### Fixed
+
+* **cli:** run when invoked through the npm bin symlink ([#197](https://github.com/ivanoats/wsg-check/issues/197)) ([796631b](https://github.com/ivanoats/wsg-check/commit/796631b166e83e465d21c35c12997cd729fe1b14))
+
 ## [0.2.0](https://github.com/ivanoats/wsg-check/compare/v0.1.2...v0.2.0) (2026-09-24)
 
 
