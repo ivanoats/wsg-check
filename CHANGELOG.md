@@ -9,14 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+### Changed
 
-- Phase 10 documentation: `CONTRIBUTING.md` development setup guide and this `CHANGELOG.md`
-- npm security override for `rollup` to patch high-severity path-traversal vulnerability (GHSA-mw96-cpmx-2vgc)
+- Pin WSG July-2026 and use canonical guideline slugs with legacy numeric input compatibility ([#180](https://github.com/ivanoats/wsg-check/pull/180)). See [spec migration details](SPEC_VERSIONING.md).
+- **Breaking:** results and recommendations use slug IDs; four related checks are excluded from WSG scores. WSG summary counts exclude them and expose `relatedChecks` separately ([#189](https://github.com/ivanoats/wsg-check/pull/189)).
+- Add `specVersion` to reports and health responses, display the spec release in CLI version output, and watch upstream spec tags ([#190](https://github.com/ivanoats/wsg-check/pull/190)).
+- Repair the CO2.js ESM hosting integration and consolidate dependency/security updates ([#178](https://github.com/ivanoats/wsg-check/pull/178), [#188](https://github.com/ivanoats/wsg-check/pull/188)).
+- Organize documentation under `docs/`, backfill architecture decisions, and distinguish released behavior from current source in the README.
 
----
+## [0.1.2] — 2026-04-22
 
-## [0.0.1] — 2025-01-01
+- Switch npm publication to Trusted Publishing (OIDC), removing token authentication.
+- Update production and development dependencies, including rate-limiter-flexible 11, TypeScript 6, and the Vite React plugin 6.
+
+Source: [GitHub release](https://github.com/ivanoats/wsg-check/releases/tag/v0.1.2).
+
+## [0.1.1] — 2026-04-22
+
+- Scope the package as `@sustainablewebsites/wsg-check`.
+
+Source: [GitHub release](https://github.com/ivanoats/wsg-check/releases/tag/v0.1.1).
+
+## [0.1.0] — 2026-04-22
+
+- First tagged GitHub release: shared checker, CLI, web UI/API, reporting, and npm distribution, with accumulated dependency/security fixes.
+
+Source: [GitHub release](https://github.com/ivanoats/wsg-check/releases/tag/v0.1.0). Dates above are GitHub publication dates (UTC).
+
+## Historical implementation inventory
+
+The inventory below is retained from the original changelog for historical context. It previously carried an unverified `0.0.1` / `2025-01-01` label; repository history starts in February 2026 and has no `v0.0.1` tag. Its phase descriptions and guideline numbers reflect early planning and are not the current contract. See the [current module reference](docs/reference.md).
 
 ### Added
 
@@ -156,5 +178,7 @@ Hosting & Infrastructure (Section 4):
 - CI pipeline: lint → type-check → test/coverage → build → a11y → lighthouse
 - Codecov and DeepSource coverage reporting
 
-[Unreleased]: https://github.com/ivanoats/wsg-check/compare/v0.0.1...HEAD
-[0.0.1]: https://github.com/ivanoats/wsg-check/releases/tag/v0.0.1
+[Unreleased]: https://github.com/ivanoats/wsg-check/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/ivanoats/wsg-check/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/ivanoats/wsg-check/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/ivanoats/wsg-check/releases/tag/v0.1.0

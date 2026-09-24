@@ -19,7 +19,7 @@ Thank you for your interest in contributing to WSG-Check! This guide will help y
 
 ### Prerequisites
 
-- **Node.js** v22 or later
+- **Node.js** v22.22.1 or later (current development tooling requirement; the published CLI declares Node >=22)
 - **npm** v10 or later
 - **Git**
 
@@ -223,3 +223,7 @@ Open an issue with the `enhancement` label describing:
 - The problem you are trying to solve
 - Your proposed solution or approach
 - Any relevant WSG guideline references (<https://www.w3.org/TR/web-sustainability-guidelines/>)
+
+## Architecture documentation
+
+See the [documentation index](docs/README.md) and [architecture overview](docs/architecture.md). For significant architectural changes, add an [ADR](docs/adr/template.md), update the [decision log](docs/adl.md), and keep affected reference and release documentation aligned.
