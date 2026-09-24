@@ -138,6 +138,27 @@ export const TESTABILITY_OVERLAY: ReadonlyMap<string, Testability> = new Map([
   ['5.9', 'semi-automated'],
 ])
 
+// ─── Schema check ─────────────────────────────────────────────────────────────
+
+/** Matches the relative numeric guideline IDs (e.g. `"3"`) this client maps. */
+const NUMERIC_GUIDELINE_ID = /^\d+$/
+
+/**
+ * Returns `true` when every guideline carries a numeric relative ID.
+ *
+ * The July-2026 spec release replaced numeric IDs with slugs (e.g.
+ * `"minify-and-remove-unused-code"`). Mapping those would produce IDs such as
+ * `"3.minify-and-remove-unused-code"` that match neither the checks nor
+ * {@link TESTABILITY_OVERLAY}, so such responses are rejected and callers fall
+ * back to the static registry. See SPEC_VERSIONING.md.
+ */
+const hasNumericGuidelineIds = (data: WsgApiResponse): boolean =>
+  data.category.every((category) =>
+    (category.guidelines ?? []).every(
+      (guideline) => typeof guideline?.id === 'string' && NUMERIC_GUIDELINE_ID.test(guideline.id)
+    )
+  )
+
 // ─── Fetch function ───────────────────────────────────────────────────────────
 
 /**
@@ -171,6 +192,13 @@ export const fetchWsgGuidelines = async (): Promise<Result<WsgApiResponse, WsgAp
       return err(
         new WsgApiError(
           `WSG API returned unexpected response format from ${WSG_GUIDELINES_API_URL}`
+        )
+      )
+    }
+    if (!hasNumericGuidelineIds(data)) {
+      return err(
+        new WsgApiError(
+          `WSG API at ${WSG_GUIDELINES_API_URL} uses an unsupported schema (non-numeric guideline IDs)`
         )
       )
     }

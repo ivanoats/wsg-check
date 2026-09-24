@@ -289,6 +289,61 @@ describe('fetchWsgGuidelines', () => {
     }
   })
 
+  it('returns err result when guideline IDs are slugs (July-2026 schema)', async () => {
+    mockGet.mockResolvedValueOnce({
+      data: {
+        title: 'Web Sustainability Guidelines',
+        edition: 'Group Note Draft',
+        lastModified: '2026-07-28',
+        category: [
+          { id: '1', name: 'Introduction' },
+          {
+            id: '3',
+            name: 'Web Development',
+            shortName: 'Web Development',
+            guidelines: [
+              {
+                id: 'minify-and-remove-unused-code',
+                url: 'https://www.w3.org/TR/web-sustainability-guidelines/#minify-and-remove-unused-code',
+                guideline: 'Minify and remove unused code',
+                subheading: 'Remove unnecessary code.',
+                criteria: [],
+                tags: ['Performance'],
+              },
+            ],
+          },
+        ],
+      },
+    })
+
+    const result = await fetchWsgGuidelines()
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(WsgApiError)
+      expect(result.error.message).toContain('unsupported schema')
+    }
+  })
+
+  it('returns err result when any single guideline ID is non-numeric', async () => {
+    const [intro, ux, ...rest] = MINIMAL_API_RESPONSE.category
+    const uxGuidelines = ux.guidelines ?? []
+    mockGet.mockResolvedValueOnce({
+      data: {
+        ...MINIMAL_API_RESPONSE,
+        category: [
+          intro,
+          { ...ux, guidelines: [...uxGuidelines, { ...uxGuidelines[0], id: 'some-slug' }] },
+          ...rest,
+        ],
+      },
+    })
+
+    const result = await fetchWsgGuidelines()
+
+    expect(result.ok).toBe(false)
+  })
+
   it('preserves the original error as cause on failure', async () => {
     const originalError = new Error('timeout')
     mockGet.mockRejectedValueOnce(originalError)
