@@ -544,12 +544,10 @@ const checker = new WsgChecker({ timeout: 15_000 }, [
 const result = await checker.check('https://example.com')
 
 // Or register individual checks for more granular control
-import { checkSemanticHtml, checkSecurityHeaders, checkSustainableHosting } from '@/checks'
-
 const checker2 = new WsgChecker()
-checker2.runner.register(checkSemanticHtml)
-checker2.runner.register(checkSecurityHeaders)
-checker2.runner.register(checkSustainableHosting)
+checker2.runner.register(semanticChecks[0])
+checker2.runner.register(securityChecks[0])
+checker2.runner.register(hostingChecks[0])
 ```
 
 ## Report Module (`src/report/`)
