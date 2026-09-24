@@ -133,7 +133,7 @@ describe('UrlInputForm', () => {
   it('shows an error when the server returns a non-OK response', async () => {
     fetchMock.mockResolvedValue({
       ok: false,
-      json: async () => ({ message: 'SSRF blocked' }),
+      json: vi.fn().mockResolvedValue({ message: 'SSRF blocked' }),
     })
     render(<UrlInputForm />)
     fireEvent.change(screen.getByRole('textbox', { name: /website url/i }), {
@@ -170,7 +170,7 @@ describe('UrlInputForm', () => {
     }
     fetchMock.mockResolvedValue({
       ok: true,
-      json: async () => mockData,
+      json: vi.fn().mockResolvedValue(mockData),
     })
     render(<UrlInputForm />)
     fireEvent.change(screen.getByRole('textbox', { name: /website url/i }), {
@@ -192,7 +192,7 @@ describe('UrlInputForm', () => {
   it('does not navigate when API returns an invalid result id', async () => {
     fetchMock.mockResolvedValue({
       ok: true,
-      json: async () => ({
+      json: vi.fn().mockResolvedValue({
         id: String.raw`/\/evil.com`,
         status: 'completed',
         report: { overallScore: 80 },
