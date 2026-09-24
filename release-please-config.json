@@ -6,6 +6,7 @@
   "packages": {
     ".": {
       "package-name": "@sustainablewebsites/wsg-check",
+      "bump-minor-pre-major": true,
       "changelog-path": "CHANGELOG.md",
       "changelog-sections": [
         { "type": "feat", "section": "Added" },
