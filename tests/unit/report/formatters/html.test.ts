@@ -196,7 +196,7 @@ describe('formatHtml guideline labels and related checks', () => {
     const html = formatHtml(makeReport({ results: [wsg, related] }))
     expect(html).toContain('<td><code>3.2</code></td>')
     expect(html).toContain('<h2>Related Checks (not scored)</h2>')
-    expect(html).toContain('<span class="badge">not scored</span>')
+    expect(html).toContain('<span class="badge">related, not scored</span>')
   })
 
   it('omits the related section when there are no related checks', () => {

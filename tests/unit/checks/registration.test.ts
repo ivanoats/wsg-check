@@ -27,11 +27,27 @@ describe('check registration', () => {
     expect(error).toMatchObject({ guidelineId: 'minify-and-remove-unused-code', related: false })
   })
 
+  it('carries the guideline title, number and spec link on a WSG check error', async () => {
+    const error = await errorFrom(performanceChecks[0])
+
+    expect(error).toMatchObject({
+      identity: {
+        guidelineName: 'Minify and remove unused code',
+        guidelineNumber: '3.2',
+        resources: [expect.stringContaining('#minify-and-remove-unused-code')],
+      },
+    })
+  })
+
   it('re-throws a related check error as a related CheckError', async () => {
     const error = await errorFrom(securityHeaders)
 
     expect(error).toBeInstanceOf(CheckError)
-    expect(error).toMatchObject({ guidelineId: 'security-headers', related: true })
+    expect(error).toMatchObject({
+      guidelineId: 'security-headers',
+      related: true,
+      identity: { guidelineName: 'Security headers', related: true },
+    })
   })
 
   it('exposes legacy ID, slug and related ID for filtering', () => {

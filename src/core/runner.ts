@@ -70,13 +70,18 @@ export class CheckRunner {
       const reason = outcome.reason as unknown
       const guidelineId =
         reason instanceof CheckError ? reason.guidelineId : `check-error-${String(i)}`
+      const identity = reason instanceof CheckError ? reason.identity : {}
       const message =
         reason instanceof Error ? reason.message : 'An unexpected error occurred during the check'
 
       return {
         guidelineId,
-        guidelineName: guidelineId,
-        ...(reason instanceof CheckError && reason.related ? { related: true } : {}),
+        guidelineName: identity.guidelineName ?? guidelineId,
+        ...(identity.guidelineNumber === undefined
+          ? {}
+          : { guidelineNumber: identity.guidelineNumber }),
+        ...(identity.resources === undefined ? {} : { resources: [...identity.resources] }),
+        ...(identity.related === true ? { related: true } : {}),
         successCriterion: '',
         status: 'fail',
         score: 0,

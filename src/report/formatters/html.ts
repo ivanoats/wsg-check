@@ -119,7 +119,7 @@ const buildRecommendationItems = (recommendations: ReadonlyArray<Recommendation>
         <span class="rec-id">${esc(guidelineLabel(rec))}</span>
         <span class="rec-name">${esc(rec.guidelineName)}</span>
         <span class="badge badge-${rec.impact}">${esc(rec.impact)}</span>
-        <span class="badge badge-${rec.status}">${esc(rec.status)}</span>${rec.related === true ? '\n        <span class="badge">not scored</span>' : ''}
+        <span class="badge badge-${rec.status}">${esc(rec.status)}</span>${rec.related === true ? '\n        <span class="badge">related, not scored</span>' : ''}
       </div>
       <p class="rec-text">${esc(rec.recommendation)}</p>
       ${rec.resources && rec.resources.length > 0 ? buildResourceLinks(rec.resources) : ''}

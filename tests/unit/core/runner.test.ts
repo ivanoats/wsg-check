@@ -140,13 +140,44 @@ describe('CheckRunner', () => {
   it('marks the fail result as related when the CheckError says so', async () => {
     const runner = new CheckRunner()
     const relatedCheck: CheckFn = () => {
-      throw new CheckError('Boom', 'security-headers', undefined, true)
+      throw new CheckError('Boom', 'security-headers', undefined, { related: true })
     }
     runner.register(relatedCheck)
     const [result] = await runner.run(PAGE_DATA)
 
     expect(result.guidelineId).toBe('security-headers')
     expect(result.related).toBe(true)
+  })
+
+  it('reports the guideline title, number and spec link carried by the CheckError', async () => {
+    const runner = new CheckRunner()
+    const failingCheck: CheckFn = () => {
+      throw new CheckError('Boom', 'minify-and-remove-unused-code', undefined, {
+        guidelineName: 'Minify and remove unused code',
+        guidelineNumber: '3.2',
+        resources: ['https://example.com/spec#minify'],
+      })
+    }
+    runner.register(failingCheck)
+    const [result] = await runner.run(PAGE_DATA)
+
+    expect(result).toMatchObject({
+      guidelineId: 'minify-and-remove-unused-code',
+      guidelineName: 'Minify and remove unused code',
+      guidelineNumber: '3.2',
+      resources: ['https://example.com/spec#minify'],
+      status: 'fail',
+    })
+  })
+
+  it('falls back to the guideline ID as the name when the CheckError has no identity', async () => {
+    const runner = new CheckRunner()
+    runner.register(throwingCheck('3.5'))
+    const [result] = await runner.run(PAGE_DATA)
+
+    expect(result.guidelineName).toBe('3.5')
+    expect(result.guidelineNumber).toBeUndefined()
+    expect(result.resources).toBeUndefined()
   })
 
   it('does not mark an ordinary CheckError failure as related', async () => {
