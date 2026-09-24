@@ -8,7 +8,7 @@ describe('CO2.js integration', () => {
   })
 
   it.each([true, false])('returns the hosting API green value %s', async (green) => {
-    const fetch = vi.fn().mockResolvedValue({ json: async () => ({ green }) })
+    const fetch = vi.fn().mockResolvedValue({ json: vi.fn().mockResolvedValue({ green }) })
     vi.stubGlobal('fetch', fetch)
 
     expect(await checkGreenHosting('example.com')).toBe(green)
