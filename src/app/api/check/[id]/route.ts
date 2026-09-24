@@ -11,7 +11,7 @@ interface RouteContext {
   readonly params: Promise<{ readonly id: string }>
 }
 
-export const OPTIONS = async (): Promise<Response> => optionsResponse()
+export const OPTIONS = (): Response => optionsResponse()
 
 export const GET = async (request: NextRequest, context: RouteContext): Promise<Response> => {
   const rateLimited = await enforceRateLimit(request)

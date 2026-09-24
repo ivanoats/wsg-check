@@ -6,7 +6,7 @@
 
 A Web Sustainability Guidelines checker for websites. It checks a website against the [W3C Web Sustainability Guidelines](https://www.w3.org/TR/web-sustainability-guidelines/) and provides a report with a score and actionable recommendations.
 
-WSG-Check targets the **July-2026** release of the guidelines (Group Note Draft). Every report records that release as `specVersion`, and `wsg-check --version` prints it, e.g. `0.2.0 (WSG July-2026)`. Scores are only comparable between reports with the same `specVersion`. See [SPEC_VERSIONING.md](./SPEC_VERSIONING.md) for how wsg-check tracks spec releases.
+WSG-Check targets the **July-2026** release of the guidelines (Group Note Draft). Every report records that release as `specVersion`, and `wsg-check --version` prints it, e.g. `<version> (WSG July-2026)`. Scores are only comparable between reports with the same `specVersion`. See [SPEC_VERSIONING.md](./SPEC_VERSIONING.md) for how wsg-check tracks spec releases.
 
 Four checks have no guideline in that release: security headers, form validation, native form features and image alternative text. They still run, but appear in reports as **related checks** and are not included in the score.
 
