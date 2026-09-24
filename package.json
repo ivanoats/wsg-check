@@ -86,7 +86,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/tgwf__co2": "^0.14.2",
     "@vitejs/plugin-react": "^6.0.1",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "^5.0.1",
     "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
