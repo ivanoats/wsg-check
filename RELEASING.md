@@ -5,7 +5,7 @@ Runbook for cutting releases of `@sustainablewebsites/wsg-check` to npm.
 ## Normal flow (you want to ship what's on main)
 
 1. **Wait for or open the Release PR.** The [release-please](https://github.com/googleapis/release-please) workflow watches pushes to `main` and keeps a rolling PR titled `chore(main): release X.Y.Z`. It updates `package.json`, `.release-please-manifest.json`, and `CHANGELOG.md` as conventional-commit PRs land.
-   - `feat:` bumps minor, `fix:` bumps patch, `feat!:` / `BREAKING CHANGE:` bumps major.
+   - `feat:` bumps minor, `fix:` bumps patch, `feat!:` / `BREAKING CHANGE:` bumps major. While the version is `0.x`, `bump-minor-pre-major` makes breaking changes bump minor instead (see SPEC_VERSIONING.md §5.4).
    - `ci:`, `chore:`, `test:`, `style:` commits don't trigger a release on their own — release-please stays silent until a user-visible change lands.
 
 2. **Review the Release PR's CHANGELOG diff.** The sections map from conventional-commit types in `release-please-config.json`:
