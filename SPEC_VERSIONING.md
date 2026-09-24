@@ -149,10 +149,10 @@ The four checks with no guideline needed a decision. The options were to drop th
 
 ### 5.3 Report the spec version everywhere
 
-- `package.json`: add `"wsg": { "spec": "July-2026", "specCommit": "071d86c", "lastModified": "2026-07-28" }`. Read it through `src/version.ts`, like `VERSION`.
-- CLI `--version`: `wsg-check 0.2.0 (WSG July-2026)`.
-- JSON / HTML / Markdown reports and `/api/health`: include `specVersion` so a stored report says which rule set produced the score.
-- README badge / About page: "Checks against WSG July-2026 (Group Note Draft)".
+- The single source is `WSG_SPEC` in `src/config/spec/index.ts` (release tag, commit, edition, `lastModified`, URL), next to the vendored JSON. It is not duplicated into `package.json`, so the two cannot disagree.
+- CLI `--version`: `0.2.0 (WSG July-2026)`.
+- Reports (`SustainabilityReport.specVersion`, shown in the JSON, HTML, Markdown and terminal formats and on the results page) and `/api/health` (`specVersion`, plus the package `version`) name the release, so a stored report says which rule set produced the score.
+- README badge and intro: "WSG July-2026 (Group Note Draft)".
 
 ### 5.4 Keep the npm version independent, with a clear bump policy
 
@@ -168,7 +168,7 @@ Each spec bump gets one CHANGELOG entry (`feat!: target WSG July-2026`) that lin
 
 ### 5.5 Automate drift detection
 
-- A weekly scheduled workflow runs `git ls-remote --tags https://github.com/w3c/sustainableweb-wsg` and opens an issue when a new tag appears.
+- The weekly `WSG spec watch` workflow (`.github/workflows/wsg-spec-watch.yml`) lists the tags in https://github.com/w3c/sustainableweb-wsg and opens an issue for each tag missing from `src/config/spec/upstream-tags.txt`, unless one already exists. After reviewing a release, add its tag to that file, whether or not wsg-check moves to it. A unit test checks that the vendored release is listed.
 - A unit test asserts that every `guidelineId` in `src/checks/index.ts` exists in the vendored spec, and that every overlay key does too. With that test in place, this drift could not have happened silently. (Added in step 2: `tests/unit/config/guidelines-registry.test.ts`.)
 
 ### 5.6 Suggested order of work
@@ -176,4 +176,4 @@ Each spec bump gets one CHANGELOG entry (`feat!: target WSG July-2026`) that lin
 1. **Fix now (patch), done in this PR:** `fetchWsgGuidelines` rejects responses with non-numeric guideline IDs, so `/api/guidelines` falls back to the static registry. This stops the "everything is manual-only" regression.
 2. **Done:** vendor `July-2026`, generate the registry, and switch to slug IDs with a numeric alias table (`feat!:`). `/api/guidelines` now serves the vendored release and reports it in `spec`; the live `guidelines.json` fetch was removed.
 3. **Done:** remap checks per section 4 and decide what to do with the four orphaned checks. Results now report the July-2026 slug, title, display number and spec link, set when each check is registered in `src/checks/index.ts`. The four orphans run as unscored related checks (see §4).
-4. Add `specVersion` to the CLI, reports and API, plus the tag-watcher workflow (5.5). The drift test is already in place.
+4. **Done:** `specVersion` in the CLI, reports and API (5.3), plus the tag-watcher workflow (5.5). The drift test is already in place.

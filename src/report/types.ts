@@ -21,6 +21,7 @@
 
 import type { CheckResult, CategoryScore, RunResult } from '../core/types'
 import type { CO2Model } from '../utils/carbon-estimator'
+import { WSG_SPEC } from '../config/spec/index'
 import { buildRecommendations } from './recommendations'
 
 // ─── Grade ────────────────────────────────────────────────────────────────────
@@ -174,6 +175,11 @@ export interface SustainabilityReport {
   readonly overallScore: number
   /** Letter grade derived from `overallScore`. */
   readonly grade: Grade
+  /**
+   * WSG release the checks were scored against, e.g. `"July-2026"` (a tag in
+   * w3c/sustainableweb-wsg). Scores are only comparable within one release.
+   */
+  readonly specVersion: string
   /** Per-category score breakdown. */
   readonly categories: ReadonlyArray<CategoryScore>
   /** Individual results for every check that was run. */
@@ -260,6 +266,7 @@ export const fromRunResult = (
   duration: runResult.duration,
   overallScore: runResult.overallScore,
   grade: scoreToGrade(runResult.overallScore),
+  specVersion: WSG_SPEC.release,
   categories: runResult.categoryScores,
   checks: runResult.results,
   summary: summariseResults(runResult.results),

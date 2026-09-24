@@ -12,7 +12,10 @@ export const OPENAPI_SPEC = {
       get: {
         summary: 'Health check',
         responses: {
-          '200': { description: 'Service is healthy' },
+          '200': {
+            description:
+              'Service is healthy. The body includes the package `version` and the targeted WSG release as `specVersion`.',
+          },
         },
       },
     },
@@ -43,7 +46,10 @@ export const OPENAPI_SPEC = {
           },
         },
         responses: {
-          '200': { description: 'Completed sustainability report' },
+          '200': {
+            description:
+              'Completed sustainability report. `specVersion` names the WSG release the checks were scored against.',
+          },
           '400': { description: 'Invalid request payload or URL' },
           '429': { description: 'Rate limit exceeded' },
         },

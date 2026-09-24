@@ -1,0 +1,58 @@
+name: WSG spec watch
+
+# Opens an issue when w3c/sustainableweb-wsg publishes a release tag that is
+# not yet listed in src/config/spec/upstream-tags.txt. See SPEC_VERSIONING.md
+# §5.5 for what to do with a new release.
+
+on:
+  schedule:
+    - cron: '17 6 * * 1' # Mondays, 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Open an issue for each new WSG release tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SPEC_REPO: https://github.com/w3c/sustainableweb-wsg
+          KNOWN_TAGS: src/config/spec/upstream-tags.txt
+        run: |
+          set -euo pipefail
+          git ls-remote --tags --refs "$SPEC_REPO" | sed 's#.*refs/tags/##' | sort -u > "$RUNNER_TEMP/upstream.txt"
+          grep -v -e '^#' -e '^[[:space:]]*$' "$KNOWN_TAGS" | sort -u > "$RUNNER_TEMP/known.txt"
+          comm -23 "$RUNNER_TEMP/upstream.txt" "$RUNNER_TEMP/known.txt" > "$RUNNER_TEMP/new.txt"
+
+          if [ ! -s "$RUNNER_TEMP/new.txt" ]; then
+            echo "No new WSG release tags."
+            exit 0
+          fi
+
+          while IFS= read -r tag; do
+            title="New WSG spec release: $tag"
+            existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state all \
+              --search "\"$title\" in:title" --json number --jq 'length')
+            if [ "$existing" != "0" ]; then
+              echo "An issue already exists for $tag."
+              continue
+            fi
+
+            body=$(printf '%s\n' \
+              "w3c/sustainableweb-wsg has a new release tag: \`$tag\`." \
+              "" \
+              "- Tag: $SPEC_REPO/tree/$tag" \
+              "- Compare with the vendored release in \`src/config/spec/index.ts\` (\`WSG_SPEC.release\`)." \
+              "" \
+              "To move wsg-check to this release, follow SPEC_VERSIONING.md: vendor its \`guidelines.json\`, update \`WSG_SPEC\`, remap checks, and bump the version per §5.4." \
+              "Either way, add \`$tag\` to \`src/config/spec/upstream-tags.txt\` once it has been reviewed.")
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"
+            echo "Opened an issue for $tag."
+          done < "$RUNNER_TEMP/new.txt"

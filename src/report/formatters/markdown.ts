@@ -131,6 +131,7 @@ export const formatMarkdown = (report: SustainabilityReport): string => {
     '',
     `**URL:** ${report.url}  `,
     `**Date:** ${new Date(report.timestamp).toUTCString()}  `,
+    `**WSG release:** ${report.specVersion}  `,
     `**Duration:** ${formatDuration(report.duration)}  `,
     '',
     `## Overall Score: ${report.overallScore} / 100 — Grade ${gradeEmoji} ${report.grade}`,

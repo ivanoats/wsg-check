@@ -277,7 +277,7 @@ export const buildProgram = (): Command => {
   program
     .name('wsg-check')
     .description('Check a website against the W3C Web Sustainability Guidelines')
-    .version(_pkg.version)
+    .version(`${_pkg.version} (WSG ${WSG_SPEC.release})`)
     .argument('<url>', 'URL of the website to check')
     .option('-f, --format <format>', 'output format: json | markdown | html | terminal', 'terminal')
     .option('-o, --output <path>', 'write report to a file instead of stdout')

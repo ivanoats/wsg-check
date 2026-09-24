@@ -94,6 +94,10 @@ describe('fromRunResult', () => {
     expect(report.duration).toBe(1500)
   })
 
+  it('records the targeted WSG release as specVersion', () => {
+    expect(fromRunResult(makeRunResult()).specVersion).toBe('July-2026')
+  })
+
   it('preserves overallScore from RunResult', () => {
     const report = fromRunResult(makeRunResult({ overallScore: 72 }))
     expect(report.overallScore).toBe(72)

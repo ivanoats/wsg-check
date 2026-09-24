@@ -219,6 +219,7 @@ export const formatTerminal = (
     '',
     `  ${bold('URL:')}      ${report.url}`,
     `  ${bold('Date:')}     ${new Date(report.timestamp).toUTCString()}`,
+    `  ${bold('WSG:')}      ${report.specVersion}`,
     `  ${bold('Duration:')} ${formatDuration(report.duration)}`,
     '',
     HR,

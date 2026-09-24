@@ -65,6 +65,10 @@ describe('buildProgram', () => {
     expect(program.name()).toBe('wsg-check')
   })
 
+  it('reports the package version and the targeted WSG release', () => {
+    expect(buildProgram().version()).toMatch(/^\d+\.\d+\.\d+.* \(WSG July-2026\)$/)
+  })
+
   it('has the expected top-level options', () => {
     const program = buildProgram()
     const optionNames = program.options.map((o) => o.long)
