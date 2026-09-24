@@ -15,8 +15,8 @@
  *   1 — check failed (fetch/parse error) or score is below threshold
  */
 
-import { writeFileSync, readFileSync } from 'node:fs'
-import { pathToFileURL, fileURLToPath } from 'node:url'
+import { writeFileSync, readFileSync, realpathSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { Command } from 'commander'
 import { resolveConfig } from '../config/loader'
@@ -307,13 +307,26 @@ export const buildProgram = (): Command => {
 
 // ─── Entry point ──────────────────────────────────────────────────────────────
 
-// Only run when this file is the direct entry point (not when imported by tests).
-// In Node.js ESM we compare import.meta.url to the resolved argv[1] path.
-// Guard against undefined process.argv[1] (e.g. when Node.js starts with --eval).
-const _isMain =
-  process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href
+/**
+ * Returns `true` when `scriptPath` (normally `process.argv[1]`) is the module
+ * at `moduleUrl`. Both paths are resolved with `realpathSync`, because npm
+ * installs the `wsg-check` bin as a symlink: `argv[1]` is the symlink, while
+ * `import.meta.url` is the real file. Returns `false` when there is no script
+ * path (e.g. `node --eval`) or either path cannot be resolved.
+ *
+ * Exported for testing.
+ */
+export const isEntryPoint = (moduleUrl: string, scriptPath: string | undefined): boolean => {
+  if (scriptPath === undefined) return false
+  try {
+    return realpathSync(fileURLToPath(moduleUrl)) === realpathSync(scriptPath)
+  } catch {
+    return false
+  }
+}
 
-if (_isMain) {
+// Only run when this file is the direct entry point (not when imported by tests).
+if (isEntryPoint(import.meta.url, process.argv[1])) {
   const program = buildProgram()
   try {
     await program.parseAsync(process.argv)

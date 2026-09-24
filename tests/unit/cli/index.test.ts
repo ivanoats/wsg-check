@@ -6,10 +6,19 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { existsSync, readFileSync, unlinkSync } from 'node:fs'
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { buildProgram, runCheck } from '@/cli/index'
+import { pathToFileURL } from 'node:url'
+import { buildProgram, isEntryPoint, runCheck } from '@/cli/index'
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -58,6 +67,45 @@ const LOW_SCORE_RUN_RESULT = {
 }
 
 // ─── buildProgram ─────────────────────────────────────────────────────────────
+
+describe('isEntryPoint', () => {
+  let dir: string
+  let script: string
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'wsg-entry-'))
+    script = join(dir, 'index.js')
+    writeFileSync(script, '')
+  })
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('matches when argv[1] is the module file itself', () => {
+    expect(isEntryPoint(pathToFileURL(script).href, script)).toBe(true)
+  })
+
+  it('matches when argv[1] is a symlink to the module, as npm installs bins', () => {
+    const link = join(dir, 'wsg-check')
+    symlinkSync(script, link)
+    expect(isEntryPoint(pathToFileURL(script).href, link)).toBe(true)
+  })
+
+  it('does not match a different file', () => {
+    const other = join(dir, 'other.js')
+    writeFileSync(other, '')
+    expect(isEntryPoint(pathToFileURL(script).href, other)).toBe(false)
+  })
+
+  it('does not match when there is no script path (node --eval)', () => {
+    expect(isEntryPoint(pathToFileURL(script).href, undefined)).toBe(false)
+  })
+
+  it('does not match when the script path does not exist', () => {
+    expect(isEntryPoint(pathToFileURL(script).href, join(dir, 'missing.js'))).toBe(false)
+  })
+})
 
 describe('buildProgram', () => {
   it('creates a command named wsg-check', () => {
