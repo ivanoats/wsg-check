@@ -87,11 +87,14 @@ export class ConfigError extends Error {
  */
 export class CheckError extends Error {
   readonly guidelineId: string
+  /** `true` when the failing check is a related (unscored) check. */
+  readonly related: boolean
 
-  constructor(message: string, guidelineId: string, cause?: unknown) {
+  constructor(message: string, guidelineId: string, cause?: unknown, related = false) {
     super(message)
     this.name = 'CheckError'
     this.guidelineId = guidelineId
+    this.related = related
     if (cause !== undefined) {
       this.cause = cause
     }

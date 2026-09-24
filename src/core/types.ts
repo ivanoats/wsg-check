@@ -21,10 +21,23 @@ import type { CO2Model } from '../utils/carbon-estimator'
  * formatter.
  */
 export interface CheckResult {
-  /** WSG guideline identifier, e.g. `"3.2"`. */
+  /**
+   * Guideline identifier: the WSG slug (e.g. `"minify-and-remove-unused-code"`)
+   * for WSG checks, or the check's own ID for related checks.
+   */
   guidelineId: string
   /** Human-readable guideline name. */
   guidelineName: string
+  /**
+   * Position of the guideline in the targeted WSG release, e.g. `"3.2"`, for
+   * display. Absent for related checks.
+   */
+  guidelineNumber?: string
+  /**
+   * `true` for related checks (e.g. accessibility or security) that have no
+   * guideline in the targeted WSG release. They are reported but not scored.
+   */
+  related?: boolean
   /** Short label for the specific success criterion being tested. */
   successCriterion: string
   /** Outcome of the check. */
@@ -69,10 +82,12 @@ export type CheckFn = (page: PageData) => CheckResult | Promise<CheckResult>
  * in the CLI).
  */
 export type CheckFnWithId = CheckFn & {
-  /** Legacy numeric ID the check reports under, e.g. `"3.3"`. */
+  /** Legacy numeric ID the check was registered under, e.g. `"3.3"`. */
   readonly guidelineId: string
   /** Slug of the guideline in the targeted WSG release; `null` if it has none. */
   readonly guidelineSlug: string | null
+  /** ID of a related (unscored) check; `null` for WSG checks. */
+  readonly relatedId: string | null
 }
 
 // ─── Page data ────────────────────────────────────────────────────────────────

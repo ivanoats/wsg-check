@@ -228,3 +228,21 @@ describe('scoreResults', () => {
     expect(business.score).toBe(100)
   })
 })
+
+describe('related checks', () => {
+  it('are excluded from the overall score', () => {
+    const results = [
+      makeResult({ status: 'pass' }),
+      makeResult({ status: 'fail', related: true, impact: 'high' }),
+    ]
+    expect(calculateOverallScore(results)).toBe(100)
+  })
+
+  it('are excluded from category scores and counts', () => {
+    const results = [makeResult({ status: 'warn' }), makeResult({ status: 'fail', related: true })]
+    const category = calculateCategoryScore(results, 'web-dev')
+    expect(category.score).toBe(50)
+    expect(category.totalChecks).toBe(1)
+    expect(category.failed).toBe(0)
+  })
+})

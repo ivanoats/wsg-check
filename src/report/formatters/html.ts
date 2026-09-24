@@ -10,6 +10,7 @@ import type { SustainabilityReport, Recommendation } from '../types'
 import type { CheckResult, CategoryScore } from '../../core/types'
 import { scoreBadgeSvg, categoryBarChartSvg } from '../visualization'
 import { esc } from './escape'
+import { RELATED_CHECKS_NOTE, guidelineLabel, partitionChecks } from './labels'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -83,7 +84,7 @@ const buildCheckRows = (checks: ReadonlyArray<CheckResult>): string =>
     .map(
       (c) => `
       <tr>
-        <td><code>${esc(c.guidelineId)}</code></td>
+        <td><code>${esc(guidelineLabel(c))}</code></td>
         <td>${esc(c.guidelineName)}</td>
         <td class="${STATUS_CLASS[c.status] ?? ''}">${STATUS_ICON[c.status] ?? esc(c.status)} ${esc(c.status)}</td>
         <td class="num">${c.score}</td>
@@ -91,6 +92,15 @@ const buildCheckRows = (checks: ReadonlyArray<CheckResult>): string =>
       </tr>`
     )
     .join('')
+
+const buildRelatedSection = (checks: ReadonlyArray<CheckResult>): string => `
+  <h2>Related Checks (not scored)</h2>
+  <p>${esc(RELATED_CHECKS_NOTE)}</p>
+  <table>
+    <thead><tr><th>#</th><th>Check</th><th>Status</th><th>Score</th><th>Impact</th></tr></thead>
+    <tbody>${buildCheckRows(checks)}</tbody>
+  </table>
+`
 
 const buildResourceLink = (resource: string): string =>
   `<li><a href="${safeHref(resource)}" rel="noopener noreferrer">${esc(resource)}</a></li>`
@@ -106,10 +116,10 @@ const buildRecommendationItems = (recommendations: ReadonlyArray<Recommendation>
       (rec) => `
     <li class="rec rec-${rec.impact}">
       <div class="rec-header">
-        <span class="rec-id">${esc(rec.guidelineId)}</span>
+        <span class="rec-id">${esc(guidelineLabel(rec))}</span>
         <span class="rec-name">${esc(rec.guidelineName)}</span>
         <span class="badge badge-${rec.impact}">${esc(rec.impact)}</span>
-        <span class="badge badge-${rec.status}">${esc(rec.status)}</span>
+        <span class="badge badge-${rec.status}">${esc(rec.status)}</span>${rec.related === true ? '\n        <span class="badge">not scored</span>' : ''}
       </div>
       <p class="rec-text">${esc(rec.recommendation)}</p>
       ${rec.resources && rec.resources.length > 0 ? buildResourceLinks(rec.resources) : ''}
@@ -222,6 +232,7 @@ const CSS = `
  */
 export const formatHtml = (report: SustainabilityReport): string => {
   const gradeColor = GRADE_COLOR[report.grade] ?? '#6b7280'
+  const { wsg, related } = partitionChecks(report.checks)
   const date = new Date(report.timestamp).toUTCString()
 
   return `<!DOCTYPE html>
@@ -268,10 +279,10 @@ export const formatHtml = (report: SustainabilityReport): string => {
 
   <h2>Check Results</h2>
   <table>
-    <thead><tr><th>ID</th><th>Guideline</th><th>Status</th><th>Score</th><th>Impact</th></tr></thead>
-    <tbody>${buildCheckRows(report.checks)}</tbody>
+    <thead><tr><th>#</th><th>Guideline</th><th>Status</th><th>Score</th><th>Impact</th></tr></thead>
+    <tbody>${buildCheckRows(wsg)}</tbody>
   </table>
-
+${related.length > 0 ? buildRelatedSection(related) : ''}
   <h2>Page Metrics</h2>
   <table>
     <thead><tr><th>Metric</th><th>Value</th></tr></thead>

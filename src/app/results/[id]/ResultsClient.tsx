@@ -11,6 +11,7 @@ import type { CategoryScore } from '@/core/types'
 import type { CheckResponseBody } from '@/api/types'
 import { CheckResultsSection } from '@/app/components/CheckResultsSection'
 import { SectionHeading } from '@/app/components/SectionHeading'
+import { guidelineLabel } from '@/report/formatters/labels'
 
 const RESULT_STORAGE_PREFIX = 'wsg-check:result:'
 const RESULT_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -263,7 +264,10 @@ const RecommendationItem = ({ rec }: { readonly rec: Recommendation }) => (
         aria-label={`${rec.impact} impact`}
       />
       <styled.div flex="1">
-        <RecommendationTitle name={rec.guidelineName} id={rec.guidelineId} />
+        <RecommendationTitle
+          name={rec.guidelineName}
+          id={rec.related === true ? 'related, not scored' : guidelineLabel(rec)}
+        />
         <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed">
           {rec.recommendation}
         </styled.p>
@@ -283,8 +287,8 @@ const RecommendationsSection = ({
     <styled.section aria-labelledby="recommendations-heading" mb="6">
       <SectionHeading id="recommendations-heading">Recommendations</SectionHeading>
       <styled.ol listStyleType="none" m="0" p="0" display="flex" flexDirection="column" gap="3">
-        {recommendations.map((rec) => (
-          <RecommendationItem key={rec.guidelineId} rec={rec} />
+        {recommendations.map((rec, index) => (
+          <RecommendationItem key={`${rec.guidelineId}-${String(index)}`} rec={rec} />
         ))}
       </styled.ol>
     </styled.section>

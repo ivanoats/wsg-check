@@ -7,6 +7,7 @@
 
 import type { SustainabilityReport, Recommendation } from '../types'
 import type { CheckResult, CategoryScore } from '../../core/types'
+import { RELATED_CHECKS_NOTE, guidelineLabel, partitionChecks } from './labels'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -55,14 +56,29 @@ const buildCategoryTable = (categories: ReadonlyArray<CategoryScore>): string =>
   ].join('\n')
 }
 
+const statusCell = (c: CheckResult): string => `${STATUS_EMOJI[c.status] ?? c.status} ${c.status}`
+
 const buildCheckTable = (checks: ReadonlyArray<CheckResult>): string => {
   const rows = checks.map(
     (c) =>
-      `| ${c.guidelineId} | ${mdCell(c.guidelineName)} | ${STATUS_EMOJI[c.status] ?? c.status} ${c.status} | ${c.score} | ${c.impact} |`
+      `| ${guidelineLabel(c)} | ${mdCell(c.guidelineName)} | ${statusCell(c)} | ${c.score} | ${c.impact} |`
   )
   return [
-    '| ID | Guideline | Status | Score | Impact |',
-    '|----|-----------|--------|------:|--------|',
+    '| # | Guideline | Status | Score | Impact |',
+    '|---|-----------|--------|------:|--------|',
+    ...rows,
+  ].join('\n')
+}
+
+const buildRelatedCheckTable = (checks: ReadonlyArray<CheckResult>): string => {
+  const rows = checks.map(
+    (c) => `| ${mdCell(c.guidelineName)} | ${statusCell(c)} | ${c.score} | ${c.impact} |`
+  )
+  return [
+    `_${RELATED_CHECKS_NOTE}_`,
+    '',
+    '| Check | Status | Score | Impact |',
+    '|-------|--------|------:|--------|',
     ...rows,
   ].join('\n')
 }
@@ -71,7 +87,9 @@ const buildRecommendations = (recommendations: ReadonlyArray<Recommendation>): s
   if (recommendations.length === 0) return '_No recommendations — great work!_'
   return recommendations
     .map((rec, i) => {
-      const heading = `${i + 1}. **[${rec.guidelineId} ${mdCell(rec.guidelineName)}]** _(${rec.impact} impact, ${rec.status})_`
+      const label = rec.related === true ? '' : `${guidelineLabel(rec)} `
+      const notScored = rec.related === true ? ', related, not scored' : ''
+      const heading = `${i + 1}. **[${label}${mdCell(rec.guidelineName)}]** _(${rec.impact} impact, ${rec.status}${notScored})_`
       const body = `   ${rec.recommendation}`
       const links =
         rec.resources && rec.resources.length > 0
@@ -106,6 +124,7 @@ const buildMetrics = (report: SustainabilityReport): string => {
  * @returns A string containing the full Markdown document.
  */
 export const formatMarkdown = (report: SustainabilityReport): string => {
+  const { wsg, related } = partitionChecks(report.checks)
   const gradeEmoji = GRADE_EMOJI[report.grade] ?? ''
   const sections: string[] = [
     '# WSG Sustainability Report',
@@ -134,8 +153,11 @@ export const formatMarkdown = (report: SustainabilityReport): string => {
     '',
     '## Check Results',
     '',
-    buildCheckTable(report.checks),
+    buildCheckTable(wsg),
     '',
+    ...(related.length > 0
+      ? ['## Related Checks (not scored)', '', buildRelatedCheckTable(related), '']
+      : []),
     '## Page Metrics',
     '',
     buildMetrics(report),

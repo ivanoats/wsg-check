@@ -203,11 +203,11 @@ describe('runCheck', () => {
       'numeric guideline ID "3.3" is deprecated; use "minify-and-remove-unused-code" (WSG July-2026)'
     )
     expect(stderrOutput).toContain(
-      'numeric guideline ID "3.15" is deprecated; it has no equivalent in WSG July-2026'
+      'numeric guideline ID "3.15" is deprecated; use "security-headers" (related check, not scored)'
     )
   })
 
-  it('warns that legacy 2.17 also runs a check with no July-2026 guideline', async () => {
+  it('warns that legacy 2.17 also runs a related check, naming both replacements', async () => {
     const mockCheck = await getMockCheck()
     mockCheck.mockResolvedValue({ ok: true, value: PASSING_RUN_RESULT })
 
@@ -215,7 +215,7 @@ describe('runCheck', () => {
 
     const stderrOutput = stderrSpy.mock.calls.map((c: unknown[]) => c[0]).join('')
     expect(stderrOutput).toContain(
-      'numeric guideline ID "2.17" is deprecated; use "reduce-the-impact-of-downloadable-and-physical-documents" (WSG July-2026); some of its checks have no WSG July-2026 guideline and run only under "2.17"'
+      'numeric guideline ID "2.17" is deprecated; use "reduce-the-impact-of-downloadable-and-physical-documents" (WSG July-2026); use "image-alt-text" (related check, not scored)'
     )
     expect(await getLastChecks()).toHaveLength(2)
   })

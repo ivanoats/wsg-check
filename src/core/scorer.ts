@@ -12,6 +12,9 @@
  *   'info'           →  excluded (informational only)
  *   'not-applicable' →  excluded (not relevant for this page)
  *
+ * Related checks (`related: true`) are reported but never scored: they have no
+ * guideline in the targeted WSG release.
+ *
  * Impact weights
  * ──────────────
  *   'high'   →  3
@@ -81,7 +84,8 @@ function weightedScore(results: CheckResult[]): number | null {
 // ─── Exported functions ───────────────────────────────────────────────────────
 
 /**
- * Calculate the score and check counts for a single WSG category.
+ * Calculate the score and check counts for a single WSG category, ignoring
+ * related checks.
  *
  * When the category has no scoreable results, the score defaults to `100`.
  */
@@ -89,7 +93,7 @@ export function calculateCategoryScore(
   results: CheckResult[],
   category: WSGCategory
 ): CategoryScore {
-  const categoryResults = results.filter((r) => r.category === category)
+  const categoryResults = results.filter((r) => r.category === category && r.related !== true)
   const scoreable = categoryResults.filter((r) => SCOREABLE_STATUSES.has(r.status))
 
   return {
@@ -105,12 +109,13 @@ export function calculateCategoryScore(
 }
 
 /**
- * Calculate the overall sustainability score across all results.
+ * Calculate the overall sustainability score across all WSG results
+ * (related checks are ignored).
  *
  * Returns `100` when there are no scoreable results.
  */
 export function calculateOverallScore(results: CheckResult[]): number {
-  return weightedScore(results) ?? 100
+  return weightedScore(results.filter((r) => r.related !== true)) ?? 100
 }
 
 /**

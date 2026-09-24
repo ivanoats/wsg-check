@@ -76,6 +76,7 @@ export class CheckRunner {
       return {
         guidelineId,
         guidelineName: guidelineId,
+        ...(reason instanceof CheckError && reason.related ? { related: true } : {}),
         successCriterion: '',
         status: 'fail',
         score: 0,

@@ -100,27 +100,93 @@ import { checkErrorPages } from './error-pages'
 import { checkRedirects } from './redirects'
 import { checkCdnUsage } from './cdn-usage'
 import { checkDataRefresh } from './data-refresh'
-import type { CheckFn, CheckFnWithId, PageData } from '../core/types'
+import type { CheckFn, CheckFnWithId, CheckResult, PageData } from '../core/types'
+import { getGuidelineById } from '../config/guidelines-registry'
+import type { GuidelineEntry } from '../config/types'
+import { CheckError } from '../utils/errors'
+
+/** A check with no guideline in the targeted WSG release, reported but not scored. */
+interface RelatedCheck {
+  /** Stable ID used in results and `--guidelines`, e.g. `"security-headers"`. */
+  readonly id: string
+  /** Human-readable name shown in reports. */
+  readonly name: string
+}
+
+/** Links into the WSG spec are rewritten from the registry, never trusted from checks. */
+const SPEC_LINK_PREFIX = 'https://www.w3.org/TR/web-sustainability-guidelines/#'
 
 /**
- * Wraps a check function in a new function with its guideline identity
- * attached, producing a `CheckFnWithId`: the legacy numeric `guidelineId`
- * the check reports under, and the `guidelineSlug` of the guideline it
- * implements in the targeted WSG release (`null` when the spec no longer has
- * one). The slug is declared per check because some legacy IDs are shared by
- * checks for different guidelines (e.g. alt text and downloadable documents
- * both report `2.17`).
+ * Rewrites a result's guideline identity: the slug, title, number and spec
+ * link of its July-2026 guideline, or the related-check ID and name.
+ */
+const reportAs = (result: CheckResult, identity: GuidelineEntry | RelatedCheck): CheckResult => {
+  const { resources = [], ...rest } = result
+  const otherResources = resources.filter((url) => !url.startsWith(SPEC_LINK_PREFIX))
+
+  if ('specUrl' in identity) {
+    return {
+      ...rest,
+      guidelineId: identity.id,
+      guidelineName: identity.title,
+      guidelineNumber: identity.number,
+      resources: [identity.specUrl, ...otherResources],
+    }
+  }
+
+  return {
+    ...rest,
+    guidelineId: identity.id,
+    guidelineName: identity.name,
+    related: true,
+    ...(otherResources.length > 0 ? { resources: otherResources } : {}),
+  }
+}
+
+/** Looks up a slug, failing at load time if a check names a guideline the spec lacks. */
+const guidelineFor = (slug: string): GuidelineEntry => {
+  const guideline = getGuidelineById(slug)
+  if (guideline?.id !== slug) {
+    throw new Error(`Check registered with unknown WSG guideline slug "${slug}"`)
+  }
+  return guideline
+}
+
+/**
+ * Wraps a check so its results report the check's guideline identity, and
+ * attaches that identity as static properties for pre-execution filtering:
  *
- * A new wrapper function is created for each call so that the original `fn`
- * is never mutated (avoids the no-param-reassign anti-pattern).
+ * - `guidelineId`: the legacy numeric ID the check was registered under.
+ * - `guidelineSlug`: the July-2026 guideline the check implements.
+ * - `relatedId`: set instead of a slug for related (unscored) checks.
+ *
+ * The identity is declared per check because some legacy IDs are shared by
+ * checks for different guidelines (alt text and downloadable documents both
+ * used `2.17`). A new wrapper is created for each call so the original `fn` is
+ * never mutated.
  */
 const withGuidelineId = (
   fn: CheckFn,
   guidelineId: string,
-  guidelineSlug: string | null
+  target: string | RelatedCheck
 ): CheckFnWithId => {
-  const wrapped = (page: PageData): ReturnType<CheckFn> => fn(page)
-  return Object.assign(wrapped, { guidelineId, guidelineSlug })
+  const identity = typeof target === 'string' ? guidelineFor(target) : target
+  const related = typeof target !== 'string'
+
+  const wrapped = async (page: PageData): Promise<CheckResult> => {
+    try {
+      return reportAs(await fn(page), identity)
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : String(cause)
+      throw new CheckError(message, identity.id, cause, related)
+    }
+  }
+
+  return Object.assign(wrapped, {
+    guidelineId,
+    guidelineSlug: related ? null : identity.id,
+    relatedId: related ? identity.id : null,
+  })
 }
 
 /**
@@ -152,7 +218,7 @@ export const performanceChecks: ReadonlyArray<CheckFnWithId> = [
 export const semanticChecks: ReadonlyArray<CheckFnWithId> = [
   withGuidelineId(checkSemanticHtml, '3.7', 'ensure-code-follows-good-semantic-practices'),
   withGuidelineId(checkAccessibilityAids, '3.9', 'design-efficient-and-streamlined-user-journeys'),
-  withGuidelineId(checkFormValidation, '3.10', null),
+  withGuidelineId(checkFormValidation, '3.10', { id: 'form-validation', name: 'Form validation' }),
   withGuidelineId(checkMetadata, '3.4', 'structure-metadata-for-machine-readability'),
   withGuidelineId(checkStructuredData, '3.11', 'structure-metadata-for-machine-readability'),
 ]
@@ -199,7 +265,10 @@ export const sustainabilityChecks: ReadonlyArray<CheckFnWithId> = [
  * aspects of WSG 3.17 (required files vs. beneficial optional files).
  */
 export const securityChecks: ReadonlyArray<CheckFnWithId> = [
-  withGuidelineId(checkSecurityHeaders, '3.15', null),
+  withGuidelineId(checkSecurityHeaders, '3.15', {
+    id: 'security-headers',
+    name: 'Security headers',
+  }),
   withGuidelineId(checkDependencyCount, '3.16', 'use-dependencies-sparingly-and-maintain-them'),
   withGuidelineId(checkExpectedFiles, '3.17', 'include-expected-and-beneficial-files'),
   withGuidelineId(checkBeneficialFiles, '3.17', 'include-expected-and-beneficial-files'),
@@ -244,9 +313,12 @@ export const uxDesignChecks: ReadonlyArray<CheckFnWithId> = [
     'ensure-animation-is-proportionate-and-easy-to-control'
   ),
   withGuidelineId(checkWebTypography, '2.16', 'use-optimized-web-typography'),
-  withGuidelineId(checkAltText, '2.17', null),
+  withGuidelineId(checkAltText, '2.17', { id: 'image-alt-text', name: 'Image alternative text' }),
   withGuidelineId(checkFontStackFallbacks, '2.16', 'use-optimized-web-typography'),
-  withGuidelineId(checkMinimalForms, '2.19', null),
+  withGuidelineId(checkMinimalForms, '2.19', {
+    id: 'native-form-features',
+    name: 'Native form features',
+  }),
   withGuidelineId(
     checkDownloadableDocuments,
     '2.17',

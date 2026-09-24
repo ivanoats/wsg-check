@@ -7,6 +7,8 @@ A Web Sustainability Guidelines checker for websites. It checks a website agains
 
 WSG-Check targets the **July-2026** release of the guidelines (Group Note Draft). See [SPEC_VERSIONING.md](./SPEC_VERSIONING.md) for how it tracks spec releases.
 
+Four checks have no guideline in that release: security headers, form validation, native form features and image alternative text. They still run, but appear in reports as **related checks** and are not included in the score.
+
 ## Quick Start
 
 ```bash
@@ -189,7 +191,9 @@ The Core Module is the application-layer heart introduced in **Phase 3**. It con
 
 ```typescript
 interface CheckResult {
-  guidelineId: string // e.g. "3.2"
+  guidelineId: string // WSG slug, e.g. "minify-and-remove-unused-code"
+  guidelineNumber?: string // display number in the targeted release, e.g. "3.2"
+  related?: boolean // true for related checks, which are reported but not scored
   status: 'pass' | 'fail' | 'warn' | 'info' | 'not-applicable'
   score: number // 0–100
   impact: 'high' | 'medium' | 'low'

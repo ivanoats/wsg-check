@@ -144,4 +144,37 @@ describe('CheckResultsSection', () => {
     expect(duplicateKeyWarning).toBe(false)
     consoleSpy.mockRestore()
   })
+
+  it('puts related checks in their own not-scored group', () => {
+    const checks = [
+      makeCheck({ guidelineId: 'minify-and-remove-unused-code', guidelineNumber: '3.2' }),
+      makeCheck({
+        guidelineId: 'security-headers',
+        guidelineName: 'Security headers',
+        related: true,
+        category: 'web-dev',
+      }),
+    ]
+    render(<CheckResultsSection checks={checks} />)
+    expect(screen.getByRole('button', { name: /toggle web-dev/i })).toBeDefined()
+    expect(screen.getByRole('button', { name: /toggle related \(not scored\)/i })).toBeDefined()
+  })
+
+  it('shows the WSG display number instead of the slug', async () => {
+    const checks = [
+      makeCheck({
+        guidelineId: 'minify-and-remove-unused-code',
+        guidelineName: 'Minify and remove unused code',
+        guidelineNumber: '3.2',
+      }),
+    ]
+    render(<CheckResultsSection checks={checks} />)
+    const trigger = screen.getByRole('button', { name: /toggle web-dev/i })
+    await act(async () => {
+      fireEvent.focus(trigger)
+      fireEvent.click(trigger)
+    })
+    expect(screen.getByText('(3.2)')).toBeDefined()
+    expect(screen.queryByText('(minify-and-remove-unused-code)')).toBeNull()
+  })
 })

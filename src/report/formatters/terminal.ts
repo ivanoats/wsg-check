@@ -11,6 +11,7 @@
 
 import type { SustainabilityReport, Recommendation } from '../types'
 import type { CheckResult, CategoryScore } from '../../core/types'
+import { RELATED_CHECKS_NOTE, guidelineLabel, partitionChecks } from './labels'
 
 // ─── ANSI helpers ─────────────────────────────────────────────────────────────
 
@@ -131,10 +132,11 @@ const buildRecommendationSection = (
     .map((rec, i) => {
       const impactColor = rec.impact === 'high' ? RED : rec.impact === 'medium' ? YELLOW : BLUE
       const impactTag = col(impactColor)(`[${rec.impact.toUpperCase()}]`)
-      const idBold = col(BOLD)(rec.guidelineId)
+      const idBold = rec.related === true ? '' : `${col(BOLD)(guidelineLabel(rec))} `
       const name = col(DIM)(truncate(rec.guidelineName, 35))
       const statusTag = rec.status === 'fail' ? col(RED)('fail') : col(YELLOW)('warn')
-      const heading = `  ${i + 1}. ${impactTag} ${idBold} ${name} (${statusTag})`
+      const notScored = rec.related === true ? col(DIM)(', related, not scored') : ''
+      const heading = `  ${i + 1}. ${impactTag} ${idBold}${name} (${statusTag}${notScored})`
       const body = `     ${rec.recommendation}`
       const links =
         rec.resources && rec.resources.length > 0
@@ -151,7 +153,7 @@ const buildCheckSection = (
 ): string => {
   const bold = col(BOLD)
   const dim = col(DIM)
-  const header = `${bold(pad('ID', 6))} ${bold(pad('Guideline', 36))} ${bold(pad('Status', 8))} ${bold(pad('Score', 6))} ${dim('Impact')}`
+  const header = `${bold(pad('#', 6))} ${bold(pad('Guideline', 36))} ${bold(pad('Status', 8))} ${bold(pad('Score', 6))} ${dim('Impact')}`
   const rows = checks.map((c) => {
     const icon = STATUS_ICON[c.status] ?? '?'
     const statusCode = statusColorCode(c.status)
@@ -160,7 +162,7 @@ const buildCheckSection = (
     // enabled the ANSI escape sequences add invisible bytes, so we widen the
     // pad target by the length of the wrapping escape codes (open + reset).
     const ansiOverhead = col(statusCode)('').length
-    return `${pad(c.guidelineId, 6)} ${pad(truncate(c.guidelineName, 36), 36)} ${pad(statusStr, 8 + ansiOverhead)} ${pad(String(c.score), 6)} ${dim(c.impact)}`
+    return `${pad(guidelineLabel(c), 6)} ${pad(truncate(c.guidelineName, 36), 36)} ${pad(statusStr, 8 + ansiOverhead)} ${pad(String(c.score), 6)} ${dim(c.impact)}`
   })
   return [header, HR, ...rows].join('\n')
 }
@@ -200,6 +202,7 @@ export const formatTerminal = (
   report: SustainabilityReport,
   options: TerminalFormatOptions = {}
 ): string => {
+  const { wsg, related } = partitionChecks(report.checks)
   const colorsEnabled = options.colors !== false
   const col = makeColoriser(colorsEnabled)
 
@@ -236,8 +239,18 @@ export const formatTerminal = (
     '',
     sectionHeader('Check Results'),
     '',
-    buildCheckSection(report.checks, col),
+    buildCheckSection(wsg, col),
     '',
+    ...(related.length > 0
+      ? [
+          sectionHeader('Related Checks (not scored)'),
+          '',
+          `  ${dim(RELATED_CHECKS_NOTE)}`,
+          '',
+          buildCheckSection(related, col),
+          '',
+        ]
+      : []),
     sectionHeader('Page Metrics'),
     '',
     buildMetricsSection(report, col),

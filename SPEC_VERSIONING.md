@@ -127,7 +127,9 @@ The current check ID is the one passed to `withGuidelineId` in `src/checks/index
 | `checkMinimalForms`                             | 2.19       | **No guideline.** Removed.                                                                         |
 | `checkAltText`                                  | 2.17       | **No guideline.** "Offer suitable alternatives" was removed. Accessibility is now a consideration. |
 
-The four checks with no guideline need a decision. They can be dropped, kept as unscored "related considerations" (outside the WSG score), or re-homed where a criterion partly fits. For example, _Beneficial files_ in 3.13 names `security.txt`, and _Alternative browsing_ in 3.10 covers assistive technology.
+The four checks with no guideline needed a decision. The options were to drop them, keep them as unscored related checks (outside the WSG score), or re-home them where a criterion partly fits. For example, _Beneficial files_ in 3.13 names `security.txt`, and _Alternative browsing_ in 3.10 covers assistive technology.
+
+**Decision (step 3):** keep them as related checks. They run and appear in their own "Related checks (not scored)" report section, under the IDs `security-headers`, `form-validation`, `native-form-features` and `image-alt-text`. They are left out of every score.
 
 ## 5. Proposal: versioning wsg-check alongside the spec
 
@@ -173,5 +175,5 @@ Each spec bump gets one CHANGELOG entry (`feat!: target WSG July-2026`) that lin
 
 1. **Fix now (patch), done in this PR:** `fetchWsgGuidelines` rejects responses with non-numeric guideline IDs, so `/api/guidelines` falls back to the static registry. This stops the "everything is manual-only" regression.
 2. **Done:** vendor `July-2026`, generate the registry, and switch to slug IDs with a numeric alias table (`feat!:`). `/api/guidelines` now serves the vendored release and reports it in `spec`; the live `guidelines.json` fetch was removed.
-3. Remap checks per section 4 and decide what to do with the four orphaned checks. Each check already declares its July-2026 slug (`null` for the four orphans), so this step changes the IDs, names and links the checks report.
+3. **Done:** remap checks per section 4 and decide what to do with the four orphaned checks. Results now report the July-2026 slug, title, display number and spec link, set when each check is registered in `src/checks/index.ts`. The four orphans run as unscored related checks (see §4).
 4. Add `specVersion` to the CLI, reports and API, plus the tag-watcher workflow (5.5). The drift test is already in place.

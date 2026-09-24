@@ -137,6 +137,25 @@ describe('CheckRunner', () => {
     expect(result.message).toContain('Something went wrong')
   })
 
+  it('marks the fail result as related when the CheckError says so', async () => {
+    const runner = new CheckRunner()
+    const relatedCheck: CheckFn = () => {
+      throw new CheckError('Boom', 'security-headers', undefined, true)
+    }
+    runner.register(relatedCheck)
+    const [result] = await runner.run(PAGE_DATA)
+
+    expect(result.guidelineId).toBe('security-headers')
+    expect(result.related).toBe(true)
+  })
+
+  it('does not mark an ordinary CheckError failure as related', async () => {
+    const runner = new CheckRunner()
+    runner.register(throwingCheck('3.5'))
+    const [result] = await runner.run(PAGE_DATA)
+    expect(result.related).toBeUndefined()
+  })
+
   it('converts an async rejection into a fail result', async () => {
     const runner = new CheckRunner()
     runner.register(rejectingCheck('3.6'))

@@ -5,6 +5,7 @@ import { styled } from 'styled-system/jsx'
 import { cx, css } from 'styled-system/css'
 import { accordion, badge } from 'styled-system/recipes'
 import type { CheckResult } from '@/core/types'
+import { guidelineLabel } from '@/report/formatters/labels'
 import { SectionHeading } from './SectionHeading'
 
 interface CheckResultsSectionProps {
@@ -35,16 +36,20 @@ const checkRowClass = css({
   _last: { borderBottomWidth: '0' },
 })
 
-/** Groups checks by their WSG category. */
+/** Group for related checks, which have no WSG guideline and are not scored. */
+const RELATED_GROUP = 'related (not scored)'
+
+/** Groups checks by their WSG category, with related checks in a group of their own. */
 const groupByCategory = (
   checks: ReadonlyArray<CheckResult>
 ): ReadonlyArray<{ category: string; items: ReadonlyArray<CheckResult> }> => {
   const map = checks.reduce<Map<string, CheckResult[]>>((acc, check) => {
-    const existing = acc.get(check.category)
+    const group = check.related === true ? RELATED_GROUP : check.category
+    const existing = acc.get(group)
     if (existing) {
       existing.push(check)
     } else {
-      acc.set(check.category, [check])
+      acc.set(group, [check])
     }
     return acc
   }, new Map<string, CheckResult[]>())
@@ -61,7 +66,7 @@ const CheckDetails = ({ check }: { readonly check: CheckResult }) => (
     <styled.p fontSize="sm" fontWeight="medium" color="fg.default">
       {check.guidelineName}{' '}
       <styled.span color="fg.muted" fontSize="xs">
-        ({check.guidelineId})
+        ({guidelineLabel(check)})
       </styled.span>
     </styled.p>
     <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed" mt="0.5">

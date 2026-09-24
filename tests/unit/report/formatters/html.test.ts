@@ -176,3 +176,30 @@ describe('formatHtml', () => {
     expect(html).toContain('3.1')
   })
 })
+
+describe('formatHtml guideline labels and related checks', () => {
+  const wsg = makeCheckResult({
+    guidelineId: 'minify-and-remove-unused-code',
+    guidelineName: 'Minify and remove unused code',
+    guidelineNumber: '3.2',
+  })
+  const related = makeCheckResult({
+    guidelineId: 'form-validation',
+    guidelineName: 'Form validation',
+    related: true,
+    status: 'fail',
+    score: 0,
+    recommendation: 'Label inputs.',
+  })
+
+  it('shows the display number and a separate related section', () => {
+    const html = formatHtml(makeReport({ results: [wsg, related] }))
+    expect(html).toContain('<td><code>3.2</code></td>')
+    expect(html).toContain('<h2>Related Checks (not scored)</h2>')
+    expect(html).toContain('<span class="badge">not scored</span>')
+  })
+
+  it('omits the related section when there are no related checks', () => {
+    expect(formatHtml(makeReport({ results: [wsg] }))).not.toContain('Related Checks')
+  })
+})

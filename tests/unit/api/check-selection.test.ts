@@ -48,4 +48,10 @@ describe('selectChecks', () => {
     const byLegacyId = selectChecks(['ux'], ['2.17'])
     expect(byLegacyId).toHaveLength(2)
   })
+
+  it('selects a related check by its related ID', () => {
+    const checks = selectChecks(['web-dev'], ['security-headers'])
+    expect(checks).toHaveLength(1)
+    expect(checks[0]?.relatedId).toBe('security-headers')
+  })
 })
