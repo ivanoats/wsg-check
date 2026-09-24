@@ -1,7 +1,7 @@
 # ADR-0008: Build and publish the CLI separately from the web app
 
 - Status: Accepted
-- Historical implementation date: 2026-04-20 (commit date; not a claimed approval date)
+- Historical implementation date: 2026-04-21 (commit date; not a claimed approval date)
 - Recorded: 2026-09-24
 - Provenance: retrospectively reconstructed from the evidence below
 
