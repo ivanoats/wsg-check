@@ -23,8 +23,8 @@ vi.mock('@/core/index', () => ({
 }))
 vi.mock('@/report/index', () => ({ fromRunResult: fromRunResultMock }))
 
-const { POST } = await import('@/app/api/check/route')
-const { GET } = await import('@/app/api/check/[id]/route')
+const { POST, OPTIONS: checkOptions } = await import('@/app/api/check/route')
+const { GET, OPTIONS: checkByIdOptions } = await import('@/app/api/check/[id]/route')
 const { findCheckResult } = await import('@/api/store')
 
 describe('check routes', () => {
@@ -33,6 +33,13 @@ describe('check routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     enforceRateLimitMock.mockResolvedValue(null)
+  })
+
+  it('OPTIONS on both check routes returns a CORS preflight response', () => {
+    for (const response of [checkOptions(), checkByIdOptions()]) {
+      expect(response.status).toBe(204)
+      expect(response.headers.get('Access-Control-Allow-Methods')).toContain('GET')
+    }
   })
 
   it('POST /api/check returns completed report payload', async () => {
@@ -46,7 +53,7 @@ describe('check routes', () => {
     fromRunResultMock.mockReturnValue({ overallScore: 80, summary: { totalChecks: 1 } })
 
     const request = {
-      json: async () => ({ url: 'https://example.com', categories: ['ux'] }),
+      json: () => Promise.resolve({ url: 'https://example.com', categories: ['ux'] }),
     } as unknown as NextRequest
 
     const response = await POST(request)
@@ -63,7 +70,7 @@ describe('check routes', () => {
     validateCheckPayloadMock.mockReturnValue({ ok: false, error: new Error('bad payload') })
 
     const request = {
-      json: async () => ({ bad: true }),
+      json: () => Promise.resolve({ bad: true }),
     } as unknown as NextRequest
 
     const response = await POST(request)

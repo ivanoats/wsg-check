@@ -6,7 +6,7 @@ const enforceRateLimitMock = vi.fn()
 vi.mock('@/api/rate-limit', () => ({ enforceRateLimit: enforceRateLimitMock }))
 
 const { GET: healthGet, OPTIONS: healthOptions } = await import('@/app/api/health/route')
-const { GET: openApiGet } = await import('@/app/api/openapi/route')
+const { GET: openApiGet, OPTIONS: openApiOptions } = await import('@/app/api/openapi/route')
 
 describe('health/openapi routes', () => {
   beforeEach(() => {
@@ -27,6 +27,13 @@ describe('health/openapi routes', () => {
 
   it('OPTIONS /api/health returns CORS preflight response', () => {
     const response = healthOptions()
+
+    expect(response.status).toBe(204)
+    expect(response.headers.get('Access-Control-Allow-Methods')).toContain('GET')
+  })
+
+  it('OPTIONS /api/openapi returns CORS preflight response', () => {
+    const response = openApiOptions()
 
     expect(response.status).toBe(204)
     expect(response.headers.get('Access-Control-Allow-Methods')).toContain('GET')

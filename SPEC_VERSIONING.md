@@ -150,7 +150,7 @@ The four checks with no guideline needed a decision. The options were to drop th
 ### 5.3 Report the spec version everywhere
 
 - The single source is `WSG_SPEC` in `src/config/spec/index.ts` (release tag, commit, edition, `lastModified`, URL), next to the vendored JSON. It is not duplicated into `package.json`, so the two cannot disagree.
-- CLI `--version`: `0.2.0 (WSG July-2026)`.
+- CLI `--version`: `<version> (WSG July-2026)`.
 - Reports (`SustainabilityReport.specVersion`, shown in the JSON, HTML, Markdown and terminal formats and on the results page) and `/api/health` (`specVersion`, plus the package `version`) name the release, so a stored report says which rule set produced the score.
 - README badge and intro: "WSG July-2026 (Group Note Draft)".
 
