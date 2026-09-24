@@ -170,7 +170,7 @@ Each spec bump gets one CHANGELOG entry (`feat!: target WSG July-2026`) that lin
 
 ### 5.6 Suggested order of work
 
-1. **Fix now (patch):** make `/api/guidelines` fall back to the static registry when the API's IDs are not numeric, or temporarily stop serving the live list. This stops the "everything is manual-only" regression.
+1. **Fix now (patch), done in this PR:** `fetchWsgGuidelines` rejects responses with non-numeric guideline IDs, so `/api/guidelines` falls back to the static registry. This stops the "everything is manual-only" regression.
 2. Vendor `July-2026`, generate the registry, and switch to slug IDs with a numeric alias table (`feat!:`).
 3. Remap checks per section 4 and decide what to do with the four orphaned checks.
 4. Add `specVersion` to the CLI, reports and API, plus the drift test and workflow.
