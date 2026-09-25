@@ -8,6 +8,7 @@ Start with the [project README](../README.md) for installation and usage.
 | [Architecture Decision Log (ADL)](adl.md)                                    | Ordered index of decisions and their status                                  |
 | [Architecture Decision Records (ADRs)](adr/0001-shared-analysis-pipeline.md) | Individual records explaining context, decisions, consequences, and evidence |
 | [Module and check reference](reference.md)                                   | Detailed checks, utilities, and report behavior                              |
+| [MCP server plan](mcp-server-plan.md)                                        | Proposed local MCP server for AI assistants                                  |
 | [Spec versioning](../SPEC_VERSIONING.md)                                     | WSG migration details and version policy                                     |
 | [Contributing](../CONTRIBUTING.md)                                           | Development setup and validation                                             |
 | [Releasing](../RELEASING.md)                                                 | Maintainer release procedure                                                 |
