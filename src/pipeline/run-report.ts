@@ -5,8 +5,7 @@
  * first, so they can show its notices before the (slow) run starts.
  */
 
-import type { ResolvedConfig } from '../config/loader'
-import { WsgChecker } from '../core/index'
+import { WsgChecker, type CheckerConfig } from '../core/index'
 import type { CheckFn } from '../core/types'
 import { fromRunResult, type SustainabilityReport } from '../report/types'
 import { type FetchError, type ParseError, type Result, ok } from '../utils/errors'
@@ -14,8 +13,8 @@ import { type FetchError, type ParseError, type Result, ok } from '../utils/erro
 export interface RunReportOptions {
   /** Checks to run, usually from `selectChecks`. */
   readonly checks: ReadonlyArray<CheckFn>
-  /** HTTP settings passed to the fetcher. */
-  readonly config?: Partial<ResolvedConfig>
+  /** HTTP settings and host policy passed to the fetcher. */
+  readonly config?: CheckerConfig
 }
 
 /**
