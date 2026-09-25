@@ -8,7 +8,7 @@ import { SectionHeading } from '../components/SectionHeading'
 export const metadata: Metadata = {
   title: 'About — WSG Check',
   description:
-    'About WSG Check — project purpose, scoring methodology, and sustainability statement.',
+    'About WSG Check — why it exists, how scoring works, and how Sustainable Websites can help you act on your report.',
 }
 
 const cardStyles = card()
@@ -164,6 +164,87 @@ const SustainabilitySection = () => (
   </styled.section>
 )
 
+/** Why I built WSG Check — the author's motivation. */
+const WhyIBuiltItSection = () => (
+  <styled.section aria-labelledby="why-heading" mb="8">
+    <SectionHeading id="why-heading">Why I Built WSG Check</SectionHeading>
+    <styled.p fontSize="sm" color="fg.muted" mb="3">
+      The W3C Web Sustainability Guidelines are thorough, but they read like a standard, not a to-do
+      list. Most teams I talk to agree that a lighter web is a better web, then stall on the
+      question of where to start. Carbon calculators hand out a score without a fix, and performance
+      tools measure speed without saying which guideline a problem maps to.
+    </styled.p>
+    <styled.p fontSize="sm" color="fg.muted">
+      I wanted the sustainability equivalent of an accessibility linter: something that runs in
+      seconds, points at specific success criteria, and tells you what to change. WSG Check is that
+      tool. It is open source so that anyone can see exactly how a score is calculated, and it runs
+      as a website, a CLI, and a CI step so the checks can live where the work happens.
+    </styled.p>
+  </styled.section>
+)
+
+/** Who I am — author bio. */
+const WhoIAmSection = () => (
+  <styled.section aria-labelledby="who-heading" mb="8">
+    <SectionHeading id="who-heading">Who I Am</SectionHeading>
+    <styled.p fontSize="sm" color="fg.muted" mb="3">
+      I&rsquo;m Ivan Storck, a software architect in Seattle. By day I am a Senior Solutions
+      Architect at lululemon, working on content management, design systems, and brand technology.
+      Before that I co-founded Code Fellows, taught Ruby and JavaScript to several hundred bootcamp
+      students, and spent six years on the teaching faculty of the University of Washington&rsquo;s
+      Rails certificate program.
+    </styled.p>
+    <styled.p fontSize="sm" color="fg.muted">
+      Outside of that I take a small number of fractional CTO engagements and build sustainability
+      tooling for the web. More of my work is at{' '}
+      <a href="https://ivanstorck.com" target="_blank" rel="noopener noreferrer" className={link()}>
+        ivanstorck.com
+      </a>
+      .
+    </styled.p>
+  </styled.section>
+)
+
+/** Call to action — Sustainable Websites. */
+const SustainableWebsitesSection = () => (
+  <styled.section
+    aria-labelledby="help-heading"
+    mb="8"
+    className={cardStyles.root}
+    p="5"
+    borderWidth="1px"
+    borderColor="border.default"
+  >
+    <SectionHeading id="help-heading">Want Help Acting on Your Report?</SectionHeading>
+    <styled.p fontSize="sm" color="fg.muted" mb="3">
+      A report tells you what to fix. Doing the fixing, while keeping design, content, and business
+      goals intact, is the harder part. Through{' '}
+      <a
+        href="https://sustainablewebsites.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        className={link()}
+      >
+        Sustainable Websites
+      </a>
+      , I help teams turn WSG Check findings into a prioritised plan and then into lighter, faster,
+      lower-carbon sites.
+    </styled.p>
+    <styled.p fontSize="sm" color="fg.muted" mb="4">
+      If your score was lower than you hoped, or you need to show progress against the W3C
+      guidelines, let&rsquo;s talk.
+    </styled.p>
+    <a
+      href="https://sustainablewebsites.com"
+      target="_blank"
+      rel="noopener noreferrer"
+      className={button({ size: 'md' })}
+    >
+      Visit SustainableWebsites.com ↗
+    </a>
+  </styled.section>
+)
+
 /** Resources and links section. */
 const ResourcesSection = () => (
   <styled.section aria-labelledby="links-heading" mb="6">
@@ -218,8 +299,11 @@ export default function AboutPage() {
       </styled.p>
 
       <PurposeSection />
+      <WhyIBuiltItSection />
+      <SustainableWebsitesSection />
       <ScoringSection />
       <SustainabilitySection />
+      <WhoIAmSection />
       <ResourcesSection />
     </styled.section>
   )
