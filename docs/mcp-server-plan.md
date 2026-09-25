@@ -17,17 +17,34 @@ The server ships in the existing `@sustainablewebsites/wsg-check` package as a s
 claude mcp add wsg-check -- npx -y -p @sustainablewebsites/wsg-check wsg-check-mcp
 ```
 
-```jsonc
-// Claude Desktop, Cursor, VS Code (mcp.json) and similar clients
+Claude Desktop (`claude_desktop_config.json`) and Cursor (`.cursor/mcp.json`):
+
+```json
 {
   "mcpServers": {
     "wsg-check": {
       "command": "npx",
-      "args": ["-y", "-p", "@sustainablewebsites/wsg-check", "wsg-check-mcp"],
-    },
-  },
+      "args": ["-y", "-p", "@sustainablewebsites/wsg-check", "wsg-check-mcp"]
+    }
+  }
 }
 ```
+
+VS Code (`.vscode/mcp.json`) uses a `servers` key:
+
+```json
+{
+  "servers": {
+    "wsg-check": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "-p", "@sustainablewebsites/wsg-check", "wsg-check-mcp"]
+    }
+  }
+}
+```
+
+To check a local dev server, add `--allow-origin http://localhost:3000` (or `--allow-local` for any loopback port) after `wsg-check-mcp` in the arguments. See [Network access policy](#network-access-policy).
 
 Typical prompts: "Check http://localhost:3000 against the WSG and fix the top three issues", "Which WSG guidelines cover web fonts?", "Did my change improve the render-blocking score?"
 
@@ -68,17 +85,20 @@ Errors (unreachable host, parse failure, disallowed host) return `isError: true`
 
 ## Network access policy
 
-The main local use case is checking a dev server, so the MCP server needs loopback access. It also runs whatever URL an assistant passes, and that URL can come from untrusted page content (prompt injection). The policy:
+Checking a dev server is the main local use case, so the MCP server needs a way to reach loopback addresses. It also fetches whatever URL an assistant passes, and that URL can come from untrusted page content (prompt injection). If loopback access were on by default, an injected page could make the server probe developer-local services. Local access is therefore opt-in, and the narrowest option is the one the docs recommend:
 
-| Target                                                    | Default | Opt-in                                                   |
-| --------------------------------------------------------- | ------- | -------------------------------------------------------- |
-| Public hosts                                              | Allowed | —                                                        |
-| Loopback (`localhost`, `127.0.0.0/8`, `::1`)              | Allowed | `--no-local` disables                                    |
-| Private LAN ranges (`10/8`, `172.16/12`, `192.168/16`)    | Blocked | `--allow-private-network` or `WSG_CHECK_ALLOW_PRIVATE=1` |
-| Link-local and cloud metadata (`169.254/16`, `fe80::/10`) | Blocked | Never                                                    |
-| Non-HTTP schemes                                          | Blocked | Never                                                    |
+| Target                                                    | Default | Opt-in                                                                                                                |
+| --------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------- |
+| Public hosts                                              | Allowed | —                                                                                                                     |
+| Specific local origins (e.g. `http://localhost:3000`)     | Blocked | `--allow-origin <origin>` (repeatable) or `WSG_CHECK_ALLOW_ORIGINS` (comma-separated). Recommended in setup snippets. |
+| Any loopback port (`localhost`, `127.0.0.0/8`, `::1`)     | Blocked | `--allow-local` or `WSG_CHECK_ALLOW_LOCAL=1`                                                                          |
+| Private LAN ranges (`10/8`, `172.16/12`, `192.168/16`)    | Blocked | `--allow-private-network` or `WSG_CHECK_ALLOW_PRIVATE=1`                                                              |
+| Link-local and cloud metadata (`169.254/16`, `fe80::/10`) | Blocked | Never                                                                                                                 |
+| Non-HTTP schemes                                          | Blocked | Never                                                                                                                 |
 
-Apply the policy to the initial URL and to every redirect hop. Implement it as a `hostPolicy` option on `HttpClient` and `PageFetcher`, with today's behaviour as the default, so the CLI and API keep their current rules.
+Opt-in happens in the client's server configuration, which the user edits, never through a tool argument the assistant controls. When `check_url` refuses a local URL, the error names the flag to add, so the assistant can tell the user how to enable it rather than retrying.
+
+Apply the policy to the initial URL and to every redirect hop, so an allowed origin cannot redirect to one that is not allowed. Implement it as a `hostPolicy` option on `HttpClient` and `PageFetcher`, with today's behaviour as the default, so the CLI and API keep their current rules.
 
 The server makes no other outbound calls beyond those the checks already make (the Green Web Foundation hosting lookup). Document that lookup in the README so users know a check sends the hostname to a third party.
 
@@ -125,4 +145,4 @@ Each phase is a separate PR that passes lint, type-check, unit tests, and both b
 
 1. **Separate bin or subcommand?** The plan uses a second bin, `wsg-check-mcp`, because the CLI's default command takes a positional `<url>`, and `wsg-check mcp` would be ambiguous with a URL argument. The cost is the longer `npx -p … wsg-check-mcp` form. A separate `@sustainablewebsites/wsg-check-mcp` package would give `npx -y @sustainablewebsites/wsg-check-mcp` but adds a second release to maintain.
 2. **Package weight.** `next`, `react`, and `react-dom` are runtime dependencies, so every `npx` launch downloads them. Moving them to `devDependencies` (the web app builds from the repo, not the npm package) would make CLI and MCP installs much smaller. That is worth a separate change, since it also affects the CLI.
-3. **Loopback by default?** The table above allows loopback by default because checking a dev server is the headline use case. The alternative is to require `--allow-local` and document it in every setup snippet.
+3. **Per-call confirmation?** Clients that support MCP elicitation could ask the user to approve each local URL instead of relying on a startup allowlist. Support varies by client, so v1 uses the allowlist and treats elicitation as a later addition.
