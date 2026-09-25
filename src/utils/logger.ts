@@ -6,6 +6,9 @@
  *   - "terminal"    – Human-readable prefixed lines (suitable for CLI output)
  *
  * Only messages at or above the configured minimum level are emitted.
+ *
+ * All output goes to stderr, so stdout stays reserved for program output
+ * (JSON reports, the MCP stdio protocol).
  */
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
@@ -64,13 +67,13 @@ export function createLogger(options?: LoggerOptions): Logger {
         timestamp: new Date().toISOString(),
         ...(data !== undefined ? { data } : {}),
       }
-      console.log(JSON.stringify(entry))
+      console.error(JSON.stringify(entry))
     } else {
       const prefix = `[${level.toUpperCase()}]`
       if (data !== undefined) {
-        console.log(`${prefix} ${message}`, data)
+        console.error(`${prefix} ${message}`, data)
       } else {
-        console.log(`${prefix} ${message}`)
+        console.error(`${prefix} ${message}`)
       }
     }
   }

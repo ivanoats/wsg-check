@@ -20,20 +20,10 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { Command } from 'commander'
 import { resolveConfig } from '../config/loader'
-import { checkMatchesGuideline, isLegacyGuidelineId } from '../config/guidelines-registry'
 import { WSG_SPEC } from '../config/spec/index'
 import type { OutputFormat, WSGCategory } from '../config/types'
-import { WsgChecker } from '../core/index'
-import type { CheckFnWithId } from '../core/types'
-import {
-  performanceChecks,
-  semanticChecks,
-  sustainabilityChecks,
-  securityChecks,
-  uxDesignChecks,
-  hostingChecks,
-} from '../checks/index'
-import { fromRunResult } from '../report/types'
+import { runReport, selectChecks, type SelectionNotice } from '../pipeline/index'
+import type { SustainabilityReport } from '../report/types'
 import { formatJson, formatMarkdown, formatHtml, formatTerminal } from '../report/formatters/index'
 
 // ─── Package version ──────────────────────────────────────────────────────────
@@ -90,7 +80,7 @@ const startSpinner = (message: string): (() => void) => {
 /**
  * Serialises the report to the requested format string.
  */
-const renderReport = (report: ReturnType<typeof fromRunResult>, format: OutputFormat): string => {
+const renderReport = (report: SustainabilityReport, format: OutputFormat): string => {
   switch (format) {
     case 'json':
       return formatJson(report)
@@ -121,79 +111,13 @@ const buildCliFlags = (url: string, opts: CliOptions) => ({
   ...(opts.verbose ? { verbose: true } : {}),
 })
 
-// ─── Check selector ───────────────────────────────────────────────────────────
+// ─── Selection notices ────────────────────────────────────────────────────────
 
-/** Every registered check, regardless of category. */
-const ALL_CHECKS: ReadonlyArray<CheckFnWithId> = [
-  ...performanceChecks,
-  ...semanticChecks,
-  ...sustainabilityChecks,
-  ...securityChecks,
-  ...uxDesignChecks,
-  ...hostingChecks,
-]
-
-/**
- * Describes what replaces a legacy numeric ID, based on the checks registered
- * under it: the WSG slugs they implement and the IDs of any related
- * (unscored) checks. For example, `2.17` covers downloadable documents (a WSG
- * guideline) and alt text (a related check).
- */
-const describeLegacyReplacement = (id: string): string => {
-  const checks = ALL_CHECKS.filter((check) => check.guidelineId === id)
-  const quoted = (ids: ReadonlyArray<string | null>): string =>
-    [...new Set(ids.filter((value): value is string => value !== null))]
-      .map((value) => JSON.stringify(value))
-      .join(', ')
-
-  const release = `WSG ${WSG_SPEC.release}`
-  const slugs = quoted(checks.map((check) => check.guidelineSlug))
-  const relatedIds = quoted(checks.map((check) => check.relatedId))
-
-  const parts = [
-    ...(slugs === '' ? [] : [`use ${slugs} (${release})`]),
-    ...(relatedIds === '' ? [] : [`use ${relatedIds} (related check, not scored)`]),
-  ]
-  return parts.length === 0 ? `it has no equivalent in ${release}` : parts.join('; ')
-}
-
-/** Warns for each legacy numeric guideline ID, naming what to use instead. */
-const warnOnLegacyGuidelineIds = (guidelines: readonly string[]): void => {
-  for (const id of guidelines.filter(isLegacyGuidelineId)) {
-    process.stderr.write(
-      `Warning: numeric guideline ID "${id}" is deprecated; ${describeLegacyReplacement(id)}.\n`
-    )
+/** Writes selection notices (deprecated IDs, empty categories) to stderr. */
+const writeNotices = (notices: ReadonlyArray<SelectionNotice>): void => {
+  for (const { level, message } of notices) {
+    process.stderr.write(`${level === 'note' ? 'Note' : 'Warning'}: ${message}\n`)
   }
-}
-
-/**
- * Selects and optionally filters check functions from the available check
- * arrays based on category selection and requested guideline IDs.
- * Extracted to keep `runCheck` below the cognitive-complexity threshold.
- */
-const selectChecks = (
-  categories: ReadonlySet<WSGCategory>,
-  guidelines: readonly string[]
-): ReadonlyArray<CheckFnWithId> => {
-  if (categories.has('business')) {
-    process.stderr.write(
-      'Note: the "business" category has no automated checks in the current version.\n'
-    )
-  }
-
-  const categoryChecks: ReadonlyArray<CheckFnWithId> = [
-    ...(categories.has('web-dev')
-      ? [...performanceChecks, ...semanticChecks, ...sustainabilityChecks, ...securityChecks]
-      : []),
-    ...(categories.has('ux') ? [...uxDesignChecks] : []),
-    ...(categories.has('hosting') ? [...hostingChecks] : []),
-  ]
-
-  warnOnLegacyGuidelineIds(guidelines)
-
-  return guidelines.length > 0
-    ? categoryChecks.filter((c) => guidelines.some((g) => checkMatchesGuideline(c, g)))
-    : categoryChecks
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -215,15 +139,15 @@ export const runCheck = async (url: string, opts: CliOptions): Promise<number> =
   const failThreshold = config.failThreshold ?? 0
 
   // ── Select check functions ───────────────────────────────────────────────
-  const selectedCategories = new Set(config.categories ?? ['ux', 'web-dev', 'hosting', 'business'])
-  const allChecks = selectChecks(selectedCategories, config.guidelines)
+  const { checks, notices } = selectChecks(
+    config.categories ?? ['ux', 'web-dev', 'hosting', 'business'],
+    config.guidelines
+  )
+  writeNotices(notices)
 
   // ── Run the check pipeline ───────────────────────────────────────────────
   const stopSpinner = startSpinner(`Analysing ${url} …`)
-
-  const checker = new WsgChecker(config, allChecks)
-  const result = await checker.check(url)
-
+  const result = await runReport(url, { checks, config })
   stopSpinner()
 
   if (!result.ok) {
@@ -231,15 +155,7 @@ export const runCheck = async (url: string, opts: CliOptions): Promise<number> =
     return 1
   }
 
-  const runResult = result.value
-
-  // ── Build and format the report ──────────────────────────────────────────
-  // `RunResult` is the output of `WsgChecker.check()` and does not expose the
-  // raw `PageData` (which holds detailed page-weight metrics). Those metrics
-  // are unavailable at this point, so we pass 0. They are populated when
-  // `fromRunResult` is called from layers that have direct access to `PageData`
-  // (e.g. the API or frontend).
-  const report = fromRunResult(runResult, 0, 0, 0)
+  const report = result.value
   const output = renderReport(report, format)
 
   // ── Write output ─────────────────────────────────────────────────────────
@@ -257,9 +173,9 @@ export const runCheck = async (url: string, opts: CliOptions): Promise<number> =
   }
 
   // ── Exit code ────────────────────────────────────────────────────────────
-  if (runResult.overallScore < failThreshold) {
+  if (report.overallScore < failThreshold) {
     process.stderr.write(
-      `\n✗ Score ${runResult.overallScore} is below fail-threshold ${failThreshold}\n`
+      `\n✗ Score ${report.overallScore} is below fail-threshold ${failThreshold}\n`
     )
     return 1
   }

@@ -1,12 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import { NextRequest } from 'next/server'
-import { WsgChecker } from '@/core/index'
-import { fromRunResult } from '@/report/index'
 import { optionsResponse } from '@/api/cors'
 import { errorJson, okJson } from '@/api/response'
 import { enforceRateLimit } from '@/api/rate-limit'
 import { saveCheckResult } from '@/api/store'
-import { selectChecks } from '@/api/check-selection'
+import { runReport, selectChecks } from '@/pipeline/index'
 import { validateCheckPayload, validateTargetUrl } from '@/api/validation'
 import type { CheckResponseBody } from '@/api/types'
 
@@ -36,18 +34,17 @@ export const POST = async (request: NextRequest): Promise<Response> => {
   }
 
   try {
-    const checks = selectChecks(
+    const { checks } = selectChecks(
       validatedPayload.value.categories,
       validatedPayload.value.guidelines
     )
-    const checker = new WsgChecker({}, checks)
-    const runResult = await checker.check(validatedUrl.value.toString())
+    const result = await runReport(validatedUrl.value.toString(), { checks })
 
-    if (!runResult.ok) {
-      return errorJson(400, 'BAD_REQUEST', runResult.error.message)
+    if (!result.ok) {
+      return errorJson(400, 'BAD_REQUEST', result.error.message)
     }
 
-    const report = fromRunResult(runResult.value, 0, 0, 0)
+    const report = result.value
     const id = randomUUID()
     saveCheckResult(id, report)
 

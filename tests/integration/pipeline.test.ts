@@ -64,6 +64,7 @@ const {
   hostingChecks,
 } = await import('@/checks/index')
 const { getGuidelineById } = await import('@/config/guidelines-registry')
+const { runReport, selectChecks } = await import('@/pipeline/index')
 
 const ALL_CHECKS = [
   ...performanceChecks,
@@ -194,6 +195,52 @@ describe('Full pipeline integration — WsgChecker.check()', () => {
     mockGet.mockReset()
     lookupMock.mockReset()
     lookupMock.mockResolvedValue([{ address: '93.184.216.34', family: 4 }]) // NOSONAR
+  })
+
+  // ── Stdout hygiene ────────────────────────────────────────────────────────
+
+  it('writes nothing to stdout, so JSON reports and the MCP stdio stream stay clean', async () => {
+    setupMocks(GOOD_HTML)
+    const stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    try {
+      const result = await buildChecker().check('https://example.com')
+      expect(result.ok).toBe(true)
+      expect(stdoutSpy).not.toHaveBeenCalled()
+      expect(logSpy).not.toHaveBeenCalled()
+      expect(infoSpy).not.toHaveBeenCalled()
+    } finally {
+      stdoutSpy.mockRestore()
+      logSpy.mockRestore()
+      infoSpy.mockRestore()
+      errorSpy.mockRestore()
+    }
+  })
+
+  // ── Report via the shared pipeline ────────────────────────────────────────
+
+  it('runReport fills page-weight metadata from the fetched page', async () => {
+    setupMocks(GOOD_HTML)
+    const { checks } = selectChecks()
+    const result = await runReport('https://example.com', { checks })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    const { metadata } = result.value
+    // setupMocks sends Content-Length: GOOD_HTML.length
+    expect(metadata.pageWeight).toBe(GOOD_HTML.length)
+    expect(metadata.requestCount).toBeGreaterThan(0)
+    expect(metadata.thirdPartyCount).toBe(0)
+    expect(result.value.checks.length).toBe(checks.length)
+  })
+
+  it('runReport returns the fetch error when the page cannot be fetched', async () => {
+    mockGet.mockRejectedValue(new Error('connect ECONNREFUSED'))
+    const result = await runReport('https://example.com', { checks: selectChecks().checks })
+    expect(result.ok).toBe(false)
   })
 
   // ── Shape & structure ──────────────────────────────────────────────────────

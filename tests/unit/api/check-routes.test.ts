@@ -6,22 +6,15 @@ const validateCheckPayloadMock = vi.fn()
 const validateTargetUrlMock = vi.fn()
 const selectChecksMock = vi.fn()
 const saveCheckResultMock = vi.fn()
-const checkerCheckMock = vi.fn()
-const fromRunResultMock = vi.fn()
+const runReportMock = vi.fn()
 
 vi.mock('@/api/rate-limit', () => ({ enforceRateLimit: enforceRateLimitMock }))
 vi.mock('@/api/validation', () => ({
   validateCheckPayload: validateCheckPayloadMock,
   validateTargetUrl: validateTargetUrlMock,
 }))
-vi.mock('@/api/check-selection', () => ({ selectChecks: selectChecksMock }))
+vi.mock('@/pipeline/index', () => ({ selectChecks: selectChecksMock, runReport: runReportMock }))
 vi.mock('@/api/store', () => ({ saveCheckResult: saveCheckResultMock, findCheckResult: vi.fn() }))
-vi.mock('@/core/index', () => ({
-  WsgChecker: class {
-    check = checkerCheckMock
-  },
-}))
-vi.mock('@/report/index', () => ({ fromRunResult: fromRunResultMock }))
 
 const { POST, OPTIONS: checkOptions } = await import('@/app/api/check/route')
 const { GET, OPTIONS: checkByIdOptions } = await import('@/app/api/check/[id]/route')
@@ -48,9 +41,11 @@ describe('check routes', () => {
       value: { url: 'https://example.com', categories: ['ux'], guidelines: ['2.8'] },
     })
     validateTargetUrlMock.mockResolvedValue({ ok: true, value: new URL('https://example.com') })
-    selectChecksMock.mockReturnValue([{ guidelineId: '2.8' }])
-    checkerCheckMock.mockResolvedValue({ ok: true, value: { overallScore: 80 } })
-    fromRunResultMock.mockReturnValue({ overallScore: 80, summary: { totalChecks: 1 } })
+    selectChecksMock.mockReturnValue({ checks: [{ guidelineId: '2.8' }], notices: [] })
+    runReportMock.mockResolvedValue({
+      ok: true,
+      value: { overallScore: 80, summary: { totalChecks: 1 } },
+    })
 
     const request = {
       json: () => Promise.resolve({ url: 'https://example.com', categories: ['ux'] }),

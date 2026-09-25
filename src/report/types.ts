@@ -251,15 +251,18 @@ const summariseResults = (results: ReadonlyArray<CheckResult>): ReportSummary =>
  *   5. Attaches the standard static-analysis `methodology`.
  *
  * @param runResult - The raw output of `WsgChecker.check()`.
- * @param pageWeight - Optional page-weight metrics to include in metadata.
- * @param requestCount - Optional total resource count for metadata.
- * @param thirdPartyCount - Optional third-party resource count for metadata.
+ * The page metrics default to `runResult.pageMetrics`, which
+ * `WsgChecker.check()` fills in, and to 0 when that is absent.
+ *
+ * @param pageWeight - HTML size in bytes for the metadata.
+ * @param requestCount - Total resource count for the metadata.
+ * @param thirdPartyCount - Third-party resource count for the metadata.
  */
 export const fromRunResult = (
   runResult: RunResult,
-  pageWeight = 0,
-  requestCount = 0,
-  thirdPartyCount = 0
+  pageWeight = runResult.pageMetrics?.htmlSize ?? 0,
+  requestCount = runResult.pageMetrics?.resourceCount ?? 0,
+  thirdPartyCount = runResult.pageMetrics?.thirdPartyCount ?? 0
 ): SustainabilityReport => ({
   url: runResult.url,
   timestamp: runResult.timestamp,

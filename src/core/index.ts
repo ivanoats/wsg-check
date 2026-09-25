@@ -28,7 +28,7 @@ import type { CheckFn, RunResult } from './types'
 
 // ─── Re-exports ───────────────────────────────────────────────────────────────
 
-export type { CheckResult, CheckFn, PageData, CategoryScore, RunResult } from './types'
+export type { CheckResult, CheckFn, PageData, PageMetrics, CategoryScore, RunResult } from './types'
 export { PageFetcher } from './fetcher'
 export { CheckRunner } from './runner'
 export { calculateCategoryScore, calculateOverallScore, scoreResults } from './scorer'
@@ -107,6 +107,11 @@ export class WsgChecker {
       co2PerPageView,
       co2Model: CO2_MODEL,
       isGreenHosted,
+      pageMetrics: {
+        htmlSize: pageResult.value.pageWeight.htmlSize,
+        resourceCount: pageResult.value.pageWeight.resourceCount,
+        thirdPartyCount: pageResult.value.pageWeight.thirdPartyCount,
+      },
     })
   }
 }
