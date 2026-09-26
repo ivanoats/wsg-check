@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.0](https://github.com/ivanoats/wsg-check/compare/v0.4.0...v0.5.0) (2026-09-26)
+
+
+### Added
+
+* **mcp:** search guideline descriptions in list_guidelines ([#208](https://github.com/ivanoats/wsg-check/issues/208)) ([1ef5c11](https://github.com/ivanoats/wsg-check/commit/1ef5c1143b0c61d5351fc9b85bee311cf515d547))
+* **skill:** add the wsg-sustainability-review Agent Skill ([#210](https://github.com/ivanoats/wsg-check/issues/210)) ([f5033f0](https://github.com/ivanoats/wsg-check/commit/f5033f0cfa2fd3ff4cc4f892c946e78d55af501c))
+
 ## [0.4.0](https://github.com/ivanoats/wsg-check/compare/v0.3.0...v0.4.0) (2026-09-26)
 
 
