@@ -40,7 +40,7 @@ export const listGuidelinesInputSchema = {
     .string()
     .min(1)
     .optional()
-    .describe('Case-insensitive text to find in the title or slug, e.g. "image"'),
+    .describe('Case-insensitive text to find in the title, slug, or description, e.g. "media"'),
 }
 
 export const listGuidelinesOutputSchema = {
@@ -89,6 +89,11 @@ const summarize = (guideline: GuidelineEntry): z.infer<typeof guidelineSummarySc
   automatedChecks: automatedCheckCount(guideline.id),
 })
 
+const matchesQuery = (guideline: GuidelineEntry, query: string): boolean =>
+  [guideline.title, guideline.id, guideline.description].some((text) =>
+    text.toLowerCase().includes(query)
+  )
+
 const RELATED_CHECK_IDS: ReadonlySet<string> = new Set(
   ALL_CHECKS.flatMap((check) => (check.relatedId === null ? [] : [check.relatedId]))
 )
@@ -107,9 +112,7 @@ export const handleListGuidelines = (input: ListGuidelinesInput): CallToolResult
   const matches = guidelines
     .filter((g) => input.category === undefined || g.category === input.category)
     .filter((g) => input.testability === undefined || g.testability === input.testability)
-    .filter(
-      (g) => query === undefined || g.title.toLowerCase().includes(query) || g.id.includes(query)
-    )
+    .filter((g) => query === undefined || matchesQuery(g, query))
     .map(summarize)
 
   const lines = matches.map(

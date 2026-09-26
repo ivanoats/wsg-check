@@ -107,6 +107,13 @@ describe('list_guidelines', () => {
     expect(bySlug.guidelines.map((g) => g.id)).toEqual(['minify-and-remove-unused-code'])
   })
 
+  it('also matches the description, so a search for "font" finds web typography', async () => {
+    const { guidelines } = (await call('list_guidelines', { query: 'font' }))
+      .structuredContent as Listing
+
+    expect(guidelines.map((g) => g.id)).toContain('use-optimized-web-typography')
+  })
+
   it('says so when nothing matches', async () => {
     const result = await call('list_guidelines', { query: 'no guideline has this title' })
 
