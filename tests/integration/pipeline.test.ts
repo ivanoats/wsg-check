@@ -202,9 +202,9 @@ describe('Full pipeline integration — WsgChecker.check()', () => {
   it('writes nothing to stdout, so JSON reports and the MCP stdio stream stay clean', async () => {
     setupMocks(GOOD_HTML)
     const stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined)
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined)
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
 
     try {
       const result = await buildChecker().check('https://example.com')

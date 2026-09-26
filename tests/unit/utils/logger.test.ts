@@ -5,7 +5,7 @@ describe('createLogger – terminal mode (default)', () => {
   let spy: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
-    spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    spy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
   })
 
   afterEach(() => {
@@ -54,7 +54,7 @@ describe('createLogger – structured mode', () => {
   let spy: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
-    spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    spy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
   })
 
   afterEach(() => {

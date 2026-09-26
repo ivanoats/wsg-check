@@ -63,6 +63,19 @@ export const classifyAddress = (address: string): AddressClass => {
 /** Strips the brackets that `URL.hostname` keeps around IPv6 literals. */
 const unbracket = (hostname: string): string => hostname.replace(/^\[(.*)\]$/, '$1')
 
+const RESTRICTIVENESS: Record<AddressClass, number> = {
+  public: 0,
+  loopback: 1,
+  private: 2,
+  reserved: 3,
+}
+
+const mostRestrictive = (classes: ReadonlyArray<AddressClass>): AddressClass =>
+  classes.reduce<AddressClass>(
+    (worst, current) => (RESTRICTIVENESS[current] > RESTRICTIVENESS[worst] ? current : worst),
+    classes.length === 0 ? 'reserved' : 'public'
+  )
+
 /**
  * Classifies a hostname by name, then by every address it resolves to.
  * Returns the most restrictive class so that a name resolving to both a
@@ -83,19 +96,6 @@ export const classifyHost = async (hostname: string): Promise<AddressClass> => {
     return 'reserved'
   }
 }
-
-const RESTRICTIVENESS: Record<AddressClass, number> = {
-  public: 0,
-  loopback: 1,
-  private: 2,
-  reserved: 3,
-}
-
-const mostRestrictive = (classes: ReadonlyArray<AddressClass>): AddressClass =>
-  classes.reduce<AddressClass>(
-    (worst, current) => (RESTRICTIVENESS[current] > RESTRICTIVENESS[worst] ? current : worst),
-    classes.length === 0 ? 'reserved' : 'public'
-  )
 
 // ─── Decisions ────────────────────────────────────────────────────────────────
 
