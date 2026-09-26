@@ -143,24 +143,18 @@ describe('get_guideline', () => {
     expect(textOf(result)).toContain('> numeric guideline ID "3.3" is deprecated')
   })
 
-  it('explains a numeric ID whose guideline was removed from the spec', async () => {
-    const result = await call('get_guideline', { id: '3.15' })
+  it.each([
+    [
+      'a numeric ID whose guideline was removed',
+      '3.15',
+      '"security-headers" (related check, not scored)',
+    ],
+    ['a related-check ID', 'form-validation', 'is a related check, not a WSG guideline'],
+    ['an unknown ID', 'no-such-guideline', 'Use list_guidelines to find its slug'],
+  ])('returns an explanatory error for %s', async (_case, id, explanation) => {
+    const result = await call('get_guideline', { id })
 
     expect(result.isError).toBe(true)
-    expect(textOf(result)).toContain('"security-headers" (related check, not scored)')
-  })
-
-  it('explains that a related-check ID is not a guideline', async () => {
-    const result = await call('get_guideline', { id: 'form-validation' })
-
-    expect(result.isError).toBe(true)
-    expect(textOf(result)).toContain('is a related check, not a WSG guideline')
-  })
-
-  it('points to list_guidelines for an unknown ID', async () => {
-    const result = await call('get_guideline', { id: 'no-such-guideline' })
-
-    expect(result.isError).toBe(true)
-    expect(textOf(result)).toContain('Use list_guidelines to find its slug')
+    expect(textOf(result)).toContain(explanation)
   })
 })
