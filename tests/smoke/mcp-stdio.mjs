@@ -38,16 +38,18 @@ const runSmokeTest = (serverPath) =>
       stdio: ['pipe', 'pipe', 'inherit'],
     })
     const send = (message) => child.stdin.write(`${JSON.stringify(message)}\n`)
+    const deadline = AbortSignal.timeout(TIMEOUT_MS)
+    let settled = false
     const finish = (error) => {
-      clearTimeout(timer)
+      if (settled) return
+      settled = true
       child.removeAllListeners('exit')
       child.kill()
       if (error) rejectPromise(error)
       else resolvePromise()
     }
-    const timer = setTimeout(
-      () => finish(new Error(`no tools/list response within ${TIMEOUT_MS} ms`)),
-      TIMEOUT_MS
+    deadline.addEventListener('abort', () =>
+      finish(new Error(`no tools/list response within ${TIMEOUT_MS} ms`))
     )
 
     const parse = (line) => {
