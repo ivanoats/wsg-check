@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.0](https://github.com/ivanoats/wsg-check/compare/v0.5.0...v0.6.0) (2026-09-26)
+
+
+### Added
+
+* **mcp:** list the server in the MCP Registry ([#211](https://github.com/ivanoats/wsg-check/issues/211)) ([dc7c41c](https://github.com/ivanoats/wsg-check/commit/dc7c41cd817c2709e79c32a1fe296f2359c43987))
+
 ## [0.5.0](https://github.com/ivanoats/wsg-check/compare/v0.4.0...v0.5.0) (2026-09-26)
 
 
