@@ -271,6 +271,7 @@ export const handleCheckUrl = async (
     checks,
     config: {
       hostPolicy: options.hostPolicy,
+      timeout: timeoutMs,
       signal: AbortSignal.any([
         context.signal,
         timeout,

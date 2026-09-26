@@ -68,6 +68,12 @@ describe('classifyHost', () => {
     expect(lookupMock).not.toHaveBeenCalled()
   })
 
+  it('ignores a trailing DNS root dot', async () => {
+    expect(await classifyHost('localhost.')).toBe('loopback')
+    expect(await classifyHost('nas.local.')).toBe('private')
+    expect(lookupMock).not.toHaveBeenCalled()
+  })
+
   it('treats .local names as private', async () => {
     expect(await classifyHost('printer.local')).toBe('private')
   })
@@ -204,7 +210,9 @@ describe('isLocalHostname', () => {
   it.each([
     'localhost',
     'LOCALHOST',
+    'localhost.',
     'app.localhost',
+    'nas.local.',
     'nas.local',
     '127.0.0.1',
     '10.0.0.2',

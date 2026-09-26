@@ -14,13 +14,14 @@ import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 // ─── Network mocks ────────────────────────────────────────────────────────────
 
 const mockGet = vi.fn()
+const createMock = vi.fn(() => ({ get: mockGet }))
 
 vi.mock('axios', () => {
   class MockAxiosError extends Error {
     response?: { status: number }
   }
   return {
-    default: { create: () => ({ get: mockGet }) },
+    default: { create: createMock },
     AxiosError: MockAxiosError,
   }
 })
@@ -275,6 +276,35 @@ describe('wsg-check MCP server', () => {
     hangUntilAborted()
     const result = await callCheckUrl(client, { url: 'https://example.com/', timeoutMs: 1_000 })
 
+    expect(result.isError).toBe(true)
+    expect(textOf(result)).toContain('timed out after 1000 ms')
+  })
+
+  it('uses timeoutMs as the per-request timeout', async () => {
+    servePage()
+    createMock.mockClear()
+    await callCheckUrl(client, { url: 'https://example.com/', timeoutMs: 45_000 })
+
+    expect(createMock).toHaveBeenCalledWith(expect.objectContaining({ timeout: 45_000 }))
+  })
+
+  it('times out when the hosting lookup hangs after the page was fetched', async () => {
+    servePage()
+    greenHostingMock.mockReturnValueOnce(new Promise(() => undefined))
+    const result = await callCheckUrl(client, { url: 'https://example.com/', timeoutMs: 1_000 })
+
+    expect(result.isError).toBe(true)
+    expect(textOf(result)).toContain('timed out after 1000 ms')
+  })
+
+  it('times out when the carbon estimate hosting lookup hangs', async () => {
+    servePage()
+    greenHostingMock
+      .mockResolvedValueOnce(false) // the sustainable-hosting check
+      .mockReturnValueOnce(new Promise(() => undefined)) // the checker's CO₂ estimate
+    const result = await callCheckUrl(client, { url: 'https://example.com/', timeoutMs: 1_000 })
+
+    expect(greenHostingMock).toHaveBeenCalledTimes(2)
     expect(result.isError).toBe(true)
     expect(textOf(result)).toContain('timed out after 1000 ms')
   })

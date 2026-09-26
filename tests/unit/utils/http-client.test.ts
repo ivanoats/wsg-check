@@ -462,6 +462,23 @@ describe('HttpClient — host policy', () => {
     expect(mockGet).toHaveBeenCalledTimes(2)
   })
 
+  it('does not retry when the signal fires during the retry delay', async () => {
+    const controller = new AbortController()
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockImplementationOnce(() => {
+      setTimeout(() => controller.abort(), 0)
+      return Promise.reject(new Error('ECONNRESET'))
+    })
+
+    const client = new HttpClient({ signal: controller.signal, maxRetries: 3, retryDelay: 50 })
+    const result = await client.fetch('https://example.com/aborted-during-delay')
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error.message).toContain('Request aborted')
+    expect(mockGet).toHaveBeenCalledTimes(2)
+  })
+
   it('keeps defaults for options passed as undefined (redirects are still followed)', async () => {
     mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
     mockGet.mockResolvedValueOnce(axiosResp(301, '', { location: 'https://example.com/new' }))

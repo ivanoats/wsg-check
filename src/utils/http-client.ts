@@ -232,6 +232,7 @@ export class HttpClient {
     } catch (err) {
       if (attempt < this.opts.maxRetries && !this.signal?.aborted && this.isRetryable(err)) {
         await this.sleep(this.opts.retryDelay * (attempt + 1))
+        if (this.signal?.aborted) throw new FetchError(`Request aborted: ${url}`, url, err)
         return this.fetchWithRetry(url, startClass, attempt + 1)
       }
       if (err instanceof FetchError) throw err
