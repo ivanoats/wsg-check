@@ -69,8 +69,8 @@ Use the official TypeScript SDK (`@modelcontextprotocol/sdk` 1.x, `McpServer` + 
 | Tool              | Input                                                                                                                                                     | Output                                                                                                                                                                                                  | Annotations                                 |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
 | `check_url`       | `url` (required); `categories?` (`ux`, `web-dev`, `hosting`); `guidelines?` (slugs or legacy IDs); `detail?` (`summary` default, or `full`); `timeoutMs?` | `summary`: score, grade, spec version, category scores, failed and warned checks with their recommendations, CO₂ estimate, warnings (e.g. deprecated IDs). `full`: the complete `SustainabilityReport`. | `readOnlyHint: true`, `openWorldHint: true` |
-| `list_guidelines` | `category?`, `testability?` (`automated`, `semi-automated`, `manual-only`), `query?` (substring on title)                                                 | Guideline slugs, numbers, titles, categories, and testability, plus the spec release.                                                                                                                   | `readOnlyHint: true`                        |
-| `get_guideline`   | `id` (slug or legacy numeric ID)                                                                                                                          | The registry entry (title, section, description, testability, W3C spec URL) and the IDs of the checks that implement it.                                                                                | `readOnlyHint: true`                        |
+| `list_guidelines` | `category?`, `testability?` (`automated`, `semi-automated`, `manual-only`), `query?` (substring on title or slug)                                         | Guideline slugs, numbers, titles, categories, and testability, plus the spec release.                                                                                                                   | `readOnlyHint: true`                        |
+| `get_guideline`   | `id` (slug or legacy numeric ID)                                                                                                                          | The registry entry (title, section, description, testability, W3C spec URL) and how many checks implement it.                                                                                           | `readOnlyHint: true`                        |
 
 `summary` is the default because a full report lists ~35 checks with details and costs thousands of tokens. The assistant can ask for `full` when it needs evidence for a specific check.
 
@@ -129,8 +129,8 @@ Each phase is a separate PR that passes lint, type-check, unit tests, and both b
 
 ### Phase 2 — Guideline tools
 
-- [ ] Implement `list_guidelines` and `get_guideline` on top of `src/api/guidelines.ts` and the registry.
-- [ ] Unit tests for filters, legacy-ID lookup, and an unknown ID.
+- [x] Implement `list_guidelines` and `get_guideline` on top of `src/api/guidelines.ts` and the registry (`src/mcp/guidelines.ts`). Instead of check IDs, which are internal, each guideline reports how many `check_url` checks implement it, and `get_guideline` lists the deprecated numeric IDs that resolve to it.
+- [x] Unit tests for filters, legacy-ID lookup, and an unknown ID (`tests/unit/mcp/guidelines.test.ts`). They also cover numeric IDs whose guideline was removed and related-check IDs. The stdio smoke test now expects all three tools.
 
 ### Phase 3 — Packaging, CI, and docs
 
