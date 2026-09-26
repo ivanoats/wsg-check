@@ -15,10 +15,11 @@ Use the first option that is available:
 2. **CLI.** Otherwise run the npm package; it needs Node.js 22 or later:
 
    ```bash
+   rm -f wsg-report.json
    npx -y @sustainablewebsites/wsg-check <url> --format json --output wsg-report.json
    ```
 
-   Read `wsg-report.json`. Progress and log messages go to stderr, and the command exits with 1 if the page can't be fetched. The CLI refuses redirects that stay on `localhost`, so for a local dev server pass the URL the page finally lands on, such as `http://localhost:3000/en` instead of `http://localhost:3000/`.
+   Progress and log messages go to stderr. If the command exits with anything other than 0, the page couldn't be checked: report the error it printed and don't read `wsg-report.json`. Removing the file first means a failed run can't leave you reading an old report. Otherwise, read `wsg-report.json`. The CLI refuses redirects that stay on `localhost`, so for a local dev server pass the URL the page finally lands on, such as `http://localhost:3000/en` instead of `http://localhost:3000/`.
 
 To add the MCP server instead, see the [wsg-check README](https://github.com/ivanoats/wsg-check#use-with-ai-assistants-mcp).
 
@@ -39,7 +40,7 @@ With `check_url`, the summary's `issues` are already in this order. In the CLI r
 
 ## 4. Fix each issue
 
-1. Understand what the guideline asks for: call `get_guideline` with the check's `guidelineId`, or open the guideline in the W3C specification.
+1. Understand what the issue asks for. For a WSG check, call `get_guideline` with its `guidelineId`, or open the guideline in the W3C specification. Related checks have no WSG guideline, and `get_guideline` rejects their IDs; use the check's message and recommendation instead.
 2. Find the code that produces the problem: templates and layouts, CSS, image assets, bundler or framework configuration, or server and hosting configuration for headers, compression, caching, and error pages.
 3. Make the smallest change that addresses the guideline itself. Don't game a check; for example, don't add an empty `<meta>` tag or a placeholder file just to pass it.
 4. If a fix is outside this codebase, such as the hosting provider or a third-party script someone else controls, say what needs to change and who can change it instead of editing unrelated code.
