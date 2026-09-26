@@ -16,7 +16,7 @@ Records cover the main architectural choices evidenced by the inspected history,
 | 0006 | [Keep unmatched checks visible but outside WSG scores](adr/0006-related-checks.md)              | 2026-09-24          | Accepted                      |
 | 0007 | [Report spec provenance independently of package versions](adr/0007-spec-provenance.md)         | 2026-09-24          | Accepted                      |
 | 0008 | [Build and publish the CLI separately from the web app](adr/0008-cli-distribution.md)           | 2026-04-20          | Accepted                      |
-| 0009 | [Ship a local stdio MCP server in the npm package](adr/0009-local-mcp-server.md)                | —                   | Proposed                      |
+| 0009 | [Ship a local stdio MCP server in the npm package](adr/0009-local-mcp-server.md)                | 2026-09-26          | Accepted                      |
 
 ## Maintaining the records
 

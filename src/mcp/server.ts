@@ -43,7 +43,8 @@ export const createServer = ({ hostPolicy, shutdownSignal }: ServerOptions): Mcp
       description:
         'Fetches a page and checks it against the W3C Web Sustainability Guidelines. ' +
         'Returns the score, grade, and each failed or warned check with a recommended fix. ' +
-        'Local URLs such as http://localhost:3000 work unless the server was started with --no-local.',
+        "Local URLs such as http://localhost:3000 are fetched from the user's machine; they work " +
+        'unless the server was started with --no-local.',
       inputSchema: checkUrlInputSchema,
       outputSchema: checkUrlOutputSchema,
       annotations: { readOnlyHint: true, openWorldHint: true },

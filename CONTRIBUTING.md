@@ -130,6 +130,25 @@ npm run test:a11y
 npm run test:lighthouse
 ```
 
+### MCP Server
+
+`tests/unit/mcp/` covers the tools through a real MCP client over the SDK's in-memory transport. `tests/smoke/mcp-stdio.mjs` runs the built server over stdio, checks that every tool is listed, and fails if anything other than JSON-RPC is written to stdout:
+
+```bash
+npm run build:cli
+node tests/smoke/mcp-stdio.mjs
+```
+
+Before a release, exercise the built server with the [MCP Inspector](https://github.com/modelcontextprotocol/inspector). Run it without `--cli` for the browser UI:
+
+```bash
+npx @modelcontextprotocol/inspector --cli node dist/mcp/index.js --method tools/list
+npx @modelcontextprotocol/inspector --cli node dist/mcp/index.js \
+  --method tools/call --tool-name check_url --tool-arg url=https://example.com
+```
+
+Quote numeric-looking arguments, e.g. `--tool-arg 'id="3.3"'`, or the Inspector sends them as numbers and the server rejects them.
+
 ---
 
 ## Code Style
