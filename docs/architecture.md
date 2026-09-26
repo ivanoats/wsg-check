@@ -13,7 +13,7 @@ WSG-Check is a layered TypeScript application shared by a Node.js CLI and a Next
 | Web UI and API  | `src/app/`, `src/app/api/`, `src/api/` | Input validation, HTTP responses, presentation, result storage                  |
 | CLI             | `src/cli/`                             | Configuration, format/output options, exit codes                                |
 | Pipeline        | `src/pipeline/`                        | Check selection with notices, and `runReport` shared by the CLI, API and MCP    |
-| MCP server      | `src/mcp/`                             | `wsg-check-mcp` stdio server: `check_url` tool, host policy flags               |
+| MCP server      | `src/mcp/`                             | `wsg-check-mcp` stdio server: `check_url`, `list_guidelines`, `get_guideline`   |
 | Core            | `src/core/`                            | Fetch/parse orchestration, parallel check execution, scoring                    |
 | Checks          | `src/checks/`                          | Static heuristics, hosting lookup, registered result identities                 |
 | Config and spec | `src/config/`, `src/config/spec/`      | Config loading, pinned WSG data, registry and aliases                           |

@@ -7,7 +7,7 @@
  * (the CI job runs it from a directory where the packed tarball is
  * installed), or this repository's dist/ build when no installed copy is
  * found. It runs the server with the current Node binary, sends initialize,
- * notifications/initialized and tools/list, then checks that check_url is
+ * notifications/initialized and tools/list, then checks that every tool is
  * listed and that every stdout line is a JSON-RPC message (anything else
  * would corrupt the protocol for real clients). Exits non-zero on failure.
  */
@@ -19,6 +19,7 @@ import { createInterface } from 'node:readline'
 import { fileURLToPath } from 'node:url'
 
 const TIMEOUT_MS = 15_000
+const EXPECTED_TOOLS = ['check_url', 'list_guidelines', 'get_guideline']
 
 /** The installed package's server if one is found from here, else this repo's build. */
 const findServer = () => {
@@ -78,7 +79,8 @@ const runSmokeTest = (serverPath) =>
       } else if (message.id === 2) {
         const names = (message.result?.tools ?? []).map((tool) => tool.name)
         console.log(`tools/list: ${names.join(', ')}`)
-        finish(names.includes('check_url') ? undefined : new Error('check_url is not listed'))
+        const missing = EXPECTED_TOOLS.filter((tool) => !names.includes(tool))
+        finish(missing.length === 0 ? undefined : new Error(`not listed: ${missing.join(', ')}`))
       }
     })
 

@@ -663,3 +663,15 @@ process.stdout.write(formatTerminal(report))
 // Terminal without colour (plain-text file or pipe)
 process.stdout.write(formatTerminal(report, { colors: false }))
 ```
+
+## MCP Server (`src/mcp/`)
+
+`wsg-check-mcp` is a Model Context Protocol server over stdio. `createServer` in `server.ts` registers the tools and opens no transport, so tests connect it to an in-memory client. `index.ts` parses the flags and connects stdio.
+
+| Tool              | Input                                                                   | Returns                                                                                                                                                         |
+| ----------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `check_url`       | `url`; optional `categories`, `guidelines`, `detail`, `timeoutMs`       | Score, grade, and the failed or warned checks with fixes (`detail: "full"` adds the complete report). Fetches the page, subject to the host policy flags.       |
+| `list_guidelines` | Optional `category`, `testability`, `query` (text in the title or slug) | The guidelines in the targeted WSG release, each with its slug, number, category, testability, and how many `check_url` checks implement it. No network access. |
+| `get_guideline`   | `id`: a slug, or a deprecated numeric ID that is resolved with a notice | One guideline's description, W3C specification link, and legacy numeric IDs. Related-check IDs and unknown IDs return an `isError` result. No network access.   |
+
+Every tool returns `structuredContent` that matches its `outputSchema`, plus a Markdown text block for clients that ignore structured output.
