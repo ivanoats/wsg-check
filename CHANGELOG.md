@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0](https://github.com/ivanoats/wsg-check/compare/v0.2.1...v0.3.0) (2026-09-26)
+
+
+### Added
+
+* **about:** add author bio, motivation, and Sustainable Websites CTA ([#199](https://github.com/ivanoats/wsg-check/issues/199)) ([3a6e2fa](https://github.com/ivanoats/wsg-check/commit/3a6e2fa54bc5cc53ce6dd0ac0274e64e460b5dd3))
+* shared pipeline, host policy, and smaller npm install (MCP Phase 0) ([#203](https://github.com/ivanoats/wsg-check/issues/203)) ([39437cd](https://github.com/ivanoats/wsg-check/commit/39437cd65731d98caf56b6da566b893d151da2b4))
+* wsg-check-mcp server with check_url tool (MCP Phase 1) ([#204](https://github.com/ivanoats/wsg-check/issues/204)) ([457bc9c](https://github.com/ivanoats/wsg-check/commit/457bc9c7faa752a0b37a785fa641e2237d28ea4f))
+
+
+### Changed
+
+* plan a local MCP server for AI assistants ([#200](https://github.com/ivanoats/wsg-check/issues/200)) ([e8ff24d](https://github.com/ivanoats/wsg-check/commit/e8ff24dc8b17adb12ad632e21db0cc3d6c239b46))
+
 ## [0.2.1](https://github.com/ivanoats/wsg-check/compare/v0.2.0...v0.2.1) (2026-09-24)
 
 
