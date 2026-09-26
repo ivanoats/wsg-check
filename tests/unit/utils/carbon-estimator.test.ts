@@ -120,4 +120,12 @@ describe('checkGreenHosting', () => {
     const result = await checkGreenHosting('example.com')
     expect(result).toBe(true)
   })
+
+  it.each(['localhost', 'app.localhost', 'nas.local', '127.0.0.1', '192.168.1.5', '[::1]'])(
+    'returns false for local host %s without calling the hosting API',
+    async (host) => {
+      expect(await checkGreenHosting(host)).toBe(false)
+      expect(mockHostingCheck).not.toHaveBeenCalled()
+    }
+  )
 })

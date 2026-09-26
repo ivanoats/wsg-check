@@ -237,6 +237,34 @@ describe('Full pipeline integration — WsgChecker.check()', () => {
     expect(result.value.checks.length).toBe(checks.length)
   })
 
+  it('reports progress stages in order and records the final URL after redirects', async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (String(url).includes('/robots.txt')) {
+        return Promise.resolve({ status: 200, data: ROBOTS_TXT, headers: {} })
+      }
+      if (String(url) === 'https://example.com/') {
+        return Promise.resolve({ status: 301, data: '', headers: { location: '/en' } })
+      }
+      return Promise.resolve({
+        status: 200,
+        data: GOOD_HTML,
+        headers: { 'content-type': 'text/html; charset=utf-8' },
+      })
+    })
+    const stages: string[] = []
+
+    const result = await runReport('https://example.com/', {
+      checks: selectChecks().checks,
+      config: { onProgress: (stage) => stages.push(stage) },
+    })
+
+    expect(stages).toEqual(['fetching', 'checking', 'scoring'])
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.url).toBe('https://example.com/')
+    expect(result.value.metadata.finalUrl).toBe('https://example.com/en')
+  })
+
   it('runReport returns the fetch error when the page cannot be fetched', async () => {
     mockGet.mockRejectedValue(new Error('connect ECONNREFUSED'))
     const result = await runReport('https://example.com', { checks: selectChecks().checks })

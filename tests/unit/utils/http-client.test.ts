@@ -434,4 +434,44 @@ describe('HttpClient — host policy', () => {
 
     expect(result.ok).toBe(false)
   })
+
+  it('passes the abort signal to every request', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+    const controller = new AbortController()
+
+    await new HttpClient({ signal: controller.signal }).fetch('https://example.com/signal')
+
+    for (const [, config] of mockGet.mock.calls) {
+      expect((config as { signal?: AbortSignal }).signal).toBe(controller.signal)
+    }
+  })
+
+  it('does not retry once the signal is aborted', async () => {
+    const controller = new AbortController()
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockImplementationOnce(() => {
+      controller.abort()
+      return Promise.reject(new Error('canceled'))
+    })
+
+    const client = new HttpClient({ signal: controller.signal, maxRetries: 3, retryDelay: 0 })
+    const result = await client.fetch('https://example.com/cancelled')
+
+    expect(result.ok).toBe(false)
+    expect(mockGet).toHaveBeenCalledTimes(2)
+  })
+
+  it('keeps defaults for options passed as undefined (redirects are still followed)', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockResolvedValueOnce(axiosResp(301, '', { location: 'https://example.com/new' }))
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    const client = new HttpClient({ followRedirects: undefined, timeout: undefined })
+    const result = await client.fetch('https://example.com/undefined-options')
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.url).toBe('https://example.com/new')
+  })
 })

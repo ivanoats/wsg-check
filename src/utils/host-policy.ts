@@ -124,6 +124,18 @@ const mostRestrictive = (classes: ReadonlyArray<AddressClass>): AddressClass =>
   )
 
 /**
+ * Returns `true` when a hostname is local by name or as an IP literal:
+ * `localhost`, `*.localhost`, `*.local`, or a loopback, private, or reserved
+ * address. No DNS lookup is made, so this suits deciding whether to skip a
+ * third-party lookup (e.g. green hosting) for a developer's own machine.
+ */
+export const isLocalHostname = (hostname: string): boolean => {
+  const host = unbracket(hostname.toLowerCase())
+  if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local')) return true
+  return isIP(host) !== 0 && classifyAddress(host) !== 'public'
+}
+
+/**
  * Classifies a hostname by name, then by every address it resolves to.
  * Returns the most restrictive class so that a name resolving to both a
  * public and an internal address is treated as internal. Unresolvable names

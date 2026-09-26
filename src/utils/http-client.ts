@@ -67,11 +67,13 @@ export interface HttpClientOptions {
    * checked, and every private or loopback target is refused.
    */
   hostPolicy?: HostPolicy
+  /** Aborts in-flight requests and stops retries, e.g. when a caller cancels. */
+  signal?: AbortSignal
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const DEFAULT_OPTIONS: Required<Omit<HttpClientOptions, 'hostPolicy'>> = {
+const DEFAULT_OPTIONS: Required<Omit<HttpClientOptions, 'hostPolicy' | 'signal'>> = {
   timeout: 30_000,
   userAgent: `Mozilla/5.0 (compatible; wsg-check/${VERSION}; +https://github.com/ivanoats/wsg-check)`,
   followRedirects: true,
@@ -85,15 +87,22 @@ const MAX_REDIRECTS = 10
 
 export class HttpClient {
   private readonly axiosInstance: AxiosInstance
-  private readonly opts: Required<Omit<HttpClientOptions, 'hostPolicy'>>
+  private readonly opts: Required<Omit<HttpClientOptions, 'hostPolicy' | 'signal'>>
   private readonly hostPolicy?: HostPolicy
+  private readonly signal?: AbortSignal
   private readonly cache = new Map<string, FetchResult>()
   private readonly robotsCache = new Map<string, ReturnType<typeof robotsParser>>()
 
   constructor(options: HttpClientOptions = {}) {
-    const { hostPolicy, ...rest } = options
-    this.opts = { ...DEFAULT_OPTIONS, ...rest }
+    const { hostPolicy, signal, ...rest } = options
+    // Ignore options passed as `undefined` so they don't erase the defaults
+    // (WsgChecker forwards unset config fields as `undefined`).
+    const provided = Object.fromEntries(
+      Object.entries(rest).filter(([, value]) => value !== undefined)
+    ) as Partial<typeof DEFAULT_OPTIONS>
+    this.opts = { ...DEFAULT_OPTIONS, ...provided }
     this.hostPolicy = hostPolicy
+    this.signal = signal
 
     this.axiosInstance = axios.create({
       timeout: this.opts.timeout,
@@ -109,13 +118,17 @@ export class HttpClient {
   // ── robots.txt ──────────────────────────────────────────────────────────────
 
   /**
-   * Per-request options that pin the connection to the address class the
-   * host policy approved. Empty when no policy is set.
+   * Per-request options: the caller's abort signal, and a DNS lookup that pins
+   * the connection to the address class the host policy approved.
    */
   private connectOptions(addressClass: AddressClass | undefined): {
     lookup?: ReturnType<typeof createPinnedLookup>
+    signal?: AbortSignal
   } {
-    return this.hostPolicy && addressClass ? { lookup: createPinnedLookup(addressClass) } : {}
+    return {
+      ...(this.hostPolicy && addressClass ? { lookup: createPinnedLookup(addressClass) } : {}),
+      ...(this.signal ? { signal: this.signal } : {}),
+    }
   }
 
   /** Fetch and cache the robots.txt rules for the given origin. */
@@ -213,7 +226,7 @@ export class HttpClient {
     try {
       return await this.fetchFollowingRedirects(url, startClass)
     } catch (err) {
-      if (attempt < this.opts.maxRetries && this.isRetryable(err)) {
+      if (attempt < this.opts.maxRetries && !this.signal?.aborted && this.isRetryable(err)) {
         await this.sleep(this.opts.retryDelay * (attempt + 1))
         return this.fetchWithRetry(url, startClass, attempt + 1)
       }
