@@ -110,7 +110,7 @@ export class WsgChecker {
 
     this.onProgress?.('checking')
     // Checks such as sustainable-hosting make their own network calls.
-    const checkResults = await raceAbort(this.runner.run(pageResult.value), this.signal, undefined)
+    const checkResults = await raceAbort(this.runner.run(pageResult.value), this.signal)
     if (checkResults === undefined) return err(new FetchError(`Request aborted: ${url}`, url))
     this.onProgress?.('scoring')
     const { overallScore, categoryScores } = scoreResults(checkResults)

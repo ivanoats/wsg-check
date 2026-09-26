@@ -3,18 +3,18 @@
  */
 
 /**
- * Settles with `onAbort` as soon as `signal` fires (or at once if it already
- * has), otherwise with `promise`. The underlying work is not cancelled; the
+ * Settles with `onAbort` (`undefined` if omitted) as soon as `signal` fires,
+ * or at once if it already has; otherwise settles with `promise`. The underlying work is not cancelled; the
  * caller just stops waiting for it.
  */
-export const raceAbort = <T, U>(
+export const raceAbort = <T, U = undefined>(
   promise: Promise<T>,
   signal: AbortSignal | undefined,
-  onAbort: U
-): Promise<T | U> => {
+  onAbort?: U
+): Promise<T | U | undefined> => {
   if (!signal) return promise
   if (signal.aborted) return Promise.resolve(onAbort)
-  return new Promise<T | U>((resolve, reject) => {
+  return new Promise<T | U | undefined>((resolve, reject) => {
     const abort = (): void => resolve(onAbort)
     signal.addEventListener('abort', abort, { once: true })
     promise.then(resolve, reject).finally(() => signal.removeEventListener('abort', abort))

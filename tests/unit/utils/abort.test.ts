@@ -12,6 +12,10 @@ describe('raceAbort', () => {
     )
   })
 
+  it('settles with undefined on abort when no abort value is given', async () => {
+    expect(await raceAbort(new Promise(() => undefined), AbortSignal.abort())).toBeUndefined()
+  })
+
   it('returns the abort value when the signal fires first', async () => {
     const controller = new AbortController()
     const pending = raceAbort(new Promise(() => undefined), controller.signal, 'aborted')
