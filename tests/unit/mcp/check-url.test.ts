@@ -136,9 +136,9 @@ describe('summaryToMarkdown', () => {
 describe('handleCheckUrl', () => {
   it('still returns the report when sending a progress notification fails', async () => {
     runReportMock.mockImplementation(
-      async (_url: string, { config }: { config: { onProgress?: (s: string) => void } }) => {
+      (_url: string, { config }: { config: { onProgress?: (s: string) => void } }) => {
         config.onProgress?.('fetching')
-        return { ok: true, value: report() }
+        return Promise.resolve({ ok: true, value: report() })
       }
     )
     const sendNotification = vi.fn().mockRejectedValue(new Error('transport closed'))
