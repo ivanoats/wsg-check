@@ -1,10 +1,10 @@
 # Releasing
 
-Runbook for cutting releases of `@sustainablewebsites/wsg-check` to npm.
+Runbook for cutting releases of `@sustainablewebsites/wsg-check` to npm and listing them in the [MCP Registry](https://registry.modelcontextprotocol.io).
 
 ## Normal flow (you want to ship what's on main)
 
-1. **Wait for or open the Release PR.** The [release-please](https://github.com/googleapis/release-please) workflow watches pushes to `main` and keeps a rolling PR titled `chore(main): release X.Y.Z`. It updates `package.json`, `.release-please-manifest.json`, and `CHANGELOG.md` as conventional-commit PRs land.
+1. **Wait for or open the Release PR.** The [release-please](https://github.com/googleapis/release-please) workflow watches pushes to `main` and keeps a rolling PR titled `chore(main): release X.Y.Z`. It updates `package.json`, `.release-please-manifest.json`, `server.json` (both `version` fields), and `CHANGELOG.md` as conventional-commit PRs land.
    - `feat:` bumps minor, `fix:` bumps patch, `feat!:` / `BREAKING CHANGE:` bumps major. While the version is `0.x`, `bump-minor-pre-major` makes breaking changes bump minor instead (see SPEC_VERSIONING.md §5.4).
    - `ci:`, `chore:`, `test:`, `style:` commits don't trigger a release on their own — release-please stays silent until a user-visible change lands.
 
@@ -29,9 +29,12 @@ Runbook for cutting releases of `@sustainablewebsites/wsg-check` to npm.
 
    The workflow checks out the workflow run ref, bundles the CLI with `tsup`, and runs `npm publish --provenance --access public`. For manual dispatch, that's the ref you selected (for the normal flow, `main`); for a `release: published` run, that's the tag commit (`GITHUB_SHA`). Auth is OIDC via [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers) — no long-lived token involved.
 
-5. **Verify on npm.**
+   A second job then lists the release in the MCP Registry: it checks that `server.json` has the `package.json` version, logs in with `mcp-publisher login github-oidc` (which proves ownership of the `io.github.ivanoats/*` namespace), and runs `mcp-publisher publish`. The registry confirms that the npm package's `mcpName` matches `server.json`'s `name`, so this job needs the npm publish to finish first; it retries while the new version reaches npm.
+
+5. **Verify on npm and in the MCP Registry.**
    ```bash
    npm view @sustainablewebsites/wsg-check version
+   curl -s "https://registry.modelcontextprotocol.io/v0/servers?search=io.github.ivanoats/wsg-check"
    ```
 
 ## Manual flow (release-please isn't applicable)
@@ -41,6 +44,7 @@ Use this when you need to ship an out-of-band patch that doesn't fit the convent
 1. Bump the version on main (via PR) and keep all release-tracking files in sync:
    - `package.json`
    - `.release-please-manifest.json`
+   - `server.json` (`version` and `packages[0].version`)
    - any other version source touched by the release
 2. Merge. Main now has the new version recorded consistently for both npm and future release-please runs.
 3. Tag and create a release:
@@ -56,7 +60,8 @@ Use this when you need to ship an out-of-band patch that doesn't fit the convent
 | `.github/workflows/release-please.yml` | Watches main, maintains a rolling Release PR                                                           |
 | `release-please-config.json`           | Single-package node config; `include-v-in-tag: true`; Keep a Changelog section mapping                 |
 | `.release-please-manifest.json`        | Current version baseline                                                                               |
-| `.github/workflows/publish.yml`        | Runs on `release: published` or `workflow_dispatch`; bundles + publishes                               |
+| `.github/workflows/publish.yml`        | Runs on `release: published` or `workflow_dispatch`; bundles + publishes to npm, then the MCP Registry |
+| `server.json`                          | MCP Registry listing; `name` must equal `mcpName` in `package.json`                                    |
 | npm Trusted Publishers                 | Registered on npmjs.com; binds `@sustainablewebsites/wsg-check` → `ivanoats/wsg-check` → `publish.yml` |
 
 ## Prerequisites (already satisfied — for reference)
@@ -81,6 +86,14 @@ npm's name-similarity filter rejects the unscoped name. The package is scoped (`
 ### `EOTP — This operation requires a one-time password`
 
 A `NODE_AUTH_TOKEN` was set and it's a **Publish** token (requires interactive 2FA) rather than an **Automation** token (bypasses 2FA for CI). The expected state is no `NODE_AUTH_TOKEN` at all — if you see this, someone re-added the token; remove it.
+
+### The MCP Registry job failed
+
+The npm release is unaffected; only the listing is missing. Re-run the failed job from the Actions tab.
+
+- `package.json` has no `mcpName`, or it differs from `server.json`'s `name` → fix both on main; the registry reads `mcpName` from the published npm version, so it needs a new release.
+- The version already exists in the registry → versions can't be republished; nothing to do.
+- OIDC login fails → the job needs `id-token: write`, and the repository must belong to `ivanoats` for the `io.github.ivanoats/*` namespace.
 
 ### Release PR isn't appearing
 

@@ -666,7 +666,9 @@ process.stdout.write(formatTerminal(report, { colors: false }))
 
 ## MCP Server (`src/mcp/`)
 
-`wsg-check-mcp` is a Model Context Protocol server over stdio. `createServer` in `server.ts` registers the tools and opens no transport, so tests connect it to an in-memory client. `index.ts` parses the flags and connects stdio.
+`wsg-check-mcp` is a Model Context Protocol server over stdio; `wsg-check --mcp` starts the same server. `createServer` in `server.ts` registers the tools and opens no transport, so tests connect it to an in-memory client. `start.ts` parses the flags and connects stdio; it has no side effects on import, so both bins can bundle it. `index.ts` is the `wsg-check-mcp` entry point.
+
+`server.json` at the repository root is the [MCP Registry](https://registry.modelcontextprotocol.io) listing. It runs `npx @sustainablewebsites/wsg-check --mcp`, because `npx` starts a package's default bin. Its `name` must equal `mcpName` in `package.json`.
 
 | Tool              | Input                                                                                 | Returns                                                                                                                                                         |
 | ----------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |

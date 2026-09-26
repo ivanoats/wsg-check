@@ -124,6 +124,8 @@ Claude Desktop (`claude_desktop_config.json`) and Cursor (`.cursor/mcp.json`):
 }
 ```
 
+`npx -y @sustainablewebsites/wsg-check --mcp` starts the same server; it's the command the [MCP Registry](https://registry.modelcontextprotocol.io) listing, `io.github.ivanoats/wsg-check`, uses.
+
 VS Code (`.vscode/mcp.json`) uses a `servers` key:
 
 ```json
