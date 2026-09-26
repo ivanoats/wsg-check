@@ -143,7 +143,7 @@ export const handleGetGuideline = ({ id }: { id: string }): CallToolResult => {
     if (RELATED_CHECK_IDS.has(id)) {
       return errorResult(
         `"${id}" is a related check, not a WSG guideline: check_url reports it but does not ` +
-          `score it. Pass it to check_url's guidelines to run it on its own.`
+          "score it. Pass it to check_url's guidelines to run it on its own."
       )
     }
     const [notice] = selectChecks(undefined, [id]).notices
