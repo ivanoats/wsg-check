@@ -58,6 +58,20 @@ export default tseslint.config(
     },
   },
   {
+    // Node scripts run directly with `node` (not bundled or type-checked).
+    files: ['tests/smoke/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        URL: 'readonly',
+        AbortSignal: 'readonly',
+      },
+    },
+  },
+  {
     // Service workers run in the browser's service-worker global scope.
     // Declare those globals so ESLint does not flag them as undefined.
     // `self` is intentionally omitted — use the standardised `globalThis` instead.

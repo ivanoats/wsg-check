@@ -112,4 +112,15 @@ describe('checkSustainableHosting (WSG 4.1)', () => {
     await checkSustainableHosting(makePageData('https://www.mysite.org/page'))
     expect(mockCheckGreenHosting).toHaveBeenCalledWith('www.mysite.org')
   })
+
+  it.each(['http://localhost:3000/', 'http://127.0.0.1:8080/', 'http://printer.local/'])(
+    'reports %s as not applicable without a hosting lookup',
+    async (url) => {
+      mockCheckGreenHosting.mockClear()
+      const result = await checkSustainableHosting(makePageData(url))
+      expect(result.status).toBe('not-applicable')
+      expect(result.message).toContain('local host')
+      expect(mockCheckGreenHosting).not.toHaveBeenCalled()
+    }
+  )
 })

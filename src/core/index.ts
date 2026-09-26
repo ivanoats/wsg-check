@@ -18,7 +18,8 @@
  */
 
 import type { ResolvedConfig } from '../config/loader'
-import { FetchError, ParseError, type Result, ok } from '../utils/errors'
+import { FetchError, ParseError, type Result, err, ok } from '../utils/errors'
+import { raceAbort } from '../utils/abort'
 import { defaultLogger, type Logger } from '../utils/logger'
 import type { HostPolicy } from '../utils/host-policy'
 import { estimateCO2, checkGreenHosting, CO2_MODEL } from '../utils/carbon-estimator'
@@ -36,10 +37,17 @@ export { calculateCategoryScore, calculateOverallScore, scoreResults } from './s
 
 // ─── WsgChecker ───────────────────────────────────────────────────────────────
 
-/** Settings `WsgChecker` passes to its fetcher. */
+/** The stages of a check, reported through `CheckerConfig.onProgress`. */
+export type CheckStage = 'fetching' | 'checking' | 'scoring'
+
+/** Settings for `WsgChecker`: fetcher options, host policy, cancellation, progress. */
 export type CheckerConfig = Partial<ResolvedConfig> & {
   /** Network access policy for the page fetch; see `HttpClientOptions`. */
   readonly hostPolicy?: HostPolicy
+  /** Cancels the run when aborted: the page fetch, its retries, and the hosting lookup. */
+  readonly signal?: AbortSignal
+  /** Called as the check moves through its stages, e.g. to report progress. */
+  readonly onProgress?: (stage: CheckStage) => void
 }
 
 /**
@@ -55,6 +63,8 @@ export class WsgChecker {
   readonly fetcher: PageFetcher
   readonly runner: CheckRunner
   private readonly logger: Logger
+  private readonly onProgress?: (stage: CheckStage) => void
+  private readonly signal?: AbortSignal
 
   constructor(
     config: CheckerConfig = {},
@@ -66,10 +76,13 @@ export class WsgChecker {
       userAgent: config.userAgent,
       followRedirects: config.followRedirects,
       hostPolicy: config.hostPolicy,
+      signal: config.signal,
     })
     this.runner = new CheckRunner()
     this.runner.registerAll(checks)
     this.logger = logger
+    this.onProgress = config.onProgress
+    this.signal = config.signal
   }
 
   /**
@@ -83,6 +96,7 @@ export class WsgChecker {
     this.logger.info('Starting WSG check', { url })
     const start = Date.now()
 
+    this.onProgress?.('fetching')
     const pageResult = await this.fetcher.fetch(url)
     if (!pageResult.ok) {
       this.logger.error('Failed to fetch page', { url, error: pageResult.error.message })
@@ -94,11 +108,16 @@ export class WsgChecker {
       statusCode: pageResult.value.fetchResult.statusCode,
     })
 
-    const checkResults = await this.runner.run(pageResult.value)
+    this.onProgress?.('checking')
+    // Checks such as sustainable-hosting make their own network calls.
+    const checkResults = await raceAbort(this.runner.run(pageResult.value), this.signal)
+    if (checkResults === undefined) return err(new FetchError(`Request aborted: ${url}`, url))
+    this.onProgress?.('scoring')
     const { overallScore, categoryScores } = scoreResults(checkResults)
 
     const domain = new URL(url).hostname
-    const isGreenHosted = await checkGreenHosting(domain)
+    const isGreenHosted = await checkGreenHosting(domain, this.signal)
+    if (this.signal?.aborted) return err(new FetchError(`Request aborted: ${url}`, url))
     const co2PerPageView = estimateCO2(pageResult.value.pageWeight.htmlSize, isGreenHosted)
 
     const duration = Date.now() - start
@@ -107,6 +126,7 @@ export class WsgChecker {
 
     return ok({
       url,
+      finalUrl: pageResult.value.fetchResult.url,
       timestamp: new Date().toISOString(),
       duration,
       overallScore,

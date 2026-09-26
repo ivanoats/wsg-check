@@ -9,6 +9,7 @@
  * Scoring:
  *   - Domain found in Green Web Foundation dataset  → pass  (100)
  *   - Domain NOT found                              → fail    (0)
+ *   - Local host (localhost, private IP, `.local`)  → not-applicable (no lookup)
  *
  * Note: The check is asynchronous and swallows network errors from the Green
  * Web Foundation API (a transient failure returns `fail` with a message
@@ -19,6 +20,7 @@
 
 import type { CheckFn } from '../core/types'
 import { checkGreenHosting } from '../utils/carbon-estimator'
+import { isLocalHostname } from '../utils/host-policy'
 
 const GUIDELINE_ID = '4.1'
 const GUIDELINE_NAME = 'Choose a Sustainable Hosting Provider'
@@ -31,6 +33,20 @@ const RESOURCES = [
 
 export const checkSustainableHosting: CheckFn = async (page) => {
   const domain = new URL(page.url).hostname
+
+  if (isLocalHostname(domain)) {
+    return {
+      guidelineId: GUIDELINE_ID,
+      guidelineName: GUIDELINE_NAME,
+      successCriterion: SUCCESS_CRITERION,
+      status: 'not-applicable',
+      score: 0,
+      message: `${domain} is a local host, so its hosting provider cannot be checked. Check the deployed site for this guideline.`,
+      impact: 'high',
+      category: 'hosting',
+      machineTestable: true,
+    }
+  }
 
   const isGreen = await checkGreenHosting(domain)
 

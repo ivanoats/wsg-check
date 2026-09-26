@@ -120,4 +120,37 @@ describe('checkGreenHosting', () => {
     const result = await checkGreenHosting('example.com')
     expect(result).toBe(true)
   })
+
+  it('skips the lookup when the signal has already fired', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    expect(await checkGreenHosting('example.com', controller.signal)).toBe(false)
+    expect(mockHostingCheck).not.toHaveBeenCalled()
+  })
+
+  it('stops waiting for the lookup when the signal fires', async () => {
+    mockHostingCheck.mockReturnValueOnce(new Promise(() => undefined))
+    const controller = new AbortController()
+    const pending = checkGreenHosting('slow.example', controller.signal)
+    controller.abort()
+    expect(await pending).toBe(false)
+  })
+
+  it('returns the lookup result when a signal is given but never fires', async () => {
+    mockHostingCheck.mockResolvedValueOnce(true)
+    expect(await checkGreenHosting('green-host.com', new AbortController().signal)).toBe(true)
+  })
+
+  it.each([
+    'localhost',
+    'localhost.',
+    'app.localhost',
+    'nas.local',
+    '127.0.0.1',
+    '192.168.1.5',
+    '[::1]',
+  ])('returns false for local host %s without calling the hosting API', async (host) => {
+    expect(await checkGreenHosting(host)).toBe(false)
+    expect(mockHostingCheck).not.toHaveBeenCalled()
+  })
 })

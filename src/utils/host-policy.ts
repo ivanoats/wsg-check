@@ -110,6 +110,10 @@ export const classifyAddress = (address: string): AddressClass => {
 /** Strips the brackets that `URL.hostname` keeps around IPv6 literals. */
 const unbracket = (hostname: string): string => hostname.replace(/^\[(.*)\]$/u, '$1')
 
+/** Lowercases, unbrackets IPv6 literals, and drops a trailing DNS root dot (`localhost.`). */
+const normalizeHost = (hostname: string): string =>
+  unbracket(hostname.toLowerCase()).replace(/\.$/u, '')
+
 const RESTRICTIVENESS: Record<AddressClass, number> = {
   public: 0,
   loopback: 1,
@@ -124,13 +128,25 @@ const mostRestrictive = (classes: ReadonlyArray<AddressClass>): AddressClass =>
   )
 
 /**
+ * Returns `true` when a hostname is local by name or as an IP literal:
+ * `localhost`, `*.localhost`, `*.local`, or a loopback, private, or reserved
+ * address. No DNS lookup is made, so this suits deciding whether to skip a
+ * third-party lookup (e.g. green hosting) for a developer's own machine.
+ */
+export const isLocalHostname = (hostname: string): boolean => {
+  const host = normalizeHost(hostname)
+  if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local')) return true
+  return isIP(host) !== 0 && classifyAddress(host) !== 'public'
+}
+
+/**
  * Classifies a hostname by name, then by every address it resolves to.
  * Returns the most restrictive class so that a name resolving to both a
  * public and an internal address is treated as internal. Unresolvable names
  * are `reserved` (blocked).
  */
 export const classifyHost = async (hostname: string): Promise<AddressClass> => {
-  const host = unbracket(hostname.toLowerCase())
+  const host = normalizeHost(hostname)
   if (host === 'localhost' || host.endsWith('.localhost')) return 'loopback'
   if (host.endsWith('.local')) return 'private'
   if (isIP(host) !== 0) return classifyAddress(host)

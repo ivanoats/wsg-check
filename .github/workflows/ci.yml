@@ -159,14 +159,17 @@ jobs:
         run: npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP"
 
       # Installs the tarball the way users get it (no devDependencies) and
-      # checks that the CLI runs and that web-only packages stay out.
-      - name: Install without devDependencies and run the CLI
+      # checks that both binaries run, that the MCP server speaks clean
+      # JSON-RPC over stdio, and that web-only packages stay out.
+      - name: Install without devDependencies and run both binaries
         working-directory: ${{ runner.temp }}
         run: |
           mkdir consumer && cd consumer
           npm init -y > /dev/null
           npm install --omit=dev --ignore-scripts ../sustainablewebsites-wsg-check-*.tgz
           npx --no-install wsg-check --version
+          npx --no-install wsg-check-mcp --version
+          node "$GITHUB_WORKSPACE/tests/smoke/mcp-stdio.mjs"
           for pkg in next react react-dom @ark-ui/react rate-limiter-flexible; do
             if [ -e "node_modules/$pkg" ]; then
               echo "::error::$pkg was installed as a runtime dependency"

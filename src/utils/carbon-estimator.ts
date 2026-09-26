@@ -14,6 +14,8 @@
  */
 
 import { co2 as CO2Class, hosting } from '@tgwf/co2'
+import { raceAbort } from './abort'
+import { isLocalHostname } from './host-policy'
 
 /** The CO2 model identifier exposed in `RunResult` metadata. */
 export const CO2_MODEL = 'swd-v4' as const
@@ -46,16 +48,21 @@ export function estimateCO2(bytes: number, isGreenHosted: boolean): number {
  * on renewable energy infrastructure.
  *
  * Falls back to `false` on any network or parsing error so that the overall
- * check run is never blocked by an external service outage.
+ * check run is never blocked by an external service outage. Returns `false`
+ * without a lookup for local hosts (see `isLocalHostname`).
  *
  * @param domain  The hostname to check (e.g. `"example.com"`).
  * @returns       `true` if the domain is recognised as green, `false` otherwise.
  */
-export async function checkGreenHosting(domain: string): Promise<boolean> {
+export async function checkGreenHosting(domain: string, signal?: AbortSignal): Promise<boolean> {
+  // A developer's own machine or network is never in the dataset; don't send
+  // its hostname to a third party.
+  if (isLocalHostname(domain) || signal?.aborted) return false
   try {
     // The ESM export is callable; @types/tgwf__co2 describes the CommonJS API.
     const check = hosting as unknown as (domain: string) => Promise<boolean>
-    const result = await check(domain)
+    // The library takes no signal, so stop waiting (answering false) on abort.
+    const result = await raceAbort(check(domain), signal, false)
     return Boolean(result)
   } catch {
     return false

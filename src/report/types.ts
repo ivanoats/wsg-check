@@ -87,6 +87,8 @@ export interface Recommendation {
  * These values are used by report formatters to provide context.
  */
 export interface ReportMetadata {
+  /** The URL actually fetched after redirects, when known. */
+  readonly finalUrl?: string
   /** Total size of the HTML document in bytes. */
   readonly pageWeight: number
   /** Total number of resource references found on the page. */
@@ -275,6 +277,7 @@ export const fromRunResult = (
   summary: summariseResults(runResult.results),
   recommendations: buildRecommendations(runResult.results, runResult.url),
   metadata: {
+    ...(runResult.finalUrl === undefined ? {} : { finalUrl: runResult.finalUrl }),
     pageWeight,
     requestCount,
     thirdPartyCount,

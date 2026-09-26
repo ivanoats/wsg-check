@@ -6,8 +6,14 @@ vi.mock('node:dns/promises', () => ({
   lookup: lookupMock,
 }))
 
-const { classifyAddress, classifyHost, createPinnedLookup, evaluateUrl, parseIpv6 } =
-  await import('@/utils/host-policy')
+const {
+  classifyAddress,
+  classifyHost,
+  createPinnedLookup,
+  evaluateUrl,
+  isLocalHostname,
+  parseIpv6,
+} = await import('@/utils/host-policy')
 
 const LOOPBACK_ONLY = { allowLoopback: true, allowPrivateNetwork: false }
 const STRICT = { allowLoopback: false, allowPrivateNetwork: false }
@@ -59,6 +65,12 @@ describe('classifyHost', () => {
   it('classifies localhost names without DNS', async () => {
     expect(await classifyHost('localhost')).toBe('loopback')
     expect(await classifyHost('app.localhost')).toBe('loopback')
+    expect(lookupMock).not.toHaveBeenCalled()
+  })
+
+  it('ignores a trailing DNS root dot', async () => {
+    expect(await classifyHost('localhost.')).toBe('loopback')
+    expect(await classifyHost('nas.local.')).toBe('private')
     expect(lookupMock).not.toHaveBeenCalled()
   })
 
@@ -191,5 +203,35 @@ describe('createPinnedLookup', () => {
   it('passes DNS errors through', async () => {
     lookupMock.mockRejectedValue(new Error('ENOTFOUND'))
     expect((await run('public')).err?.message).toBe('ENOTFOUND')
+  })
+})
+
+describe('isLocalHostname', () => {
+  it.each([
+    'localhost',
+    'LOCALHOST',
+    'localhost.',
+    'app.localhost',
+    'nas.local.',
+    'nas.local',
+    '127.0.0.1',
+    '10.0.0.2',
+    '[::1]',
+    '169.254.169.254',
+  ])('%s is local', (host) => {
+    expect(isLocalHostname(host)).toBe(true)
+  })
+
+  it.each(['example.com', '93.184.216.34', '[2606:4700:4700::1111]', 'localhost.example.com'])(
+    '%s is not local',
+    (host) => {
+      expect(isLocalHostname(host)).toBe(false)
+    }
+  )
+
+  it('never makes a DNS lookup', () => {
+    lookupMock.mockClear()
+    isLocalHostname('example.com')
+    expect(lookupMock).not.toHaveBeenCalled()
   })
 })

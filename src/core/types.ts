@@ -139,6 +139,8 @@ export interface CategoryScore {
 export interface RunResult {
   /** The URL that was analysed. */
   url: string
+  /** The URL actually fetched after redirects, when known. */
+  finalUrl?: string
   /** ISO 8601 timestamp of when the run started. */
   timestamp: string
   /** Total analysis duration in milliseconds. */
