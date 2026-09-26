@@ -132,7 +132,7 @@ npm run test:lighthouse
 
 ### MCP Server
 
-`tests/unit/mcp/` covers the tools through a real MCP client over the SDK's in-memory transport. `tests/smoke/mcp-stdio.mjs` runs the built server over stdio, checks that every tool is listed, and fails if anything other than JSON-RPC is written to stdout:
+`tests/unit/mcp/` covers the tools through a real MCP client over the SDK's in-memory transport. `tests/smoke/mcp-stdio.mjs` runs the built server over stdio, both as `wsg-check-mcp` and as `wsg-check --mcp`, checks that every tool is listed, and fails if anything other than JSON-RPC is written to stdout:
 
 ```bash
 npm run build:cli
@@ -148,6 +148,8 @@ npx @modelcontextprotocol/inspector --cli node dist/mcp/index.js \
 ```
 
 Quote numeric-looking arguments, e.g. `--tool-arg 'id="3.3"'`, or the Inspector sends them as numbers and the server rejects them.
+
+`server.json` is the MCP Registry listing, published by `publish.yml` after each npm release (see [RELEASING.md](RELEASING.md)). To check it after an edit, download [`mcp-publisher`](https://github.com/modelcontextprotocol/registry/releases) and run `mcp-publisher validate`.
 
 ---
 

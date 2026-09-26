@@ -7,6 +7,7 @@
  *
  * Usage:
  *   wsg-check <url> [options]
+ *   wsg-check --mcp [--no-local] [--allow-private-network]   (MCP server over stdio)
  *   wsg-check --help
  *   wsg-check --version
  *
@@ -213,6 +214,10 @@ export const buildProgram = (): Command => {
     )
     .option('--config <path>', 'path to wsg-check.config.json or .wsgcheckrc.json')
     .option('-v, --verbose', 'enable verbose logging')
+    .addHelpText(
+      'after',
+      '\nRun as an MCP server over stdio instead: wsg-check --mcp [--no-local] [--allow-private-network]'
+    )
 
   program.action(async (url: string, opts: CliOptions) => {
     const exitCode = await runCheck(url, opts)
@@ -226,11 +231,25 @@ export const buildProgram = (): Command => {
 
 export { isEntryPoint }
 
+/**
+ * Returns `true` when the first argument is `--mcp`, which starts the MCP
+ * server instead of a check. `npx @sustainablewebsites/wsg-check` runs this
+ * bin, so the MCP Registry listing needs the server reachable from it.
+ */
+export const isMcpMode = (argv: readonly string[]): boolean => argv[2] === '--mcp'
+
 // Only run when this file is the direct entry point (not when imported by tests).
 if (isEntryPoint(import.meta.url, process.argv[1])) {
-  const program = buildProgram()
   try {
-    await program.parseAsync(process.argv)
+    if (isMcpMode(process.argv)) {
+      const { startMcpServer } = await import('../mcp/start')
+      await startMcpServer(
+        [...process.argv.slice(0, 2), ...process.argv.slice(3)],
+        'wsg-check --mcp'
+      )
+    } else {
+      await buildProgram().parseAsync(process.argv)
+    }
   } catch (err: unknown) {
     process.stderr.write(`Unexpected error: ${err instanceof Error ? err.message : String(err)}\n`)
     process.exitCode = 1

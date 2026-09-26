@@ -1,0 +1,45 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.ivanoats/wsg-check",
+  "title": "WSG Check",
+  "description": "Check websites against the W3C Web Sustainability Guidelines and look up the guidelines",
+  "websiteUrl": "https://github.com/ivanoats/wsg-check#use-with-ai-assistants-mcp",
+  "repository": {
+    "url": "https://github.com/ivanoats/wsg-check",
+    "source": "github"
+  },
+  "version": "0.5.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@sustainablewebsites/wsg-check",
+      "version": "0.5.0",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "--mcp",
+          "description": "Runs the MCP server over stdio instead of a one-off check"
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "WSG_CHECK_NO_LOCAL",
+          "description": "Set to 1 to block localhost and other loopback URLs, which are allowed by default",
+          "format": "boolean",
+          "isRequired": false
+        },
+        {
+          "name": "WSG_CHECK_ALLOW_PRIVATE",
+          "description": "Set to 1 to allow private network URLs (10/8, 172.16/12, 192.168/16)",
+          "format": "boolean",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}

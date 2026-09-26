@@ -18,7 +18,7 @@ import {
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { buildProgram, isEntryPoint, runCheck } from '@/cli/index'
+import { buildProgram, isEntryPoint, isMcpMode, runCheck } from '@/cli/index'
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -134,6 +134,18 @@ describe('buildProgram', () => {
     const args = program.registeredArguments
     expect(args.length).toBeGreaterThanOrEqual(1)
     expect(args[0].name()).toBe('url')
+  })
+})
+
+describe('isMcpMode', () => {
+  it.each([
+    [['node', 'wsg-check', '--mcp'], true],
+    [['node', 'wsg-check', '--mcp', '--no-local'], true],
+    [['node', 'wsg-check', 'https://example.com'], false],
+    [['node', 'wsg-check', 'https://example.com', '--mcp'], false],
+    [['node', 'wsg-check'], false],
+  ])('%j → %s', (argv, expected) => {
+    expect(isMcpMode(argv)).toBe(expected)
   })
 })
 

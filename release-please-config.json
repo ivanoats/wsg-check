@@ -22,6 +22,10 @@
         { "type": "chore", "hidden": true },
         { "type": "test", "hidden": true },
         { "type": "style", "hidden": true }
+      ],
+      "extra-files": [
+        { "type": "json", "path": "server.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "server.json", "jsonpath": "$.packages[0].version" }
       ]
     }
   }

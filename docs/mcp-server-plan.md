@@ -145,7 +145,8 @@ Each phase is a separate PR that passes lint, type-check, unit tests, and both b
 
 - [ ] Resources and the `sustainability-review` prompt. The review workflow already ships as the `wsg-sustainability-review` [Agent Skill](../skills/wsg-sustainability-review/SKILL.md), which works in agents with or without the MCP server.
 - [ ] A `compare` option or tool that re-checks a URL and reports score changes since the last run in the same session.
-- [ ] Submit to the official MCP Registry (`server.json`) and add an MCPB bundle for one-click Claude Desktop install.
+- [x] List the server in the official MCP Registry as `io.github.ivanoats/wsg-check`: `server.json`, `mcpName` in `package.json`, a `wsg-check --mcp` flag (the registry runs a package's default bin), and a `publish.yml` job that publishes the listing with GitHub OIDC after each npm release.
+- [ ] An MCPB bundle for one-click Claude Desktop install.
 - [ ] A remote Streamable HTTP endpoint on the Netlify deployment, reusing the API's rate limiting and SSRF validation. Out of scope for the local server.
 
 ## Decisions
