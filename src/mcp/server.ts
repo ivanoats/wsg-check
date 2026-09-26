@@ -55,6 +55,7 @@ export const createServer = ({ hostPolicy, shutdownSignal }: ServerOptions): Mcp
     'list_guidelines',
     {
       title: 'List WSG guidelines',
+      description:
         `Lists the guidelines in WSG ${WSG_SPEC.release}, optionally filtered by category, ` +
         'testability, or text in the title or slug. Each entry has the slug to pass to get_guideline ' +
         "or to check_url's guidelines, and how many automated checks implement it.",
