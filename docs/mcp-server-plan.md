@@ -143,7 +143,7 @@ Each phase is a separate PR that passes lint, type-check, unit tests, and both b
 
 ### Phase 4 — After the first release
 
-- [ ] Resources and the `sustainability-review` prompt.
+- [ ] Resources and the `sustainability-review` prompt. The review workflow already ships as the `wsg-sustainability-review` [Agent Skill](../skills/wsg-sustainability-review/SKILL.md), which works in agents with or without the MCP server.
 - [ ] A `compare` option or tool that re-checks a URL and reports score changes since the last run in the same session.
 - [ ] Submit to the official MCP Registry (`server.json`) and add an MCPB bundle for one-click Claude Desktop install.
 - [ ] A remote Streamable HTTP endpoint on the Netlify deployment, reusing the API's rate limiting and SSRF validation. Out of scope for the local server.

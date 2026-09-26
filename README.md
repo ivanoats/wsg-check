@@ -153,6 +153,14 @@ Try prompts such as "Check http://localhost:3000 against the WSG and fix the top
 - The only other request `check_url` makes is a green-hosting lookup: it sends the hostname to the [Green Web Foundation](https://www.thegreenwebfoundation.org/). Local hostnames are never sent.
 - Cloud metadata and other reserved addresses are always blocked. Redirects from a public site into your machine or network are refused, and each connection is pinned to the address that was checked.
 
+### Agent skill
+
+The repository also ships an [Agent Skill](https://github.com/vercel-labs/skills), `wsg-sustainability-review`. It walks an assistant through checking a site, fixing the issues in your codebase in priority order, and checking again. It uses the MCP tools when they are configured and falls back to the CLI otherwise. Install it into Claude Code, Cursor, Copilot, and other agents with:
+
+```bash
+npx skills add ivanoats/wsg-check
+```
+
 ## REST API
 
 The web app exposes Next.js Route Handlers:
