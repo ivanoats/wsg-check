@@ -208,6 +208,8 @@ export interface CheckUrlContext {
 
 export interface CheckUrlOptions {
   readonly hostPolicy: HostPolicy
+  /** Aborts running checks when the server shuts down. */
+  readonly shutdownSignal?: AbortSignal
 }
 
 const errorResult = (text: string): CallToolResult => ({
@@ -264,7 +266,11 @@ export const handleCheckUrl = async (
     checks,
     config: {
       hostPolicy: options.hostPolicy,
-      signal: AbortSignal.any([context.signal, timeout]),
+      signal: AbortSignal.any([
+        context.signal,
+        timeout,
+        ...(options.shutdownSignal ? [options.shutdownSignal] : []),
+      ]),
       ...(onProgress ? { onProgress } : {}),
     },
   })

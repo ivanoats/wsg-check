@@ -12,6 +12,8 @@ import { checkUrlInputSchema, checkUrlOutputSchema, handleCheckUrl } from './che
 export interface ServerOptions {
   /** Which local and private targets `check_url` may fetch. */
   readonly hostPolicy: HostPolicy
+  /** Aborts running checks when the server shuts down. */
+  readonly shutdownSignal?: AbortSignal
 }
 
 const INSTRUCTIONS =
@@ -19,7 +21,7 @@ const INSTRUCTIONS =
   'Use check_url on a deployed site or a local dev server (e.g. http://localhost:3000). ' +
   'Results come from static analysis of the HTML and HTTP headers; treat scores as guidance.'
 
-export const createServer = ({ hostPolicy }: ServerOptions): McpServer => {
+export const createServer = ({ hostPolicy, shutdownSignal }: ServerOptions): McpServer => {
   const server = new McpServer(
     { name: 'wsg-check', title: 'WSG Check', version: VERSION },
     { instructions: INSTRUCTIONS }
@@ -37,7 +39,7 @@ export const createServer = ({ hostPolicy }: ServerOptions): McpServer => {
       outputSchema: checkUrlOutputSchema,
       annotations: { readOnlyHint: true, openWorldHint: true },
     },
-    (input, extra) => handleCheckUrl(input, extra, { hostPolicy })
+    (input, extra) => handleCheckUrl(input, extra, { hostPolicy, shutdownSignal })
   )
 
   return server

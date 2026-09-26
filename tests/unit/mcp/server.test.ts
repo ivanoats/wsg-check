@@ -33,8 +33,8 @@ vi.mock('node:dns/promises', () => ({
 
 const greenHostingMock = vi.fn().mockResolvedValue(false)
 vi.mock('@tgwf/co2', () => ({
-  co2: class MockCO2 {
-    perByte = () => 0.0042
+  co2: function MockCO2() {
+    return { perByte: () => 0.0042 }
   },
   hosting: greenHostingMock,
 }))

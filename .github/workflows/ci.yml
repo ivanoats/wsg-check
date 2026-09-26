@@ -169,7 +169,7 @@ jobs:
           npm install --omit=dev --ignore-scripts ../sustainablewebsites-wsg-check-*.tgz
           npx --no-install wsg-check --version
           npx --no-install wsg-check-mcp --version
-          node "$GITHUB_WORKSPACE/tests/smoke/mcp-stdio.mjs" ./node_modules/.bin/wsg-check-mcp
+          node "$GITHUB_WORKSPACE/tests/smoke/mcp-stdio.mjs"
           for pkg in next react react-dom @ark-ui/react rate-limiter-flexible; do
             if [ -e "node_modules/$pkg" ]; then
               echo "::error::$pkg was installed as a runtime dependency"

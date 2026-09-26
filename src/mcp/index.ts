@@ -56,14 +56,14 @@ const main = async (): Promise<void> => {
   program.parse(process.argv)
   const hostPolicy = resolveHostPolicy(program.opts<McpCliOptions>())
 
-  const server = createServer({ hostPolicy })
+  const shutdownController = new AbortController()
+  const server = createServer({ hostPolicy, shutdownSignal: shutdownController.signal })
   const transport = new StdioServerTransport()
 
+  // Abort running checks and release stdin; the process then exits on its own.
   const shutdown = (): void => {
-    server
-      .close()
-      .catch(() => undefined)
-      .finally(() => process.exit(0))
+    shutdownController.abort()
+    server.close().catch(() => undefined)
   }
   process.once('SIGINT', shutdown)
   process.once('SIGTERM', shutdown)
