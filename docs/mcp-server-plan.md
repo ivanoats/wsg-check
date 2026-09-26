@@ -120,11 +120,12 @@ Each phase is a separate PR that passes lint, type-check, unit tests, and both b
 
 ### Phase 1 — Server and `check_url`
 
-- [ ] Add `@modelcontextprotocol/sdk` and `zod` as dependencies.
-- [ ] Create `src/mcp/server.ts` (`createServer(options)` registers tools; no I/O) and `src/mcp/index.ts` (parses flags, connects `StdioServerTransport`, handles `SIGINT`/`SIGTERM`).
-- [ ] Implement `check_url` with the summary and full projections, progress notifications, cancellation, and a per-call timeout.
-- [ ] Add `src/mcp/index.ts` as a second tsup entry emitting `dist/mcp/index.js` with the shebang banner. Add `"wsg-check-mcp": "./dist/mcp/index.js"` to `bin`.
-- [ ] Unit tests: call the tools through the SDK's in-memory transport (`InMemoryTransport.createLinkedPair()`) with `WsgChecker` fetching a mocked page. Assert the outputs validate against the declared schemas.
+- [x] Add `@modelcontextprotocol/sdk` and `zod` as dependencies.
+- [x] Create `src/mcp/server.ts` (`createServer(options)` registers tools; no I/O) and `src/mcp/index.ts` (parses flags, connects `StdioServerTransport`, handles `SIGINT`/`SIGTERM`).
+- [x] Implement `check_url` with the summary and full projections, progress notifications, cancellation, and a per-call timeout.
+- [x] Add `src/mcp/index.ts` as a second tsup entry emitting `dist/mcp/index.js` with the shebang banner. Add `"wsg-check-mcp": "./dist/mcp/index.js"` to `bin`.
+- [x] Unit tests: call the tools through the SDK's in-memory transport (`InMemoryTransport.createLinkedPair()`) with `WsgChecker` fetching a mocked page. Assert the outputs validate against the declared schemas.
+- [x] Skip the green-hosting lookup for local hosts (the Phase 0 follow-up); the hosting check reports them as not-applicable.
 
 ### Phase 2 — Guideline tools
 
@@ -133,7 +134,7 @@ Each phase is a separate PR that passes lint, type-check, unit tests, and both b
 
 ### Phase 3 — Packaging, CI, and docs
 
-- [ ] CI smoke test: build, then spawn `node dist/mcp/index.js`, send `initialize` and `tools/list` over stdio, and assert every stdout line parses as JSON-RPC.
+- [x] CI smoke test: build, then spawn `node dist/mcp/index.js`, send `initialize` and `tools/list` over stdio, and assert every stdout line parses as JSON-RPC. Done in Phase 1: `tests/smoke/mcp-stdio.mjs`, run by the npm package smoke test against the installed tarball.
 - [ ] Run the MCP Inspector (`npx @modelcontextprotocol/inspector node dist/mcp/index.js`) manually before the first release, and document the command in CONTRIBUTING.md.
 - [ ] README: an "Use with AI assistants" section with the Claude Code, Claude Desktop, VS Code, and Cursor snippets above, the tool list, and the network policy.
 - [ ] Update `docs/architecture.md` (new adapter), `docs/reference.md` (tools), the CHANGELOG, and move ADR-0009 to Accepted.

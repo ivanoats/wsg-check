@@ -474,4 +474,21 @@ describe('HttpClient — host policy', () => {
     if (!result.ok) return
     expect(result.value.url).toBe('https://example.com/new')
   })
+
+  it('does not request the page once the signal has fired', async () => {
+    const controller = new AbortController()
+    mockGet.mockImplementationOnce(() => {
+      controller.abort()
+      return Promise.reject(new Error('canceled'))
+    }) // robots
+
+    const result = await new HttpClient({ signal: controller.signal }).fetch(
+      'https://example.com/aborted-after-robots'
+    )
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error.message).toContain('Request aborted')
+    expect(mockGet).toHaveBeenCalledTimes(1)
+  })
 })

@@ -460,10 +460,13 @@ Detects `<a href>` links pointing to downloadable document formats: `.pdf`, `.do
 
 Queries the [Green Web Foundation](https://www.thegreenwebfoundation.org/) dataset via the callable CO2.js ESM export `hosting(domain)` to determine whether the target domain is served from verified renewable-energy infrastructure.
 
-| Condition                              | Status | Score |
-| -------------------------------------- | ------ | ----- |
-| Domain in Green Web Foundation dataset | `pass` | 100   |
-| Domain NOT in dataset                  | `fail` | 0     |
+| Condition                                                   | Status           | Score |
+| ----------------------------------------------------------- | ---------------- | ----- |
+| Domain in Green Web Foundation dataset                      | `pass`           | 100   |
+| Domain NOT in dataset                                       | `fail`           | 0     |
+| Local host (`localhost`, `*.local`, private or loopback IP) | `not-applicable` | —     |
+
+Local hosts are never sent to the Green Web Foundation; `checkGreenHosting` returns `false` for them without a lookup, so the CO₂ estimate assumes standard hosting.
 
 #### `checkCaching` — WSG 4.2
 

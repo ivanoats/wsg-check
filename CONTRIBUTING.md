@@ -73,7 +73,8 @@ wsg-check/
 │   ├── cli/          # Command-line interface (commander)
 │   ├── config/       # Configuration loader and defaults
 │   ├── core/         # WsgChecker, CheckRunner, scorer
-│   ├── pipeline/     # Check selection and runReport, shared by CLI and API
+│   ├── mcp/          # MCP server (wsg-check-mcp) for AI assistants
+│   ├── pipeline/     # Check selection and runReport, shared by CLI, API and MCP
 │   ├── report/       # Report types and formatters
 │   ├── types/        # Shared TypeScript types
 │   └── utils/        # HTTP client, host policy, HTML parser, logger, etc.

@@ -207,6 +207,10 @@ export class HttpClient {
       }
     }
 
+    if (this.signal?.aborted) {
+      return err(new FetchError(`Request aborted: ${url}`, url))
+    }
+
     try {
       const result = await this.fetchWithRetry(url, startClass)
       this.cache.set(url, result)
