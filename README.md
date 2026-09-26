@@ -7,7 +7,7 @@ Check a website against automated heuristics based on the [W3C Web Sustainabilit
 
 ## Release status
 
-As of September 24, 2026, the latest GitHub release is [v0.1.2](https://github.com/ivanoats/wsg-check/releases/tag/v0.1.2). Current `main` includes **unreleased** changes targeting WSG July-2026 (Group Note Draft): canonical slug IDs, four unscored related checks, and `specVersion` in reports. These are not features of v0.1.2. See the [changelog](CHANGELOG.md) and [spec versioning policy](SPEC_VERSIONING.md).
+The latest release is v0.4.0. It targets WSG July-2026 (Group Note Draft) and adds the `wsg-check-mcp` server for AI assistants, with the `check_url`, `list_guidelines`, and `get_guideline` tools. v0.3.0 was tagged on GitHub but not published to npm; use v0.4.0 or later. See the [changelog](CHANGELOG.md) and [spec versioning policy](SPEC_VERSIONING.md).
 
 Scores from different spec versions should not be treated as directly comparable. The package version and check selection also matter when comparing reports.
 
@@ -16,10 +16,10 @@ Scores from different spec versions should not be treated as directly comparable
 Requires Node.js 22 or later. Pin the released CLI for reproducible usage:
 
 ```bash
-npx @sustainablewebsites/wsg-check@0.1.2 https://example.com
+npx @sustainablewebsites/wsg-check@0.4.0 https://example.com
 
 # Or install globally
-npm install -g @sustainablewebsites/wsg-check@0.1.2
+npm install -g @sustainablewebsites/wsg-check@0.4.0
 wsg-check https://example.com --format json --output report.json
 ```
 
@@ -44,7 +44,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for environment configuration and develop
 - Analysis uses fetched HTML and HTTP metadata; it does not render JavaScript, measure Core Web Vitals, or download every referenced asset.
 - CO₂ estimates use HTML bytes and the SWD v4 model, not measured full-page energy consumption. Failed green-hosting lookups fall back to `false`.
 - Report page weight is the HTML document size; resource and third-party counts come from references in the HTML. Referenced assets are not downloaded or measured.
-- In unreleased source, security headers, form validation, native form features, and image alternative text remain visible as **related checks**, excluded from WSG scores.
+- Security headers, form validation, native form features, and image alternative text remain visible as **related checks**, excluded from WSG scores.
 
 ## CLI Usage
 
@@ -67,8 +67,6 @@ npx @sustainablewebsites/wsg-check https://example.com --fail-threshold 70
 ```
 
 ### Options
-
-The table describes current source. In v0.1.2, `--guidelines` uses numeric IDs; slug IDs, related-check IDs, and the WSG suffix in `--version` are unreleased changes.
 
 | Option                 | Alias | Description                                                                                                             | Default           |
 | ---------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------- | ----------------- |
@@ -104,6 +102,57 @@ Use `--fail-threshold` to fail your pipeline when a site's sustainability score 
 | `0`  | Check completed and score is at or above `--fail-threshold` |
 | `1`  | Fetch/parse error, or score is below `--fail-threshold`     |
 
+## Use with AI assistants (MCP)
+
+The package includes `wsg-check-mcp`, a [Model Context Protocol](https://modelcontextprotocol.io) server for Claude Code, Claude Desktop, VS Code, Cursor, and other MCP clients. It runs on your machine over stdio, with no account, port, or hosted service. Your assistant can then check a deployed site or your local dev server, look up guidelines, and fix what it finds.
+
+```bash
+# Claude Code
+claude mcp add wsg-check -- npx -y -p @sustainablewebsites/wsg-check wsg-check-mcp
+```
+
+Claude Desktop (`claude_desktop_config.json`) and Cursor (`.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "wsg-check": {
+      "command": "npx",
+      "args": ["-y", "-p", "@sustainablewebsites/wsg-check", "wsg-check-mcp"]
+    }
+  }
+}
+```
+
+VS Code (`.vscode/mcp.json`) uses a `servers` key:
+
+```json
+{
+  "servers": {
+    "wsg-check": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "-p", "@sustainablewebsites/wsg-check", "wsg-check-mcp"]
+    }
+  }
+}
+```
+
+Try prompts such as "Check http://localhost:3000 against the WSG and fix the top three issues" or "Which WSG guidelines cover web fonts?"
+
+| Tool              | What it does                                                                                                                                   |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `check_url`       | Checks a page and returns the score, grade, and each failed or warned check with a recommended fix. `detail: "full"` adds the complete report. |
+| `list_guidelines` | Lists the WSG guidelines, filtered by category, testability, or text, with how many automated checks implement each one.                       |
+| `get_guideline`   | Returns one guideline's description and W3C specification link.                                                                                |
+
+### Network access
+
+- **Local URLs are allowed by default**, so `http://localhost:3000` and other loopback addresses work without setup. The trade-off: text the assistant reads, such as a web page or a file in your project, could try to steer it into requesting a service on your machine. Requests are GET-only and the results go back to the assistant. If you don't check a local dev server, add `--no-local` after `wsg-check-mcp` in the arguments, or set `WSG_CHECK_NO_LOCAL=1`.
+- **Private networks** (10/8, 172.16/12, 192.168/16) are blocked unless you add `--allow-private-network` or set `WSG_CHECK_ALLOW_PRIVATE=1`.
+- The only other request `check_url` makes is a green-hosting lookup: it sends the hostname to the [Green Web Foundation](https://www.thegreenwebfoundation.org/). Local hostnames are never sent.
+- Cloud metadata and other reserved addresses are always blocked. Redirects from a public site into your machine or network are refused, and each connection is pinned to the address that was checked.
+
 ## REST API
 
 The web app exposes Next.js Route Handlers:
@@ -121,7 +170,7 @@ Responses use CORS headers, shared error envelopes, and in-memory rate limiting.
 
 ## Architecture and documentation
 
-The CLI and web API share a TypeScript fetch → check → score → report pipeline. The code is layered and framework-independent at its core, with direct dependencies on concrete utility implementations. The [architecture overview](docs/architecture.md) documents these boundaries and the external-I/O exceptions.
+The CLI, web API, and MCP server share a TypeScript fetch → check → score → report pipeline. The code is layered and framework-independent at its core, with direct dependencies on concrete utility implementations. The [architecture overview](docs/architecture.md) documents these boundaries and the external-I/O exceptions.
 
 - [Documentation index](docs/README.md)
 - [Architecture Decision Log (ADL)](docs/adl.md) and [ADR template](docs/adr/template.md)

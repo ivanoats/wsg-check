@@ -1,12 +1,12 @@
 # ADR-0009: Ship a local stdio MCP server in the npm package
 
-- Status: Proposed
-- Decision date: 2026-09-25 (proposal)
+- Status: Accepted
+- Decision date: 2026-09-25
 - Recorded: 2026-09-25
 - Provenance: contemporaneous decision
 - Supersedes: none
 - Superseded by: none
-- Availability: unreleased
+- Availability: v0.4.0, the first npm release with `wsg-check-mcp` (v0.3.0 was tagged but not published)
 
 [Decision log](../adl.md) · [MCP server plan](../mcp-server-plan.md)
 

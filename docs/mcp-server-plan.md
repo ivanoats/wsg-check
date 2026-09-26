@@ -2,7 +2,7 @@
 
 [Documentation index](README.md) · [ADR-0009](adr/0009-local-mcp-server.md) · [Architecture](architecture.md)
 
-Status: **Proposed**. Nothing described here is implemented yet.
+Status: **Implemented** in phases 0–3. The first npm release with `wsg-check-mcp` is v0.4.0. Phase 4 lists later work. Setup instructions for users are in the [README](../README.md#use-with-ai-assistants-mcp).
 
 ## Goal
 
@@ -135,11 +135,11 @@ Each phase is a separate PR that passes lint, type-check, unit tests, and both b
 ### Phase 3 — Packaging, CI, and docs
 
 - [x] CI smoke test: build, then spawn `node dist/mcp/index.js`, send `initialize` and `tools/list` over stdio, and assert every stdout line parses as JSON-RPC. Done in Phase 1: `tests/smoke/mcp-stdio.mjs`, run by the npm package smoke test against the installed tarball.
-- [ ] Run the MCP Inspector (`npx @modelcontextprotocol/inspector node dist/mcp/index.js`) manually before the first release, and document the command in CONTRIBUTING.md.
-- [ ] README: an "Use with AI assistants" section with the Claude Code, Claude Desktop, VS Code, and Cursor snippets above, the tool list, and the network policy.
-- [ ] Document the loopback tradeoff: a prompt-injected call can make GET requests to services on the developer's machine. The README should recommend `--no-local` for anyone who doesn't check a local dev server. The `check_url` description should tell the assistant that local URLs are fetched from the user's machine. This is the residual risk accepted for the SonarCloud S5144 (SSRF) findings on the HTTP client.
-- [ ] Update `docs/architecture.md` (new adapter), `docs/reference.md` (tools), the CHANGELOG, and move ADR-0009 to Accepted.
-- [ ] Release through the existing release-please and Trusted Publishing flow; no workflow changes are expected.
+- [x] Run the MCP Inspector against the built server and document the commands in CONTRIBUTING.md. Its CLI mode (`--cli`) listed all three tools and called `get_guideline` and `check_url` (against a local page) successfully.
+- [x] README: a "Use with AI assistants (MCP)" section with the Claude Code, Claude Desktop, VS Code, and Cursor snippets above, the tool list, the network policy, and the Green Web Foundation lookup.
+- [x] Document the loopback tradeoff: a prompt-injected call can make GET requests to services on the developer's machine. The README should recommend `--no-local` for anyone who doesn't check a local dev server. The `check_url` description should tell the assistant that local URLs are fetched from the user's machine. This is the residual risk accepted for the SonarCloud S5144 (SSRF) findings on the HTTP client.
+- [x] Update `docs/architecture.md` (new adapter) and `docs/reference.md` (tools), and move ADR-0009 to Accepted. release-please writes the CHANGELOG from the conventional commits.
+- [ ] Release through the existing release-please and Trusted Publishing flow; no workflow changes are expected. v0.3.0 was tagged but deliberately not published; v0.4.0 is the first npm release with the server. After its release PR merges, dispatch `publish.yml` (see [RELEASING.md](../RELEASING.md)).
 
 ### Phase 4 — After the first release
 
