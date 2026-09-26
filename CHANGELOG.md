@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0](https://github.com/ivanoats/wsg-check/compare/v0.3.0...v0.4.0) (2026-09-26)
+
+
+### Added
+
+* list_guidelines and get_guideline MCP tools (MCP Phase 2) ([#205](https://github.com/ivanoats/wsg-check/issues/205)) ([ae17670](https://github.com/ivanoats/wsg-check/commit/ae17670858d9e94c8b77e7c68615885be0410d83))
+
+
+### Changed
+
+* **mcp:** user and contributor docs for the MCP server (MCP Phase 3) ([#207](https://github.com/ivanoats/wsg-check/issues/207)) ([a57630c](https://github.com/ivanoats/wsg-check/commit/a57630c0c8f7658b9bfcb6cc03e501dcb15caba7))
+
 ## [0.3.0](https://github.com/ivanoats/wsg-check/compare/v0.2.1...v0.3.0) (2026-09-26)
 
 
