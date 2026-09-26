@@ -8,17 +8,20 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { HostPolicy } from '@/utils/host-policy'
 
-const connect = vi.fn().mockResolvedValue(undefined)
-const close = vi.fn().mockResolvedValue(undefined)
+const connect = vi.fn(() => Promise.resolve())
+const close = vi.fn(() => Promise.resolve())
 type ServerOptions = { hostPolicy: HostPolicy; shutdownSignal: AbortSignal }
 const createServerMock = vi.fn<
   (options: ServerOptions) => { connect: typeof connect; close: typeof close }
 >(() => ({ connect, close }))
 vi.mock('@/mcp/server', () => ({ createServer: createServerMock }))
 
-class MockStdioServerTransport {}
+const stdioTransport = { name: 'stdio transport' }
 vi.mock('@modelcontextprotocol/sdk/server/stdio.js', () => ({
-  StdioServerTransport: MockStdioServerTransport,
+  // Called with `new`; a constructor that returns an object yields that object.
+  StdioServerTransport: vi.fn(function StdioServerTransport() {
+    return stdioTransport
+  }),
 }))
 
 const { startMcpServer } = await import('@/mcp/start')
@@ -52,7 +55,7 @@ describe('startMcpServer', () => {
     await startMcpServer(['node', 'wsg-check-mcp'])
 
     expect(options().hostPolicy).toEqual({ allowLoopback: true, allowPrivateNetwork: false })
-    expect(connect).toHaveBeenCalledWith(expect.any(MockStdioServerTransport))
+    expect(connect.mock.calls[0]).toEqual([stdioTransport])
     expect(stderr).toHaveBeenCalledWith(
       expect.stringMatching(
         /^wsg-check-mcp \S+ ready \(local URLs allowed, private network blocked\)/u
