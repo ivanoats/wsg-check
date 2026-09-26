@@ -12,7 +12,7 @@ import axios, { AxiosError, type AxiosInstance, type AxiosResponse } from 'axios
 import robotsParser from 'robots-parser'
 import { FetchError, type Result, ok, err } from './errors'
 import { isDisallowedHost, dnsResolvesToPrivateAddress } from './ssrf'
-import { evaluateUrl, type AddressClass, type HostPolicy } from './host-policy'
+import { createPinnedLookup, evaluateUrl, type AddressClass, type HostPolicy } from './host-policy'
 import { VERSION } from '../version'
 
 // ─── Public types ─────────────────────────────────────────────────────────────
@@ -108,8 +108,21 @@ export class HttpClient {
 
   // ── robots.txt ──────────────────────────────────────────────────────────────
 
+  /**
+   * Per-request options that pin the connection to the address class the
+   * host policy approved. Empty when no policy is set.
+   */
+  private connectOptions(addressClass: AddressClass | undefined): {
+    lookup?: ReturnType<typeof createPinnedLookup>
+  } {
+    return this.hostPolicy && addressClass ? { lookup: createPinnedLookup(addressClass) } : {}
+  }
+
   /** Fetch and cache the robots.txt rules for the given origin. */
-  private async fetchRobotsTxtRules(origin: string): Promise<ReturnType<typeof robotsParser>> {
+  private async fetchRobotsTxtRules(
+    origin: string,
+    addressClass?: AddressClass
+  ): Promise<ReturnType<typeof robotsParser>> {
     const cached = this.robotsCache.get(origin)
     if (cached) return cached
 
@@ -118,6 +131,7 @@ export class HttpClient {
       const resp = await this.axiosInstance.get<string>(robotsUrl, {
         responseType: 'text',
         timeout: 5_000,
+        ...this.connectOptions(addressClass),
       })
       if (resp.status === 200 && typeof resp.data === 'string') {
         const robots = robotsParser(robotsUrl, resp.data)
@@ -133,10 +147,15 @@ export class HttpClient {
     return allowAll
   }
 
-  /** Return `true` if the URL is permitted by the site's robots.txt. */
-  async isAllowedByRobots(url: string): Promise<boolean> {
+  /**
+   * Return `true` if the URL is permitted by the site's robots.txt.
+   *
+   * @param addressClass - The class the host policy approved for this host, so
+   *                       the robots.txt request is pinned to it too.
+   */
+  async isAllowedByRobots(url: string, addressClass?: AddressClass): Promise<boolean> {
     const parsed = new URL(url)
-    const robots = await this.fetchRobotsTxtRules(parsed.origin)
+    const robots = await this.fetchRobotsTxtRules(parsed.origin, addressClass)
     return robots.isAllowed(url, this.opts.userAgent) !== false
   }
 
@@ -169,7 +188,7 @@ export class HttpClient {
     }
 
     if (!options?.ignoreRobots) {
-      const allowed = await this.isAllowedByRobots(url)
+      const allowed = await this.isAllowedByRobots(url, startClass)
       if (!allowed) {
         return err(new FetchError(`URL disallowed by robots.txt: ${url}`, url))
       }
@@ -219,6 +238,7 @@ export class HttpClient {
     for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
       const resp = await this.axiosInstance.get<string>(currentUrl, {
         responseType: 'text',
+        ...this.connectOptions(currentClass),
       })
 
       if (resp.status >= 300 && resp.status < 400) {

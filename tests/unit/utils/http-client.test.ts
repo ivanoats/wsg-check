@@ -403,6 +403,29 @@ describe('HttpClient — host policy', () => {
     expect(result.error.message).toContain('into loopback are not allowed')
   })
 
+  it('pins the robots.txt and page requests to the approved address class', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    await new HttpClient({ hostPolicy: LOCAL_DEV }).fetch('https://example.com/')
+
+    expect(mockGet).toHaveBeenCalledTimes(2)
+    for (const [, config] of mockGet.mock.calls) {
+      expect(typeof (config as { lookup?: unknown }).lookup).toBe('function')
+    }
+  })
+
+  it('does not pin requests when no policy is set', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    await new HttpClient().fetch('https://example.com/')
+
+    for (const [, config] of mockGet.mock.calls) {
+      expect((config as { lookup?: unknown }).lookup).toBeUndefined()
+    }
+  })
+
   it('keeps refusing loopback redirects when no policy is set', async () => {
     mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
     mockGet.mockResolvedValueOnce(axiosResp(307, '', { location: '/en' }))

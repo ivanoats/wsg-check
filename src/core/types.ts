@@ -166,7 +166,7 @@ export interface RunResult {
 export interface PageMetrics {
   /** Byte size of the HTML response body. */
   htmlSize: number
-  /** Total resource references found on the page, including the HTML. */
+  /** External resource references parsed from the HTML (not counting the HTML itself). */
   resourceCount: number
   /** Resources served from third-party origins. */
   thirdPartyCount: number

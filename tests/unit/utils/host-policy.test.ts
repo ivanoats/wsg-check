@@ -6,7 +6,8 @@ vi.mock('node:dns/promises', () => ({
   lookup: lookupMock,
 }))
 
-const { classifyAddress, classifyHost, evaluateUrl } = await import('@/utils/host-policy')
+const { classifyAddress, classifyHost, createPinnedLookup, evaluateUrl, parseIpv6 } =
+  await import('@/utils/host-policy')
 
 const LOOPBACK_ONLY = { allowLoopback: true, allowPrivateNetwork: false }
 const STRICT = { allowLoopback: false, allowPrivateNetwork: false }
@@ -30,6 +31,21 @@ describe('classifyAddress', () => {
     ['0.0.0.0', 'reserved'], // NOSONAR - intentional unspecified IP
     ['::', 'reserved'],
     ['not-an-ip', 'reserved'],
+    ['224.0.0.1', 'reserved'], // NOSONAR - intentional multicast IP
+    // Every spelling of an address must classify the same way.
+    ['0:0:0:0:0:0:0:1', 'loopback'],
+    ['0:0:0:0:0:0:0:0', 'reserved'],
+    ['::ffff:7f00:1', 'loopback'],
+    ['0:0:0:0:0:ffff:7f00:1', 'loopback'],
+    ['::ffff:a00:1', 'private'],
+    ['::ffff:169.254.169.254', 'reserved'], // NOSONAR - intentional metadata IP
+    ['64:ff9b::7f00:1', 'loopback'],
+    ['64:ff9b::5db8:d822', 'public'],
+    ['::127.0.0.1', 'reserved'], // NOSONAR - deprecated IPv4-compatible form
+    ['FE80::1', 'reserved'],
+    ['fe80::1%eth0', 'reserved'],
+    ['ff02::1', 'reserved'],
+    ['fec0::1', 'private'],
   ])('%s is %s', (address, expected) => {
     expect(classifyAddress(address)).toBe(expected)
   })
@@ -102,5 +118,78 @@ describe('evaluateUrl', () => {
   it('allows a redirect from loopback to loopback', async () => {
     const decision = await evaluateUrl('http://127.0.0.1:3000/en', LOOPBACK_ONLY, 'loopback')
     expect(decision.allowed).toBe(true)
+  })
+})
+
+describe('parseIpv6', () => {
+  it('expands compressed and embedded-IPv4 forms to eight groups', () => {
+    expect(parseIpv6('::1')).toEqual([0, 0, 0, 0, 0, 0, 0, 1])
+    expect(parseIpv6('::ffff:127.0.0.1')).toEqual([0, 0, 0, 0, 0, 0xffff, 0x7f00, 1])
+    expect(parseIpv6('2001:db8::')).toEqual([0x2001, 0xdb8, 0, 0, 0, 0, 0, 0])
+  })
+
+  it('rejects malformed addresses', () => {
+    for (const bad of [
+      '1::2::3',
+      '1:2:3',
+      '1:2:3:4:5:6:7:8:9',
+      '::ffff:999.0.0.1',
+      'g::1',
+      '1:2:3:4:5:6:7::8',
+    ]) {
+      expect(parseIpv6(bad)).toBeNull()
+    }
+  })
+})
+
+describe('evaluateUrl — normalized IPv6 URLs', () => {
+  it('refuses IPv4-mapped loopback that URL parsing rewrites to hex', async () => {
+    // new URL() turns [::ffff:127.0.0.1] into [::ffff:7f00:1].
+    const decision = await evaluateUrl('http://[::ffff:127.0.0.1]/', STRICT)
+    expect(decision).toEqual({ allowed: false, reason: 'loopback addresses are not allowed' })
+  })
+
+  it('refuses expanded IPv6 loopback', async () => {
+    expect((await evaluateUrl('http://[0:0:0:0:0:0:0:1]/', STRICT)).allowed).toBe(false)
+  })
+})
+
+describe('createPinnedLookup', () => {
+  beforeEach(() => {
+    lookupMock.mockReset()
+  })
+
+  const run = (expected: Parameters<typeof createPinnedLookup>[0], hostname = 'example.com') =>
+    new Promise<{ err: Error | null; addresses: unknown[] }>((resolve) => {
+      createPinnedLookup(expected)(hostname, {}, (err, addresses) => resolve({ err, addresses }))
+    })
+
+  it('returns the resolved addresses when they match the approved class', async () => {
+    lookupMock.mockResolvedValue([
+      { address: '93.184.216.34', family: 4 }, // NOSONAR - intentional public IP
+      { address: '2606:2800:220:1::1', family: 6 },
+    ])
+    const { err, addresses } = await run('public')
+    expect(err).toBeNull()
+    expect(addresses).toEqual([
+      { address: '93.184.216.34', family: 4 }, // NOSONAR - intentional public IP
+      { address: '2606:2800:220:1::1', family: 6 },
+    ])
+  })
+
+  it('refuses a host that re-resolves to loopback after approval as public (DNS rebinding)', async () => {
+    lookupMock.mockResolvedValue([{ address: '127.0.0.1', family: 4 }])
+    const { err } = await run('public', 'rebind.example')
+    expect(err?.message).toContain('outside the approved public range')
+  })
+
+  it('refuses when resolution returns no addresses', async () => {
+    lookupMock.mockResolvedValue([])
+    expect((await run('public')).err).toBeInstanceOf(Error)
+  })
+
+  it('passes DNS errors through', async () => {
+    lookupMock.mockRejectedValue(new Error('ENOTFOUND'))
+    expect((await run('public')).err?.message).toBe('ENOTFOUND')
   })
 })

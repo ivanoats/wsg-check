@@ -33,22 +33,69 @@ const classifyIpv4 = (address: string): AddressClass => {
   if (a === 10) return 'private'
   if (a === 172 && b >= 16 && b <= 31) return 'private'
   if (a === 192 && b === 168) return 'private'
-  // 0.0.0.0/8 can reach local services; 169.254/16 includes cloud metadata.
-  if (a === 0) return 'reserved'
+  // 0.0.0.0/8 can reach local services; 169.254/16 includes cloud metadata;
+  // 224/4 and above are multicast and reserved.
+  if (a === 0 || a >= 224) return 'reserved'
   if (a === 169 && b === 254) return 'reserved'
   return 'public'
 }
 
+/** Rewrites a trailing dotted IPv4 part (e.g. `::ffff:1.2.3.4`) as two hex groups. */
+const inlineIpv4Tail = (text: string): string | null => {
+  const lastColon = text.lastIndexOf(':')
+  const tail = text.slice(lastColon + 1)
+  if (!tail.includes('.')) return text
+  if (isIP(tail) !== 4) return null
+  const [a, b, c, d] = tail.split('.').map(Number)
+  return `${text.slice(0, lastColon + 1)}${((a << 8) | b).toString(16)}:${((c << 8) | d).toString(16)}`
+}
+
+/**
+ * Expands an IPv6 literal into its eight 16-bit groups, so that every
+ * spelling of an address (`::1`, `0:0:0:0:0:0:0:1`, `::ffff:127.0.0.1`,
+ * `::ffff:7f00:1`) classifies the same way. Returns `null` when invalid.
+ */
+export const parseIpv6 = (address: string): number[] | null => {
+  const withoutZone = address.toLowerCase().split('%')[0]
+  const text = inlineIpv4Tail(withoutZone)
+  if (text === null) return null
+
+  const halves = text.split('::')
+  if (halves.length > 2) return null
+  const head = halves[0] === '' ? [] : halves[0].split(':')
+  const tail = halves.length === 2 && halves[1] !== '' ? halves[1].split(':') : []
+  const fill = 8 - head.length - tail.length
+  if (halves.length === 1 ? head.length !== 8 : fill < 1) return null
+
+  const groups = [...head, ...Array<string>(halves.length === 2 ? fill : 0).fill('0'), ...tail]
+  const values = groups.map((group) =>
+    /^[0-9a-f]{1,4}$/u.test(group) ? Number.parseInt(group, 16) : Number.NaN
+  )
+  return values.some(Number.isNaN) ? null : values
+}
+
+const embeddedIpv4 = (high: number, low: number): string =>
+  `${high >> 8}.${high & 0xff}.${low >> 8}.${low & 0xff}`
+
 const classifyIpv6 = (address: string): AddressClass => {
-  const lower = address.toLowerCase()
-  if (lower === '::1') return 'loopback'
-  if (lower === '::') return 'reserved'
-  if (lower.startsWith('::ffff:')) {
-    const mapped = lower.substring(lower.lastIndexOf(':') + 1)
-    if (isIP(mapped) === 4) return classifyIpv4(mapped)
+  const groups = parseIpv6(address)
+  if (groups === null) return 'reserved'
+  const [g0, g1, g2, g3, g4, g5, g6, g7] = groups
+  const firstFiveZero = g0 === 0 && g1 === 0 && g2 === 0 && g3 === 0 && g4 === 0
+
+  if (firstFiveZero && g5 === 0) {
+    // ::1 is loopback; :: and deprecated IPv4-compatible forms are reserved.
+    return g6 === 0 && g7 === 1 ? 'loopback' : 'reserved'
   }
-  if (/^fe[89ab][0-9a-f]:/.test(lower)) return 'reserved'
-  if (lower.startsWith('fc') || lower.startsWith('fd')) return 'private'
+  // IPv4-mapped (::ffff:0:0/96) and NAT64 (64:ff9b::/96) embed an IPv4 address.
+  const isMapped = firstFiveZero && g5 === 0xffff
+  const isNat64 = g0 === 0x64 && g1 === 0xff9b && g2 === 0 && g3 === 0 && g4 === 0 && g5 === 0
+  if (isMapped || isNat64) return classifyIpv4(embeddedIpv4(g6, g7))
+
+  if ((g0 & 0xffc0) === 0xfe80) return 'reserved' // link-local fe80::/10
+  if ((g0 & 0xff00) === 0xff00) return 'reserved' // multicast ff00::/8
+  if ((g0 & 0xfe00) === 0xfc00) return 'private' // unique local fc00::/7
+  if ((g0 & 0xffc0) === 0xfec0) return 'private' // deprecated site-local fec0::/10
   return 'public'
 }
 
@@ -61,7 +108,7 @@ export const classifyAddress = (address: string): AddressClass => {
 }
 
 /** Strips the brackets that `URL.hostname` keeps around IPv6 literals. */
-const unbracket = (hostname: string): string => hostname.replace(/^\[(.*)\]$/, '$1')
+const unbracket = (hostname: string): string => hostname.replace(/^\[(.*)\]$/u, '$1')
 
 const RESTRICTIVENESS: Record<AddressClass, number> = {
   public: 0,
@@ -148,3 +195,43 @@ export const evaluateUrl = async (
   }
   return { allowed: true, addressClass }
 }
+
+// ─── Connection-time pinning ──────────────────────────────────────────────────
+
+/** A resolved address in the shape HTTP clients' `lookup` options expect. */
+export interface ResolvedAddress {
+  readonly address: string
+  readonly family: 4 | 6
+}
+
+type LookupCallback = (err: Error | null, addresses: ResolvedAddress[]) => void
+
+/**
+ * Returns a DNS lookup for an HTTP request that only connects to addresses in
+ * `expected`, the class `evaluateUrl` approved for that host. Checking the
+ * addresses the connection actually uses closes the gap a DNS-rebinding host
+ * could otherwise exploit between validation and connection.
+ */
+export const createPinnedLookup =
+  (expected: AddressClass) =>
+  (hostname: string, _options: object, callback: LookupCallback): void => {
+    lookup(hostname, { all: true }).then(
+      (records) => {
+        const mismatch = records.find((record) => classifyAddress(record.address) !== expected)
+        if (records.length === 0 || mismatch !== undefined) {
+          callback(
+            new Error(
+              `Host ${hostname} resolved to ${mismatch?.address ?? 'no address'}, outside the approved ${expected} range`
+            ),
+            []
+          )
+          return
+        }
+        callback(
+          null,
+          records.map(({ address, family }) => ({ address, family: family === 6 ? 6 : 4 }))
+        )
+      },
+      (error: unknown) => callback(error instanceof Error ? error : new Error(String(error)), [])
+    )
+  }
