@@ -111,12 +111,12 @@ Each phase is a separate PR that passes lint, type-check, unit tests, and both b
 
 ### Phase 0 — Prerequisites in shared code
 
-- [ ] Send all logger output to **stderr** (`console.error`), or make the stream configurable. Add a test that runs `check` and asserts nothing is written to stdout. This also fixes `wsg-check -f json` output.
-- [ ] Move check selection into one pure module (for example `src/core/selection.ts`) that returns `{ checks, warnings }`. Make the CLI and API use it and delete the CLI copy.
-- [ ] Add a shared `runReport(url, options)` function that selects checks, runs `WsgChecker`, and builds the `SustainabilityReport` with real page-weight metrics. The CLI, API route, and MCP server all call it.
-- [ ] Add the `hostPolicy` option to `HttpClient` and `PageFetcher`, checked on the initial URL and on each redirect hop.
-- [ ] Move web-only packages from `dependencies` to `devDependencies`: `next`, `react`, `react-dom`, `@ark-ui/react`, and `rate-limiter-flexible` (only `src/app/` and `src/api/` import them). The Netlify and CI builds install dev dependencies, so the web app is unaffected, while `npx` installs of the CLI and MCP server skip them.
-- [ ] Guard that move: add an ESLint `no-restricted-imports` rule so `src/cli/`, `src/mcp/`, `src/core/`, `src/checks/`, `src/report/`, `src/config/`, and `src/utils/` cannot import `next`, React, or the Next-dependent `src/api/` modules (`cors.ts`, `rate-limit.ts`, `response.ts`). Otherwise tsup would silently bundle Next.js into the CLI. Add a CI step that installs the packed tarball with `--omit=dev` and runs `wsg-check --version`.
+- [x] Send all logger output to **stderr** (`console.error`), or make the stream configurable. Add a test that runs `check` and asserts nothing is written to stdout. This also fixes `wsg-check -f json` output.
+- [x] Move check selection into one pure module that returns the checks and notices. Make the CLI and API use it and delete the CLI copy. Implemented as `src/pipeline/selection.ts` (`{ checks, notices }`).
+- [x] Add a shared `runReport(url, options)` function that runs `WsgChecker` and builds the `SustainabilityReport` with real page-weight metrics. The CLI, API route, and MCP server all call it. Implemented in `src/pipeline/run-report.ts`; callers pass checks from `selectChecks` so they can show notices before the run starts.
+- [x] Add the `hostPolicy` option to `HttpClient` and `PageFetcher`, checked on the initial URL and on each redirect hop. Implemented in `src/utils/host-policy.ts`.
+- [x] Move web-only packages from `dependencies` to `devDependencies`: `next`, `react`, `react-dom`, `@ark-ui/react`, and `rate-limiter-flexible` (only `src/app/` and `src/api/` import them). The Netlify and CI builds install dev dependencies, so the web app is unaffected, while `npx` installs of the CLI and MCP server skip them.
+- [x] Guard that move: add an ESLint `no-restricted-imports` rule so `src/cli/`, `src/mcp/`, `src/core/`, `src/checks/`, `src/report/`, `src/config/`, and `src/utils/` cannot import `next`, React, or the Next-dependent `src/api/` modules (`cors.ts`, `rate-limit.ts`, `response.ts`). Otherwise tsup would silently bundle Next.js into the CLI. Add a CI step that installs the packed tarball with `--omit=dev` and runs `wsg-check --version`.
 
 ### Phase 1 — Server and `check_url`
 

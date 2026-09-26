@@ -155,4 +155,19 @@ export interface RunResult {
   co2Model: CO2Model
   /** Whether the hosting provider is recognised as running on renewable energy. */
   isGreenHosted: boolean
+  /**
+   * Page-weight metrics for the report metadata. Optional so that results
+   * built without a fetched page (e.g. test fixtures) remain valid.
+   */
+  pageMetrics?: PageMetrics
+}
+
+/** Page-weight figures carried from `PageData` into the report. */
+export interface PageMetrics {
+  /** Byte size of the HTML response body. */
+  htmlSize: number
+  /** External resource references parsed from the HTML (not counting the HTML itself). */
+  resourceCount: number
+  /** Resources served from third-party origins. */
+  thirdPartyCount: number
 }

@@ -43,7 +43,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for environment configuration and develop
 - Checks cover web development, UX, and hosting. The business category has no automated checks.
 - Analysis uses fetched HTML and HTTP metadata; it does not render JavaScript, measure Core Web Vitals, or download every referenced asset.
 - CO₂ estimates use HTML bytes and the SWD v4 model, not measured full-page energy consumption. Failed green-hosting lookups fall back to `false`.
-- Current CLI/API report page-weight and request-count metadata are zero placeholders because `RunResult` does not carry those metrics. They do not mean the page has no resources.
+- Report page weight is the HTML document size; resource and third-party counts come from references in the HTML. Referenced assets are not downloaded or measured.
 - In unreleased source, security headers, form validation, native form features, and image alternative text remain visible as **related checks**, excluded from WSG scores.
 
 ## CLI Usage

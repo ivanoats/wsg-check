@@ -322,3 +322,116 @@ describe('HttpClient', () => {
     expect(result.error).toBeInstanceOf(FetchError)
   })
 })
+
+describe('HttpClient — host policy', () => {
+  const LOCAL_DEV = { allowLoopback: true, allowPrivateNetwork: false }
+
+  beforeEach(() => {
+    mockGet.mockReset()
+    lookupMock.mockReset()
+    lookupMock.mockResolvedValue([{ address: '93.184.216.34', family: 4 }]) // NOSONAR - intentional public IP
+  })
+
+  it('fetches a loopback dev server when loopback is allowed', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    const client = new HttpClient({ hostPolicy: LOCAL_DEV })
+    const result = await client.fetch('http://localhost:3000/')
+
+    expect(result.ok).toBe(true)
+  })
+
+  it('refuses a blocked initial URL before requesting anything, including robots.txt', async () => {
+    const client = new HttpClient({
+      hostPolicy: { allowLoopback: false, allowPrivateNetwork: false },
+    })
+    const result = await client.fetch('http://127.0.0.1:8080/')
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error.message).toContain('loopback addresses are not allowed')
+    expect(mockGet).not.toHaveBeenCalled()
+  })
+
+  it('refuses private network hosts unless allowed', async () => {
+    lookupMock.mockResolvedValue([{ address: '192.168.1.20', family: 4 }]) // NOSONAR - intentional private IP
+
+    const blocked = await new HttpClient({ hostPolicy: LOCAL_DEV }).fetch('http://nas.example/')
+    expect(blocked.ok).toBe(false)
+
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+    const allowed = await new HttpClient({
+      hostPolicy: { allowLoopback: true, allowPrivateNetwork: true },
+    }).fetch('http://nas.example/')
+    expect(allowed.ok).toBe(true)
+  })
+
+  it('always refuses link-local and metadata addresses', async () => {
+    const client = new HttpClient({
+      hostPolicy: { allowLoopback: true, allowPrivateNetwork: true },
+    })
+    const result = await client.fetch('http://169.254.169.254/latest/meta-data/') // NOSONAR - intentional metadata IP
+
+    expect(result.ok).toBe(false)
+    expect(mockGet).not.toHaveBeenCalled()
+  })
+
+  it('follows redirects within loopback', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockResolvedValueOnce(axiosResp(307, '', { location: '/en' }))
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    const client = new HttpClient({ hostPolicy: LOCAL_DEV })
+    const result = await client.fetch('http://localhost:3000/')
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.url).toBe('http://localhost:3000/en')
+  })
+
+  it('refuses a redirect from a public host into loopback', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockResolvedValueOnce(axiosResp(302, '', { location: 'http://localhost:6379/' }))
+
+    const client = new HttpClient({ hostPolicy: LOCAL_DEV })
+    const result = await client.fetch('https://example.com/')
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error.message).toContain('into loopback are not allowed')
+  })
+
+  it('pins the robots.txt and page requests to the approved address class', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    await new HttpClient({ hostPolicy: LOCAL_DEV }).fetch('https://example.com/')
+
+    expect(mockGet).toHaveBeenCalledTimes(2)
+    for (const [, config] of mockGet.mock.calls) {
+      expect(typeof (config as { lookup?: unknown }).lookup).toBe('function')
+    }
+  })
+
+  it('does not pin requests when no policy is set', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    await new HttpClient().fetch('https://example.com/')
+
+    for (const [, config] of mockGet.mock.calls) {
+      expect((config as { lookup?: unknown }).lookup).toBeUndefined()
+    }
+  })
+
+  it('keeps refusing loopback redirects when no policy is set', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockResolvedValueOnce(axiosResp(307, '', { location: '/en' }))
+
+    const result = await new HttpClient().fetch('http://localhost:3000/')
+
+    expect(result.ok).toBe(false)
+  })
+})

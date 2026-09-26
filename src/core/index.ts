@@ -20,6 +20,7 @@
 import type { ResolvedConfig } from '../config/loader'
 import { FetchError, ParseError, type Result, ok } from '../utils/errors'
 import { defaultLogger, type Logger } from '../utils/logger'
+import type { HostPolicy } from '../utils/host-policy'
 import { estimateCO2, checkGreenHosting, CO2_MODEL } from '../utils/carbon-estimator'
 import { PageFetcher } from './fetcher'
 import { CheckRunner } from './runner'
@@ -28,21 +29,27 @@ import type { CheckFn, RunResult } from './types'
 
 // ─── Re-exports ───────────────────────────────────────────────────────────────
 
-export type { CheckResult, CheckFn, PageData, CategoryScore, RunResult } from './types'
+export type { CheckResult, CheckFn, PageData, PageMetrics, CategoryScore, RunResult } from './types'
 export { PageFetcher } from './fetcher'
 export { CheckRunner } from './runner'
 export { calculateCategoryScore, calculateOverallScore, scoreResults } from './scorer'
 
 // ─── WsgChecker ───────────────────────────────────────────────────────────────
 
+/** Settings `WsgChecker` passes to its fetcher. */
+export type CheckerConfig = Partial<ResolvedConfig> & {
+  /** Network access policy for the page fetch; see `HttpClientOptions`. */
+  readonly hostPolicy?: HostPolicy
+}
+
 /**
  * Top-level orchestrator that coordinates fetching, parsing, running checks,
  * and scoring for a single URL.
  *
- * Accepts an optional subset of `ResolvedConfig` to configure the underlying
- * `HttpClient`, and an optional array of check functions to register on
- * construction.  Additional checks can be registered later via
- * `checker.runner.register(fn)`.
+ * Accepts an optional subset of `ResolvedConfig` (plus an optional host
+ * policy) to configure the underlying `HttpClient`, and an optional array of
+ * check functions to register on construction.  Additional checks can be
+ * registered later via `checker.runner.register(fn)`.
  */
 export class WsgChecker {
   readonly fetcher: PageFetcher
@@ -50,7 +57,7 @@ export class WsgChecker {
   private readonly logger: Logger
 
   constructor(
-    config: Partial<ResolvedConfig> = {},
+    config: CheckerConfig = {},
     checks: ReadonlyArray<CheckFn> = [],
     logger: Logger = defaultLogger
   ) {
@@ -58,6 +65,7 @@ export class WsgChecker {
       timeout: config.timeout,
       userAgent: config.userAgent,
       followRedirects: config.followRedirects,
+      hostPolicy: config.hostPolicy,
     })
     this.runner = new CheckRunner()
     this.runner.registerAll(checks)
@@ -107,6 +115,11 @@ export class WsgChecker {
       co2PerPageView,
       co2Model: CO2_MODEL,
       isGreenHosted,
+      pageMetrics: {
+        htmlSize: pageResult.value.pageWeight.htmlSize,
+        resourceCount: pageResult.value.pageWeight.resourceCount,
+        thirdPartyCount: pageResult.value.pageWeight.thirdPartyCount,
+      },
     })
   }
 }

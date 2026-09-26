@@ -5,7 +5,7 @@ describe('createLogger – terminal mode (default)', () => {
   let spy: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
-    spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    spy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
   })
 
   afterEach(() => {
@@ -33,7 +33,16 @@ describe('createLogger – terminal mode (default)', () => {
   it('includes extra data when provided', () => {
     const log = createLogger({ level: 'info' })
     log.info('fetching', { url: 'https://example.com' })
-    expect(spy).toHaveBeenCalledWith('[INFO] fetching', { url: 'https://example.com' })
+    expect(spy).toHaveBeenCalledWith("[INFO] fetching { url: 'https://example.com' }")
+  })
+
+  it('keeps each entry on one line so user input cannot forge log lines', () => {
+    const log = createLogger({ level: 'info' })
+    log.info('fetching https://example.com/\n[ERROR] forged', { url: 'a\r\nb' })
+    expect(spy).toHaveBeenCalledTimes(1)
+    const line = spy.mock.calls[0][0] as string
+    expect(line).not.toMatch(/[\r\n]/)
+    expect(line.startsWith('[INFO] fetching https://example.com/ [ERROR] forged')).toBe(true)
   })
 
   it('suppresses messages below the configured level', () => {
@@ -54,7 +63,7 @@ describe('createLogger – structured mode', () => {
   let spy: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
-    spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    spy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
   })
 
   afterEach(() => {
@@ -82,6 +91,14 @@ describe('createLogger – structured mode', () => {
     log.warn('check failed', { guidelineId: '3.2' })
     const entry = JSON.parse(spy.mock.calls[0][0] as string) as Record<string, unknown>
     expect(entry.data).toEqual({ guidelineId: '3.2' })
+  })
+
+  it('escapes newlines in structured output', () => {
+    const log = createLogger({ level: 'info', structured: true })
+    log.info('line one\nline two')
+    const raw = spy.mock.calls[0][0] as string
+    expect(raw).not.toMatch(/\n/)
+    expect((JSON.parse(raw) as { message: string }).message).toBe('line one\nline two')
   })
 
   it('omits data field when no extra data is provided', () => {

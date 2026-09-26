@@ -12,6 +12,7 @@ import axios, { AxiosError, type AxiosInstance, type AxiosResponse } from 'axios
 import robotsParser from 'robots-parser'
 import { FetchError, type Result, ok, err } from './errors'
 import { isDisallowedHost, dnsResolvesToPrivateAddress } from './ssrf'
+import { createPinnedLookup, evaluateUrl, type AddressClass, type HostPolicy } from './host-policy'
 import { VERSION } from '../version'
 
 // ─── Public types ─────────────────────────────────────────────────────────────
@@ -60,11 +61,17 @@ export interface HttpClientOptions {
   maxRetries?: number
   /** Base delay in ms between retries (multiplied by attempt number). Defaults to 500. */
   retryDelay?: number
+  /**
+   * Network access policy applied to the initial URL (before robots.txt is
+   * fetched) and to every redirect hop. When omitted, only redirect hops are
+   * checked, and every private or loopback target is refused.
+   */
+  hostPolicy?: HostPolicy
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const DEFAULT_OPTIONS: Required<HttpClientOptions> = {
+const DEFAULT_OPTIONS: Required<Omit<HttpClientOptions, 'hostPolicy'>> = {
   timeout: 30_000,
   userAgent: `Mozilla/5.0 (compatible; wsg-check/${VERSION}; +https://github.com/ivanoats/wsg-check)`,
   followRedirects: true,
@@ -78,12 +85,15 @@ const MAX_REDIRECTS = 10
 
 export class HttpClient {
   private readonly axiosInstance: AxiosInstance
-  private readonly opts: Required<HttpClientOptions>
+  private readonly opts: Required<Omit<HttpClientOptions, 'hostPolicy'>>
+  private readonly hostPolicy?: HostPolicy
   private readonly cache = new Map<string, FetchResult>()
   private readonly robotsCache = new Map<string, ReturnType<typeof robotsParser>>()
 
   constructor(options: HttpClientOptions = {}) {
-    this.opts = { ...DEFAULT_OPTIONS, ...options }
+    const { hostPolicy, ...rest } = options
+    this.opts = { ...DEFAULT_OPTIONS, ...rest }
+    this.hostPolicy = hostPolicy
 
     this.axiosInstance = axios.create({
       timeout: this.opts.timeout,
@@ -98,8 +108,21 @@ export class HttpClient {
 
   // ── robots.txt ──────────────────────────────────────────────────────────────
 
+  /**
+   * Per-request options that pin the connection to the address class the
+   * host policy approved. Empty when no policy is set.
+   */
+  private connectOptions(addressClass: AddressClass | undefined): {
+    lookup?: ReturnType<typeof createPinnedLookup>
+  } {
+    return this.hostPolicy && addressClass ? { lookup: createPinnedLookup(addressClass) } : {}
+  }
+
   /** Fetch and cache the robots.txt rules for the given origin. */
-  private async fetchRobotsTxtRules(origin: string): Promise<ReturnType<typeof robotsParser>> {
+  private async fetchRobotsTxtRules(
+    origin: string,
+    addressClass?: AddressClass
+  ): Promise<ReturnType<typeof robotsParser>> {
     const cached = this.robotsCache.get(origin)
     if (cached) return cached
 
@@ -108,6 +131,7 @@ export class HttpClient {
       const resp = await this.axiosInstance.get<string>(robotsUrl, {
         responseType: 'text',
         timeout: 5_000,
+        ...this.connectOptions(addressClass),
       })
       if (resp.status === 200 && typeof resp.data === 'string') {
         const robots = robotsParser(robotsUrl, resp.data)
@@ -123,10 +147,15 @@ export class HttpClient {
     return allowAll
   }
 
-  /** Return `true` if the URL is permitted by the site's robots.txt. */
-  async isAllowedByRobots(url: string): Promise<boolean> {
+  /**
+   * Return `true` if the URL is permitted by the site's robots.txt.
+   *
+   * @param addressClass - The class the host policy approved for this host, so
+   *                       the robots.txt request is pinned to it too.
+   */
+  async isAllowedByRobots(url: string, addressClass?: AddressClass): Promise<boolean> {
     const parsed = new URL(url)
-    const robots = await this.fetchRobotsTxtRules(parsed.origin)
+    const robots = await this.fetchRobotsTxtRules(parsed.origin, addressClass)
     return robots.isAllowed(url, this.opts.userAgent) !== false
   }
 
@@ -149,15 +178,24 @@ export class HttpClient {
     const cached = this.cache.get(url)
     if (cached) return ok({ ...cached, fromCache: true })
 
+    let startClass: AddressClass | undefined
+    if (this.hostPolicy) {
+      const decision = await evaluateUrl(url, this.hostPolicy)
+      if (!decision.allowed) {
+        return err(new FetchError(`Host not allowed (${decision.reason}): ${url}`, url))
+      }
+      startClass = decision.addressClass
+    }
+
     if (!options?.ignoreRobots) {
-      const allowed = await this.isAllowedByRobots(url)
+      const allowed = await this.isAllowedByRobots(url, startClass)
       if (!allowed) {
         return err(new FetchError(`URL disallowed by robots.txt: ${url}`, url))
       }
     }
 
     try {
-      const result = await this.fetchWithRetry(url)
+      const result = await this.fetchWithRetry(url, startClass)
       this.cache.set(url, result)
       return ok(result)
     } catch (e) {
@@ -167,13 +205,17 @@ export class HttpClient {
 
   // ── Internals ───────────────────────────────────────────────────────────────
 
-  private async fetchWithRetry(url: string, attempt = 0): Promise<FetchResult> {
+  private async fetchWithRetry(
+    url: string,
+    startClass: AddressClass | undefined,
+    attempt = 0
+  ): Promise<FetchResult> {
     try {
-      return await this.fetchFollowingRedirects(url)
+      return await this.fetchFollowingRedirects(url, startClass)
     } catch (err) {
       if (attempt < this.opts.maxRetries && this.isRetryable(err)) {
         await this.sleep(this.opts.retryDelay * (attempt + 1))
-        return this.fetchWithRetry(url, attempt + 1)
+        return this.fetchWithRetry(url, startClass, attempt + 1)
       }
       if (err instanceof FetchError) throw err
       const msg = err instanceof Error ? err.message : String(err)
@@ -185,13 +227,18 @@ export class HttpClient {
    * Follow redirects manually so that each hop can be recorded.
    * Raises `FetchError` after more than `MAX_REDIRECTS` hops.
    */
-  private async fetchFollowingRedirects(startUrl: string): Promise<FetchResult> {
+  private async fetchFollowingRedirects(
+    startUrl: string,
+    startClass: AddressClass | undefined
+  ): Promise<FetchResult> {
     const redirectChain: RedirectEntry[] = []
     let currentUrl = startUrl
+    let currentClass = startClass
 
     for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
       const resp = await this.axiosInstance.get<string>(currentUrl, {
         responseType: 'text',
+        ...this.connectOptions(currentClass),
       })
 
       if (resp.status >= 300 && resp.status < 400) {
@@ -214,21 +261,7 @@ export class HttpClient {
         const nextUrl = new URL(location, currentUrl).href
 
         // SSRF guard: validate the redirect target before following it.
-        const nextHostname = new URL(nextUrl).hostname
-        if (isDisallowedHost(nextHostname)) {
-          throw new FetchError(
-            `Redirect target host is not allowed for security reasons: ${nextHostname}`,
-            startUrl
-          )
-        }
-        const resolvesToPrivate = await dnsResolvesToPrivateAddress(nextHostname)
-        if (resolvesToPrivate) {
-          throw new FetchError(
-            `Redirect target resolves to a private or unreachable address: ${nextHostname}`,
-            startUrl
-          )
-        }
-
+        currentClass = await this.checkRedirectTarget(nextUrl, startUrl, currentClass)
         currentUrl = nextUrl
         continue
       }
@@ -237,6 +270,43 @@ export class HttpClient {
     }
 
     throw new FetchError(`Too many redirects (> ${MAX_REDIRECTS}) for ${startUrl}`, startUrl)
+  }
+
+  /**
+   * Refuses a redirect target that the host policy (or, without one, the
+   * default SSRF rules) does not allow. Returns the target's address class
+   * when a policy is in use.
+   */
+  private async checkRedirectTarget(
+    nextUrl: string,
+    startUrl: string,
+    fromClass: AddressClass | undefined
+  ): Promise<AddressClass | undefined> {
+    if (this.hostPolicy) {
+      const decision = await evaluateUrl(nextUrl, this.hostPolicy, fromClass)
+      if (!decision.allowed) {
+        throw new FetchError(
+          `Redirect target not allowed (${decision.reason}): ${nextUrl}`,
+          startUrl
+        )
+      }
+      return decision.addressClass
+    }
+
+    const nextHostname = new URL(nextUrl).hostname
+    if (isDisallowedHost(nextHostname)) {
+      throw new FetchError(
+        `Redirect target host is not allowed for security reasons: ${nextHostname}`,
+        startUrl
+      )
+    }
+    if (await dnsResolvesToPrivateAddress(nextHostname)) {
+      throw new FetchError(
+        `Redirect target resolves to a private or unreachable address: ${nextHostname}`,
+        startUrl
+      )
+    }
+    return undefined
   }
 
   private buildResult(

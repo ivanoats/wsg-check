@@ -93,7 +93,7 @@ All classes extend `Error` and preserve the `cause` chain where applicable, enab
 
 ### `logger.ts` — Logger
 
-A lightweight structured logger supporting two output modes:
+A lightweight structured logger supporting two output modes. All output goes to **stderr**, so stdout carries only program output (for example `wsg-check -f json`).
 
 | Mode                 | Output                                           | Suitable for          |
 | -------------------- | ------------------------------------------------ | --------------------- |
@@ -586,7 +586,7 @@ Converts a `RunResult` (the raw output of `WsgChecker.check()`) into a `Sustaina
 1. Derives the letter **grade** from `overallScore`.
 2. Computes **summary** counts for WSG checks only; `relatedChecks` separately counts unscored related checks.
 3. Builds the **recommendations** list from all `fail` and `warn` results that carry a `recommendation` string, sorted with WSG checks before related checks, then by impact (`high` first) and status (`fail` before `warn`).
-4. Populates **metadata** with page-weight metrics and CO₂/green-hosting data.
+4. Populates **metadata** with page-weight metrics and CO₂/green-hosting data. The metrics default to `runResult.pageMetrics`, which `WsgChecker.check()` fills in, and to 0 when that is absent.
 5. Adds `specVersion` from `WSG_SPEC.release` to the report (it is not a field on `RunResult`).
 6. Attaches standard static-analysis **methodology** notes, including a PageSpeed Insights link for live Core Web Vitals data.
 
@@ -600,13 +600,9 @@ Exported string constant included in every report's `methodology.disclaimer` fie
 import { fromRunResult, scoreToGrade, STATIC_ANALYSIS_DISCLAIMER } from '@/report'
 import type { SustainabilityReport } from '@/report'
 
-// Convert a WsgChecker run result into a SustainabilityReport
-const report: SustainabilityReport = fromRunResult(
-  runResult,
-  pageData.pageWeight.htmlSize, // page weight in bytes
-  pageData.pageWeight.resourceCount, // total resource count
-  pageData.pageWeight.thirdPartyCount // third-party resource count
-)
+// Convert a WsgChecker run result into a SustainabilityReport. Page metrics
+// come from runResult.pageMetrics; pass them explicitly only to override.
+const report: SustainabilityReport = fromRunResult(runResult)
 
 console.log(`Grade: ${report.grade}`) // e.g. "B"
 console.log(`Score: ${report.overallScore}`) // e.g. 82

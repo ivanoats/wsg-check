@@ -6,7 +6,12 @@
  *   - "terminal"    – Human-readable prefixed lines (suitable for CLI output)
  *
  * Only messages at or above the configured minimum level are emitted.
+ *
+ * All output goes to stderr, so stdout stays reserved for program output
+ * (JSON reports, the MCP stdio protocol).
  */
+
+import { inspect } from 'node:util'
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
@@ -44,6 +49,17 @@ export interface Logger {
 }
 
 /**
+ * Collapses line breaks so one call always writes one log line. Messages and
+ * data can contain user-supplied text such as URLs, and an embedded newline
+ * would otherwise let that text forge extra log entries.
+ */
+const toSingleLine = (text: string): string => text.replace(/[\r\n\u2028\u2029]+/gu, ' ')
+
+/** Renders log data compactly on one line. */
+const formatData = (data: unknown): string =>
+  inspect(data, { breakLength: Infinity, compact: true, depth: 4 })
+
+/**
  * Create a new logger instance.
  *
  * @example
@@ -57,22 +73,20 @@ export function createLogger(options?: LoggerOptions): Logger {
   function emit(level: LogLevel, message: string, data?: unknown): void {
     if (LEVEL_WEIGHT[level] < minWeight) return
 
-    if (structured) {
-      const entry: LogEntry = {
-        level,
-        message,
-        timestamp: new Date().toISOString(),
-        ...(data !== undefined ? { data } : {}),
-      }
-      console.log(JSON.stringify(entry))
-    } else {
-      const prefix = `[${level.toUpperCase()}]`
-      if (data !== undefined) {
-        console.log(`${prefix} ${message}`, data)
-      } else {
-        console.log(`${prefix} ${message}`)
-      }
-    }
+    const line = structured
+      ? JSON.stringify({
+          level,
+          message,
+          timestamp: new Date().toISOString(),
+          ...(data !== undefined ? { data } : {}),
+        } satisfies LogEntry)
+      : [
+          `[${level.toUpperCase()}]`,
+          message,
+          ...(data !== undefined ? [formatData(data)] : []),
+        ].join(' ')
+
+    console.error(toSingleLine(line))
   }
 
   return {
