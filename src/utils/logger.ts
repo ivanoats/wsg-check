@@ -53,7 +53,7 @@ export interface Logger {
  * data can contain user-supplied text such as URLs, and an embedded newline
  * would otherwise let that text forge extra log entries.
  */
-const toSingleLine = (text: string): string => text.replace(/[\r\n\u2028\u2029]+/g, ' ')
+const toSingleLine = (text: string): string => text.replace(/[\r\n\u2028\u2029]+/gu, ' ')
 
 /** Renders log data compactly on one line. */
 const formatData = (data: unknown): string =>
