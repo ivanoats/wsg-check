@@ -109,10 +109,12 @@ type Issue = z.infer<typeof issueSchema>
 
 const IMPACT_RANK: Record<Issue['impact'], number> = { high: 0, medium: 1, low: 2 }
 
+const STATUS_RANK: Record<Issue['status'], number> = { fail: 0, warn: 1 }
+
 const compareIssues = (a: Issue, b: Issue): number =>
   Number(a.related) - Number(b.related) ||
   IMPACT_RANK[a.impact] - IMPACT_RANK[b.impact] ||
-  (a.status === b.status ? 0 : a.status === 'fail' ? -1 : 1)
+  STATUS_RANK[a.status] - STATUS_RANK[b.status]
 
 /** Projects a full report onto the compact summary returned by default. */
 export const summarizeReport = (
@@ -158,10 +160,13 @@ export const summarizeReport = (
   notices: [...notices],
 })
 
+const issueLabel = (issue: Issue): string => {
+  if (issue.guidelineNumber) return `${issue.guidelineNumber} ${issue.guidelineName}`
+  return issue.related ? `${issue.guidelineName} (related, not scored)` : issue.guidelineName
+}
+
 const issueLine = (issue: Issue): string => {
-  const label = issue.guidelineNumber
-    ? `${issue.guidelineNumber} ${issue.guidelineName}`
-    : `${issue.guidelineName}${issue.related ? ' (related, not scored)' : ''}`
+  const label = issueLabel(issue)
   const fix = issue.recommendation ? ` Fix: ${issue.recommendation}` : ''
   return `- **${issue.status.toUpperCase()}** (${issue.impact}) ${label}: ${issue.message}${fix}`
 }
@@ -293,7 +298,7 @@ export const handleCheckUrl = async (
     structuredContent: {
       detail,
       summary,
-      ...(detail === 'full' ? { report: JSON.parse(JSON.stringify(report)) } : {}),
+      ...(detail === 'full' ? { report: structuredClone(report) } : {}),
     },
     content: [
       {

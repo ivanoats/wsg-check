@@ -76,10 +76,12 @@ const main = async (): Promise<void> => {
 }
 
 if (isEntryPoint(import.meta.url, process.argv[1])) {
-  main().catch((error: unknown) => {
+  try {
+    await main()
+  } catch (error: unknown) {
     process.stderr.write(
       `wsg-check-mcp failed to start: ${error instanceof Error ? error.message : String(error)}\n`
     )
     process.exitCode = 1
-  })
+  }
 }

@@ -96,10 +96,10 @@ const runSmokeTest = (serverPath) =>
     })
   })
 
-runSmokeTest(findServer()).then(
-  () => console.log('MCP smoke test passed'),
-  (error) => {
-    console.error(`MCP smoke test failed: ${error.message}`)
-    process.exitCode = 1
-  }
-)
+try {
+  await runSmokeTest(findServer())
+  console.log('MCP smoke test passed')
+} catch (error) {
+  console.error(`MCP smoke test failed: ${error.message}`)
+  process.exitCode = 1
+}
