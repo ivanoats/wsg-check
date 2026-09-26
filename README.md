@@ -7,7 +7,7 @@ Check a website against automated heuristics based on the [W3C Web Sustainabilit
 
 ## Release status
 
-As of September 26, 2026, the latest GitHub release is [v0.3.0](https://github.com/ivanoats/wsg-check/releases/tag/v0.3.0). It targets WSG July-2026 (Group Note Draft) and adds the `wsg-check-mcp` server for AI assistants with the `check_url` tool. Current `main` also includes the **unreleased** `list_guidelines` and `get_guideline` tools. See the [changelog](CHANGELOG.md) and [spec versioning policy](SPEC_VERSIONING.md).
+The latest release is v0.4.0. It targets WSG July-2026 (Group Note Draft) and adds the `wsg-check-mcp` server for AI assistants, with the `check_url`, `list_guidelines`, and `get_guideline` tools. v0.3.0 was tagged on GitHub but not published to npm; use v0.4.0 or later. See the [changelog](CHANGELOG.md) and [spec versioning policy](SPEC_VERSIONING.md).
 
 Scores from different spec versions should not be treated as directly comparable. The package version and check selection also matter when comparing reports.
 
@@ -16,10 +16,10 @@ Scores from different spec versions should not be treated as directly comparable
 Requires Node.js 22 or later. Pin the released CLI for reproducible usage:
 
 ```bash
-npx @sustainablewebsites/wsg-check@0.3.0 https://example.com
+npx @sustainablewebsites/wsg-check@0.4.0 https://example.com
 
 # Or install globally
-npm install -g @sustainablewebsites/wsg-check@0.3.0
+npm install -g @sustainablewebsites/wsg-check@0.4.0
 wsg-check https://example.com --format json --output report.json
 ```
 
@@ -140,11 +140,11 @@ VS Code (`.vscode/mcp.json`) uses a `servers` key:
 
 Try prompts such as "Check http://localhost:3000 against the WSG and fix the top three issues" or "Which WSG guidelines cover web fonts?"
 
-| Tool              | What it does                                                                                                                                        |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `check_url`       | Checks a page and returns the score, grade, and each failed or warned check with a recommended fix. `detail: "full"` adds the complete report.      |
-| `list_guidelines` | Lists the WSG guidelines, filtered by category, testability, or text, with how many automated checks implement each one. Unreleased (after v0.3.0). |
-| `get_guideline`   | Returns one guideline's description and W3C specification link. Unreleased (after v0.3.0).                                                          |
+| Tool              | What it does                                                                                                                                   |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `check_url`       | Checks a page and returns the score, grade, and each failed or warned check with a recommended fix. `detail: "full"` adds the complete report. |
+| `list_guidelines` | Lists the WSG guidelines, filtered by category, testability, or text, with how many automated checks implement each one.                       |
+| `get_guideline`   | Returns one guideline's description and W3C specification link.                                                                                |
 
 ### Network access
 

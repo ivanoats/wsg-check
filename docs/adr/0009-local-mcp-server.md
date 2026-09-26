@@ -6,7 +6,7 @@
 - Provenance: contemporaneous decision
 - Supersedes: none
 - Superseded by: none
-- Availability: v0.3.0 (`wsg-check-mcp` with `check_url`); `list_guidelines` and `get_guideline` unreleased
+- Availability: v0.4.0, the first npm release with `wsg-check-mcp` (v0.3.0 was tagged but not published)
 
 [Decision log](../adl.md) · [MCP server plan](../mcp-server-plan.md)
 

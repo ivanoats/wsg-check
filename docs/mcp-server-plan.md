@@ -2,7 +2,7 @@
 
 [Documentation index](README.md) · [ADR-0009](adr/0009-local-mcp-server.md) · [Architecture](architecture.md)
 
-Status: **Implemented** in phases 0–3. `wsg-check-mcp` with `check_url` shipped in v0.3.0; `list_guidelines` and `get_guideline` are on `main` for the next release. Phase 4 lists later work. Setup instructions for users are in the [README](../README.md#use-with-ai-assistants-mcp).
+Status: **Implemented** in phases 0–3. The first npm release with `wsg-check-mcp` is v0.4.0. Phase 4 lists later work. Setup instructions for users are in the [README](../README.md#use-with-ai-assistants-mcp).
 
 ## Goal
 
@@ -139,7 +139,7 @@ Each phase is a separate PR that passes lint, type-check, unit tests, and both b
 - [x] README: a "Use with AI assistants (MCP)" section with the Claude Code, Claude Desktop, VS Code, and Cursor snippets above, the tool list, the network policy, and the Green Web Foundation lookup.
 - [x] Document the loopback tradeoff: a prompt-injected call can make GET requests to services on the developer's machine. The README should recommend `--no-local` for anyone who doesn't check a local dev server. The `check_url` description should tell the assistant that local URLs are fetched from the user's machine. This is the residual risk accepted for the SonarCloud S5144 (SSRF) findings on the HTTP client.
 - [x] Update `docs/architecture.md` (new adapter) and `docs/reference.md` (tools), and move ADR-0009 to Accepted. release-please writes the CHANGELOG from the conventional commits.
-- [ ] Release through the existing release-please and Trusted Publishing flow; no workflow changes are expected. v0.3.0 is tagged but not yet on npm: dispatch `publish.yml` (see [RELEASING.md](../RELEASING.md)).
+- [ ] Release through the existing release-please and Trusted Publishing flow; no workflow changes are expected. v0.3.0 was tagged but deliberately not published; v0.4.0 is the first npm release with the server. After its release PR merges, dispatch `publish.yml` (see [RELEASING.md](../RELEASING.md)).
 
 ### Phase 4 — After the first release
 
