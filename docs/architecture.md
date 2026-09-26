@@ -10,22 +10,23 @@ WSG-Check is a layered TypeScript application shared by a Node.js CLI and a Next
 
 | Component       | Location                               | Responsibility                                                                  |
 | --------------- | -------------------------------------- | ------------------------------------------------------------------------------- |
-| Web UI and API  | `src/app/`, `src/app/api/`, `src/api/` | Input validation, check selection, HTTP responses, presentation, result storage |
-| CLI             | `src/cli/`                             | Configuration, check selection, format/output options, exit codes               |
+| Web UI and API  | `src/app/`, `src/app/api/`, `src/api/` | Input validation, HTTP responses, presentation, result storage                  |
+| CLI             | `src/cli/`                             | Configuration, format/output options, exit codes                                |
+| Pipeline        | `src/pipeline/`                        | Check selection with notices, and `runReport` shared by the CLI and API         |
 | Core            | `src/core/`                            | Fetch/parse orchestration, parallel check execution, scoring                    |
 | Checks          | `src/checks/`                          | Static heuristics, hosting lookup, registered result identities                 |
 | Config and spec | `src/config/`, `src/config/spec/`      | Config loading, pinned WSG data, registry and aliases                           |
 | Reports         | `src/report/`                          | Summary, grade, recommendations, metadata, four output formats                  |
-| Utilities       | `src/utils/`                           | HTTP/robots handling, HTML parsing, resource metrics, CO₂, errors and logging   |
+| Utilities       | `src/utils/`                           | HTTP/robots handling, host policy, HTML parsing, resource metrics, CO₂, logging |
 
-Core code does not import Next.js or the CLI. Checks use core types, configuration, and utilities; most are static functions, but the sustainable-hosting check calls the Green Web Foundation. `WsgChecker` also performs a hosting lookup for its CO₂ estimate. These are external-I/O exceptions, so checks are not universally pure.
+Core code does not import Next.js or the CLI. An ESLint rule keeps Next.js, React, and the Next-based API helpers out of the CLI, pipeline, core, checks, report, config, and utility layers, because the npm package ships without the web app's dependencies. The logger writes to stderr so stdout carries only program output. Checks use core types, configuration, and utilities; most are static functions, but the sustainable-hosting check calls the Green Web Foundation. `WsgChecker` also performs a hosting lookup for its CO₂ estimate. These are external-I/O exceptions, so checks are not universally pure.
 
 ## Analysis and reporting flow
 
 ```mermaid
 flowchart TD
     UI[Web form] --> API[Next.js check route]
-    CLI[CLI] --> SELECT[Select registered checks]
+    CLI[CLI] --> SELECT[Pipeline: select registered checks]
     API --> SELECT
     SPEC[Vendored WSG JSON and provenance] --> REG[Registry, aliases and testability overlay]
     REG --> SELECT
@@ -60,11 +61,11 @@ The four unscored related IDs are `security-headers`, `form-validation`, `native
 
 The runtime fetches HTML and inspects response headers and resource references. It does not execute page JavaScript or measure rendered performance. External asset bytes are not collected. The CO₂ calculation uses `pageWeight.htmlSize` and SWD v4; it is an estimate for HTML bytes, not a full-page energy measurement. Green-hosting lookup failures return `false`, indistinguishable from an unlisted domain in this boolean interface.
 
-Both CLI and check API currently call `fromRunResult(runResult, 0, 0, 0)`: page-weight and resource-count report metadata are placeholders because `RunResult` does not expose `PageData` metrics. Static checks still inspect the actual `PageData`. Passing these metrics through the result contract would require an implementation change.
+`RunResult.pageMetrics` carries the HTML size, resource count, and third-party count from `PageData`, and `fromRunResult` uses them for the report metadata by default. Page weight is the HTML size (from `Content-Length` when present), not the total of all assets.
 
 ## Runtime and storage
 
-`POST /api/check` completes the analysis within the request and returns the report; there is no job queue. Next.js routes use the Node.js runtime. API validation and HTTP utilities implement URL/SSRF checks; HTTP fetching also supports robots.txt, caching, retries, and redirect tracking.
+`POST /api/check` completes the analysis within the request and returns the report; there is no job queue. Next.js routes use the Node.js runtime. API validation and HTTP utilities implement URL/SSRF checks; HTTP fetching also supports robots.txt, caching, retries, and redirect tracking. Without a host policy, `HttpClient` refuses any redirect hop to a private or loopback host. With a `hostPolicy` (see `src/utils/host-policy.ts`), it checks the initial URL before fetching robots.txt and every redirect hop: loopback and private-network targets are allowed only when the policy says so, link-local and metadata addresses are always refused, and a redirect from a non-loopback host into loopback is always refused.
 
 The [result store](../src/api/store.ts) is process-local, with a one-hour TTL and 500-entry cap, enforced lazily on reads/writes. The [rate limiter](../src/api/rate-limit.ts) is also process-local (default 30 requests per 60 seconds per pathname/client key). Forwarded IP headers are trusted only when `WSG_API_TRUST_PROXY=true`. Neither facility coordinates across instances or survives a restart.
 

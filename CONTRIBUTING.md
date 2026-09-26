@@ -73,9 +73,10 @@ wsg-check/
 │   ├── cli/          # Command-line interface (commander)
 │   ├── config/       # Configuration loader and defaults
 │   ├── core/         # WsgChecker, CheckRunner, scorer
+│   ├── pipeline/     # Check selection and runReport, shared by CLI and API
 │   ├── report/       # Report types and formatters
 │   ├── types/        # Shared TypeScript types
-│   └── utils/        # HTTP client, HTML parser, logger, etc.
+│   └── utils/        # HTTP client, host policy, HTML parser, logger, etc.
 ├── tests/
 │   ├── e2e/          # Playwright end-to-end tests
 │   ├── integration/  # Full-pipeline integration tests
