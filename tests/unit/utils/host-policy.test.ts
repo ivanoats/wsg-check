@@ -16,6 +16,7 @@ describe('classifyAddress', () => {
     ['93.184.216.34', 'public'], // NOSONAR - intentional public IP
     ['127.0.0.1', 'loopback'],
     ['127.10.0.1', 'loopback'],
+    ['2606:4700:4700::1111', 'public'],
     ['::1', 'loopback'],
     ['::ffff:127.0.0.1', 'loopback'],
     ['10.1.2.3', 'private'], // NOSONAR - intentional private IP

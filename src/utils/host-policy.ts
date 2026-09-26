@@ -99,10 +99,11 @@ export const classifyHost = async (hostname: string): Promise<AddressClass> => {
 
 // ─── Decisions ────────────────────────────────────────────────────────────────
 
-const isClassAllowed = (addressClass: AddressClass, policy: HostPolicy): boolean => {
+const isClassAllowed = (
+  addressClass: Exclude<AddressClass, 'public'>,
+  policy: HostPolicy
+): boolean => {
   switch (addressClass) {
-    case 'public':
-      return true
     case 'loopback':
       return policy.allowLoopback
     case 'private':
