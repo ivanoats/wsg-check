@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.1](https://github.com/ivanoats/wsg-check/compare/v0.6.0...v0.6.1) (2026-09-27)
+
+
+### Changed
+
+* update README to v0.6.0 and let release-please bump its pins ([#213](https://github.com/ivanoats/wsg-check/issues/213)) ([c73b434](https://github.com/ivanoats/wsg-check/commit/c73b4342af6279b06da6d399a986e8a0b8b17f7c))
+
 ## [0.6.0](https://github.com/ivanoats/wsg-check/compare/v0.5.0...v0.6.0) (2026-09-26)
 
 
