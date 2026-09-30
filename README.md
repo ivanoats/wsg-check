@@ -7,7 +7,7 @@ Check a website against automated heuristics based on the [W3C Web Sustainabilit
 
 ## Release status
 
-The latest release is v0.6.0. <!-- x-release-please-version -->
+The latest release is v0.6.1. <!-- x-release-please-version -->
 
 It targets WSG July-2026 (Group Note Draft). It includes an MCP server for AI assistants, with the `check_url`, `list_guidelines`, and `get_guideline` tools, listed in the [MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.ivanoats/wsg-check`. The server first shipped in v0.4.0; v0.3.0 was tagged on GitHub but not published to npm. See the [changelog](CHANGELOG.md) and [spec versioning policy](SPEC_VERSIONING.md).
 
@@ -18,10 +18,10 @@ Scores from different spec versions should not be treated as directly comparable
 Requires Node.js 22 or later. Pin the released CLI for reproducible usage:
 
 ```bash
-npx @sustainablewebsites/wsg-check@0.6.0 https://example.com # x-release-please-version
+npx @sustainablewebsites/wsg-check@0.6.1 https://example.com # x-release-please-version
 
 # Or install globally
-npm install -g @sustainablewebsites/wsg-check@0.6.0 # x-release-please-version
+npm install -g @sustainablewebsites/wsg-check@0.6.1 # x-release-please-version
 wsg-check https://example.com --format json --output report.json
 ```
 
