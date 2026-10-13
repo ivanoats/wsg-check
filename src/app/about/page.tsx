@@ -2,8 +2,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { styled } from 'styled-system/jsx'
 import { cx, css } from 'styled-system/css'
-import { button, card, link } from 'styled-system/recipes'
+import { card, link } from 'styled-system/recipes'
 import { SectionHeading } from '../components/SectionHeading'
+import { primaryButtonClass, secondaryButtonClass } from '../design-system'
 
 export const metadata: Metadata = {
   title: 'About — WSG Check',
@@ -15,9 +16,7 @@ const cardStyles = card()
 
 /*
  * Per-grade badge colours — each `css()` call uses a *literal* object so
- * Panda's static extractor generates the utility classes (bg_green.9, etc.)
- * at build time. Dynamic `bg={variable}` props are NOT extracted by Panda,
- * which is why CSS-variable or dynamic-prop approaches left circles invisible.
+ * Literal css() calls ensure Panda extracts each grade colour at build time.
  */
 const gradeCircleBase = css({
   display: 'inline-flex',
@@ -32,11 +31,11 @@ const gradeCircleBase = css({
 })
 
 const gradeCircleColor: Readonly<Record<string, string>> = {
-  A: css({ bg: 'green.9', color: 'white' }), // green.9 in Park UI preset ✓
-  B: css({ bg: '[#0055b3]', color: 'white' }), // blue.9 token absent → arbitrary hex (≈7.1:1)
-  C: css({ bg: '[#ffb224]', color: '[#4d2000]' }), // amber.9/12 absent → arbitrary hex (≈7.1:1)
-  D: css({ bg: '[#ad4800]', color: 'white' }), // orange.9 token absent → arbitrary hex (≈5.7:1)
-  F: css({ bg: '[#c7272d]', color: 'white' }), // darker red than Panda's red.9 (≈5.6:1)
+  A: css({ bg: 'positive', color: 'surface.100' }),
+  B: css({ bg: 'info', color: 'surface.100' }),
+  C: css({ bg: 'warning', color: 'surface.100' }),
+  D: css({ bg: 'warning', color: 'surface.100' }),
+  F: css({ bg: 'critical', color: 'surface.100' }),
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -50,7 +49,7 @@ interface GradeScaleItemProps {
 const GradeScaleItem = ({ grade, range }: GradeScaleItemProps) => (
   <styled.div
     role="listitem"
-    className={cardStyles.root}
+    className={cardStyles}
     display="flex"
     gap="3"
     alignItems="center"
@@ -59,10 +58,10 @@ const GradeScaleItem = ({ grade, range }: GradeScaleItemProps) => (
       {grade}
     </span>
     <styled.div>
-      <styled.p fontWeight="semibold" fontSize="sm" color="fg.default">
+      <styled.p fontWeight="semibold" fontSize="sm" color="ink">
         Grade {grade}
       </styled.p>
-      <styled.p fontSize="xs" color="fg.muted">
+      <styled.p fontSize="xs" color="ink.muted">
         Score {range}
       </styled.p>
     </styled.div>
@@ -81,13 +80,13 @@ const GRADE_SCALE = [
 const PurposeSection = () => (
   <styled.section aria-labelledby="purpose-heading" mb="8">
     <SectionHeading id="purpose-heading">Purpose &amp; Methodology</SectionHeading>
-    <styled.p fontSize="sm" color="fg.muted" mb="3">
+    <styled.p fontSize="sm" color="ink.muted" mb="3">
       WSG Check analyses a web page&apos;s HTML and HTTP responses against 80+ automated and
       semi-automated checks derived from the W3C Web Sustainability Guidelines. Each check maps to a
       specific guideline and provides a pass, fail, warn, or info result along with an actionable
       recommendation.
     </styled.p>
-    <styled.p fontSize="sm" color="fg.muted">
+    <styled.p fontSize="sm" color="ink.muted">
       Because WSG Check uses static analysis only (no headless browser), some checks that require
       JavaScript execution or network timing — such as Core Web Vitals — are out of scope. Those are
       flagged in every report with links to complementary tools like{' '}
@@ -108,7 +107,7 @@ const PurposeSection = () => (
 const ScoringSection = () => (
   <styled.section aria-labelledby="scoring-heading" mb="8">
     <SectionHeading id="scoring-heading">How Scoring Works</SectionHeading>
-    <styled.p fontSize="sm" color="fg.muted" mb="4">
+    <styled.p fontSize="sm" color="ink.muted" mb="4">
       Each check contributes a score of 0–100, weighted by impact (high, medium, low). The overall
       sustainability score is a weighted average across all scored checks. Checks with status{' '}
       <em>info</em> or <em>not-applicable</em> are excluded from the average.
@@ -131,7 +130,7 @@ const ScoringSection = () => (
 const SustainabilitySection = () => (
   <styled.section aria-labelledby="sustainability-heading" mb="8">
     <SectionHeading id="sustainability-heading">Sustainability Statement</SectionHeading>
-    <styled.p fontSize="sm" color="fg.muted" mb="3">
+    <styled.p fontSize="sm" color="ink.muted" mb="3">
       WSG Check is itself designed to minimise environmental impact:
     </styled.p>
     <styled.ul
@@ -141,7 +140,7 @@ const SustainabilitySection = () => (
       flexDirection="column"
       gap="1"
       fontSize="sm"
-      color="fg.muted"
+      color="ink.muted"
       mb="3"
     >
       <li>Static analysis only — no headless browser, no Chromium binary</li>
@@ -168,13 +167,13 @@ const SustainabilitySection = () => (
 const WhyIBuiltItSection = () => (
   <styled.section aria-labelledby="why-heading" mb="8">
     <SectionHeading id="why-heading">Why I Built WSG Check</SectionHeading>
-    <styled.p fontSize="sm" color="fg.muted" mb="3">
+    <styled.p fontSize="sm" color="ink.muted" mb="3">
       The W3C Web Sustainability Guidelines are thorough, but they read like a standard, not a to-do
       list. Most teams I talk to agree that a lighter web is a better web, then stall on the
       question of where to start. Carbon calculators hand out a score without a fix, and performance
       tools measure speed without saying which guideline a problem maps to.
     </styled.p>
-    <styled.p fontSize="sm" color="fg.muted">
+    <styled.p fontSize="sm" color="ink.muted">
       I wanted the sustainability equivalent of an accessibility linter: something that runs in
       seconds, points at specific success criteria, and tells you what to change. WSG Check is that
       tool. It is open source so that anyone can see exactly how a score is calculated, and it runs
@@ -187,14 +186,14 @@ const WhyIBuiltItSection = () => (
 const WhoIAmSection = () => (
   <styled.section aria-labelledby="who-heading" mb="8">
     <SectionHeading id="who-heading">Who I Am</SectionHeading>
-    <styled.p fontSize="sm" color="fg.muted" mb="3">
+    <styled.p fontSize="sm" color="ink.muted" mb="3">
       I&rsquo;m Ivan Storck, a software architect in Seattle. By day I am a Senior Solutions
       Architect at lululemon, working on content management, design systems, and brand technology.
       Before that I co-founded Code Fellows, taught Ruby and JavaScript to several hundred bootcamp
       students, and spent six years on the teaching faculty of the University of Washington&rsquo;s
       Rails certificate program.
     </styled.p>
-    <styled.p fontSize="sm" color="fg.muted">
+    <styled.p fontSize="sm" color="ink.muted">
       Outside of that I take a small number of fractional CTO engagements and build sustainability
       tooling for the web. More of my work is at{' '}
       <a href="https://ivanstorck.com" target="_blank" rel="noopener noreferrer" className={link()}>
@@ -210,13 +209,13 @@ const SustainableWebsitesSection = () => (
   <styled.section
     aria-labelledby="help-heading"
     mb="8"
-    className={cardStyles.root}
+    className={cardStyles}
     p="5"
     borderWidth="1px"
-    borderColor="border.default"
+    borderColor="border"
   >
     <SectionHeading id="help-heading">Want Help Acting on Your Report?</SectionHeading>
-    <styled.p fontSize="sm" color="fg.muted" mb="3">
+    <styled.p fontSize="sm" color="ink.muted" mb="3">
       A report tells you what to fix. Doing the fixing, while keeping design, content, and business
       goals intact, is the harder part. Through{' '}
       <a
@@ -230,7 +229,7 @@ const SustainableWebsitesSection = () => (
       , I help teams turn WSG Check findings into a prioritised plan and then into lighter, faster,
       lower-carbon sites.
     </styled.p>
-    <styled.p fontSize="sm" color="fg.muted" mb="4">
+    <styled.p fontSize="sm" color="ink.muted" mb="4">
       If your score was lower than you hoped, or you need to show progress against the W3C
       guidelines, let&rsquo;s talk.
     </styled.p>
@@ -238,7 +237,7 @@ const SustainableWebsitesSection = () => (
       href="https://sustainablewebsites.com"
       target="_blank"
       rel="noopener noreferrer"
-      className={button({ size: 'md' })}
+      className={primaryButtonClass}
     >
       Visit SustainableWebsites.com ↗
     </a>
@@ -254,7 +253,7 @@ const ResourcesSection = () => (
         href="https://www.w3.org/TR/web-sustainability-guidelines/"
         target="_blank"
         rel="noopener noreferrer"
-        className={button({ variant: 'outline', size: 'sm' })}
+        className={secondaryButtonClass}
       >
         WSG Specification ↗
       </a>
@@ -262,11 +261,11 @@ const ResourcesSection = () => (
         href="https://github.com/ivanoats/wsg-check"
         target="_blank"
         rel="noopener noreferrer"
-        className={button({ variant: 'ghost', size: 'sm' })}
+        className={secondaryButtonClass}
       >
         GitHub ↗
       </a>
-      <Link href="/guidelines" className={button({ variant: 'ghost', size: 'sm' })}>
+      <Link href="/guidelines" className={secondaryButtonClass}>
         Browse Guidelines
       </Link>
     </styled.div>
@@ -281,11 +280,11 @@ export default function AboutPage() {
         fontSize={{ base: '2xl', md: '3xl' }}
         fontWeight="bold"
         mb="2"
-        color="fg.default"
+        color="ink"
       >
         About WSG Check
       </styled.h1>
-      <styled.p fontSize="md" color="fg.default" lineHeight="relaxed" mb="8">
+      <styled.p fontSize="md" color="ink" lineHeight="relaxed" mb="8">
         An open-source tool for evaluating websites against the{' '}
         <a
           href="https://www.w3.org/TR/web-sustainability-guidelines/"

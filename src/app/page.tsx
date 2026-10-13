@@ -21,23 +21,23 @@ interface HowItWorksStepProps {
 const HowItWorksStep = ({ step, title, detail }: HowItWorksStepProps) => (
   <styled.li display="flex" gap="3" alignItems="flex-start">
     <span
-      className={cx(stepAvatarStyles.root, css({ bg: 'accent.default', flexShrink: '0' }))}
+      className={cx(stepAvatarStyles.root, css({ bg: 'accent', flexShrink: '0' }))}
       aria-hidden="true"
     >
       <span
         className={cx(
           stepAvatarStyles.fallback,
-          css({ color: 'accent.fg', fontWeight: 'bold', fontSize: 'sm' })
+          css({ color: 'accent.ink', fontWeight: 'bold', fontSize: 'sm' })
         )}
       >
         {step}
       </span>
     </span>
     <styled.div>
-      <styled.p fontWeight="semibold" color="fg.default">
+      <styled.p fontWeight="semibold" color="ink">
         {title}
       </styled.p>
-      <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed">
+      <styled.p fontSize="sm" color="ink" lineHeight="relaxed">
         {detail}
       </styled.p>
     </styled.div>
@@ -70,11 +70,11 @@ export default function Home() {
         fontSize={{ base: '2xl', md: '3xl' }}
         fontWeight="bold"
         mb="2"
-        color="fg.default"
+        color="ink"
       >
         WSG Check
       </styled.h1>
-      <styled.p fontSize="md" color="fg.default" lineHeight="relaxed" mb="6">
+      <styled.p fontSize="md" color="ink" lineHeight="relaxed" mb="6">
         Check any website against the{' '}
         <a
           href="https://www.w3.org/TR/web-sustainability-guidelines/"
@@ -92,7 +92,7 @@ export default function Home() {
 
       {/* Quick-start guide */}
       <styled.section aria-labelledby="how-it-works" mt="10">
-        <styled.h2 id="how-it-works" fontSize="lg" fontWeight="semibold" mb="4" color="fg.default">
+        <styled.h2 id="how-it-works" fontSize="lg" fontWeight="semibold" mb="4" color="ink">
           How it works
         </styled.h2>
         <styled.ol listStyleType="none" m="0" p="0" display="flex" flexDirection="column" gap="4">

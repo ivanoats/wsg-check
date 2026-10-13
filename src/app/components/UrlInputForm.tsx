@@ -4,14 +4,15 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Field } from '@ark-ui/react/field'
 import { createStyleContext, styled } from 'styled-system/jsx'
-import { field, button, input, alert } from 'styled-system/recipes'
+import { field, fieldInput, alert } from 'styled-system/recipes'
 import type { CheckResponseBody } from '@/api/types'
+import { primaryButtonClass, secondaryButtonClass } from '@/app/design-system'
 
 const RECENT_CHECKS_KEY = 'wsg-check:recent-urls'
 const MAX_RECENT = 5
 const RESULT_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
-// ─── Park UI styled Field components ─────────────────────────────────────────
+// ─── Verdant styled Field components ──────────────────────────────────────────
 // Use createStyleContext so each sub-component receives its recipe slot class
 // from the nearest FieldRoot context — no manual className props required.
 const { withProvider, withContext } = createStyleContext(field)
@@ -19,7 +20,7 @@ const FieldRoot = withProvider(Field.Root, 'root')
 const FieldLabel = withContext(Field.Label, 'label')
 const FieldErrorText = withContext(Field.ErrorText, 'errorText')
 // Input uses the standalone `input` recipe (not the `field__input` slot) for full border/padding styling.
-const FieldInput = styled(Field.Input, input)
+const FieldInput = styled(Field.Input, fieldInput)
 
 const alertStyles = alert()
 
@@ -91,7 +92,7 @@ const UrlFieldInput = ({ value, error, isLoading, onChange }: UrlFieldInputProps
       value={value}
       onChange={onChange}
       disabled={isLoading}
-      size="lg"
+      minH="12"
     />
     <FieldErrorText>{error}</FieldErrorText>
   </FieldRoot>
@@ -111,7 +112,7 @@ const RecentCheckButton = ({ url, onSelect }: RecentCheckButtonProps) => {
   return (
     <button
       type="button"
-      className={button({ variant: 'ghost', size: 'sm' })}
+      className={secondaryButtonClass}
       onClick={handleClick}
     >
       {url}
@@ -222,7 +223,7 @@ export const UrlInputForm = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className={button({ variant: 'solid', size: 'xl' })}
+            className={primaryButtonClass}
             aria-busy={isLoading}
           >
             {isLoading ? 'Checking…' : 'Check'}
@@ -240,7 +241,7 @@ export const UrlInputForm = () => {
 
       {recent.length > 0 && (
         <styled.div display="flex" flexDirection="column" gap="2">
-          <styled.p fontSize="sm" color="fg.default" fontWeight="semibold">
+          <styled.p fontSize="sm" color="ink" fontWeight="semibold">
             Recent checks
           </styled.p>
           <styled.ul listStyleType="none" m="0" p="0" display="flex" flexDirection="column" gap="1">

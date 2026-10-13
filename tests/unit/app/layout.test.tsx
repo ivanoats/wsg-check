@@ -4,7 +4,6 @@ import { render, screen } from '@testing-library/react'
 // Activate manual mocks
 vi.mock('next/link')
 vi.mock('next/navigation')
-vi.mock('next/font/google')
 
 // Stub sub-components to keep the layout test focused
 vi.mock('@/app/components/Header', () => ({
@@ -78,15 +77,13 @@ describe('RootLayout — rendered output', () => {
     expect(noscript).not.toBeNull()
   })
 
-  it('html element carries the Inter CSS variable class', () => {
+  it('does not load a web font', () => {
     render(
       <RootLayout>
         <p>test content</p>
       </RootLayout>
     )
-    // layout applies inter.variable (the CSS custom-property name) to <html>
-    // The mock returns variable: '--font-inter'
-    expect(document.documentElement.className).toContain('--font-inter')
+    expect(document.documentElement.className).not.toContain('font-inter')
   })
 
   it('sets lang="en" on the html element', () => {

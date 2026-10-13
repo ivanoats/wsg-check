@@ -3,20 +3,20 @@
 import { useState, useMemo, useCallback } from 'react'
 import { Field } from '@ark-ui/react/field'
 import { styled } from 'styled-system/jsx'
-import { css } from 'styled-system/css'
-import { field, link } from 'styled-system/recipes'
+import { css, cx } from 'styled-system/css'
+import { fieldInput, link } from 'styled-system/recipes'
 import type { GuidelineEntry, WSGCategory, Testability } from '@/config/types'
 
 interface GuidelinesFilterProps {
   readonly guidelines: ReadonlyArray<GuidelineEntry>
 }
 
-const fieldStyles = field()
+const filterInputClass = cx(fieldInput(), css({ minH: '12' }))
 
-const testabilityColor: Readonly<Record<string, { bg: string; fg: string }>> = {
-  automated: { bg: 'green.3', fg: 'green.11' },
-  'semi-automated': { bg: 'amber.3', fg: 'amber.11' },
-  'manual-only': { bg: 'gray.3', fg: 'gray.11' },
+const testabilityClass: Readonly<Record<string, string>> = {
+  automated: css({ bg: 'positive', color: 'surface.100' }),
+  'semi-automated': css({ bg: 'warning', color: 'surface.100' }),
+  'manual-only': css({ bg: 'surface.100', color: 'ink' }),
 }
 
 const categoryLabel: Readonly<Record<string, string>> = {
@@ -81,7 +81,7 @@ const FilterControls = ({
         placeholder="Search guidelines…"
         value={search}
         onChange={onSearchChange}
-        className={fieldStyles.input}
+        className={filterInputClass}
         aria-label="Search guidelines"
       />
     </Field.Root>
@@ -91,7 +91,7 @@ const FilterControls = ({
       <Field.Select
         value={category}
         onChange={onCategoryChange}
-        className={fieldStyles.select}
+        className={filterInputClass}
         aria-label="Filter by category"
       >
         <option value="">All categories</option>
@@ -108,7 +108,7 @@ const FilterControls = ({
       <Field.Select
         value={testability}
         onChange={onTestabilityChange}
-        className={fieldStyles.select}
+        className={filterInputClass}
         aria-label="Filter by testability"
       >
         <option value="">All testability</option>
@@ -125,18 +125,17 @@ const FilterControls = ({
 /** Guideline metadata badges (ID, testability, category). */
 const GuidelineBadges = ({ g }: { readonly g: GuidelineEntry }) => (
   <styled.div display="flex" gap="2" alignItems="center" flexWrap="wrap">
-    <styled.span fontSize="xs" fontWeight="bold" color="fg.muted" fontFamily="mono">
+    <styled.span fontSize="xs" fontWeight="bold" color="ink.muted" fontFamily="mono">
       {g.number}
     </styled.span>
     <styled.span
+      className={testabilityClass[g.testability] ?? css({ bg: 'surface.100', color: 'ink' })}
+      aria-label={`Testability: ${testabilityLabel[g.testability]}`}
       fontSize="xs"
       px="1.5"
       py="0.5"
       borderRadius="sm"
-      bg={testabilityColor[g.testability]?.bg ?? 'gray.3'}
-      color={testabilityColor[g.testability]?.fg ?? 'gray.11'}
       fontWeight="medium"
-      aria-label={`Testability: ${testabilityLabel[g.testability]}`}
     >
       {testabilityLabel[g.testability]}
     </styled.span>
@@ -146,8 +145,8 @@ const GuidelineBadges = ({ g }: { readonly g: GuidelineEntry }) => (
       py="0.5"
       borderRadius="sm"
       borderWidth="1px"
-      borderColor="border.default"
-      color="fg.default"
+      borderColor="border"
+      color="ink"
       fontWeight="medium"
     >
       {categoryLabel[g.category] ?? g.category}
@@ -157,7 +156,7 @@ const GuidelineBadges = ({ g }: { readonly g: GuidelineEntry }) => (
 
 /** Single guideline card — extracted to limit JSX nesting depth. */
 const GuidelineCard = ({ g }: { readonly g: GuidelineEntry }) => (
-  <styled.li p="4" borderWidth="1px" borderColor="border.default" borderRadius="lg" bg="bg.subtle">
+  <styled.li p="4" borderWidth="1px" borderColor="border" borderRadius="lg" bg="surface.100">
     <styled.div
       display="flex"
       justifyContent="space-between"
@@ -177,10 +176,10 @@ const GuidelineCard = ({ g }: { readonly g: GuidelineEntry }) => (
         W3C ↗
       </a>
     </styled.div>
-    <styled.h2 fontSize="sm" fontWeight="semibold" color="fg.default" mb="1">
+    <styled.h2 fontSize="sm" fontWeight="semibold" color="ink" mb="1">
       {g.title}
     </styled.h2>
-    <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed">
+    <styled.p fontSize="sm" color="ink" lineHeight="relaxed">
       {g.description}
     </styled.p>
   </styled.li>
@@ -230,13 +229,13 @@ export const GuidelinesFilter = ({ guidelines }: GuidelinesFilterProps) => {
       />
 
       {/* Results count */}
-      <styled.p fontSize="sm" color="fg.muted" aria-live="polite" aria-atomic="true">
+      <styled.p fontSize="sm" color="ink.muted" aria-live="polite" aria-atomic="true">
         Showing {filtered.length} of {guidelines.length} guidelines
       </styled.p>
 
       {/* Guidelines list */}
       {filtered.length === 0 ? (
-        <styled.p color="fg.default" fontSize="sm">
+        <styled.p color="ink" fontSize="sm">
           No guidelines match your filters.
         </styled.p>
       ) : (

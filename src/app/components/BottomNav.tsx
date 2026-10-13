@@ -49,7 +49,7 @@ const navLinkClass = css({
   justifyContent: 'center',
   height: 'full',
   gap: '1',
-  color: 'fg.muted',
+  color: 'ink.muted',
   textDecoration: 'none',
   fontSize: 'xs',
   fontWeight: 'medium',
@@ -57,18 +57,18 @@ const navLinkClass = css({
   minH: '12',
   minW: '12',
   transition: 'color 0.15s',
-  _hover: { color: 'fg.default' },
+  _hover: { color: 'ink' },
   _focusVisible: {
-    color: 'accent.default',
+    color: 'accent',
     outline: '2px solid',
-    outlineColor: 'accent.default',
+    outlineColor: 'focusRing',
     outlineOffset: '2px',
   },
 })
 
 const activeLinkClass = css({
-  color: 'accent.default',
-  _hover: { color: 'accent.default' },
+  color: 'accent',
+  _hover: { color: 'accent' },
 })
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -124,9 +124,9 @@ export const BottomNav = () => {
       left="0"
       right="0"
       h="16"
-      bg="bg.default"
+      bg="surface.200"
       borderTopWidth="1px"
-      borderColor="border.default"
+      borderColor="border"
       display="flex"
       alignItems="stretch"
       zIndex="sticky"

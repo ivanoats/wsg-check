@@ -11,59 +11,14 @@
   }
 }
 
-/* --- Design tokens --- */
+/* --- Layout tokens --- */
 :root {
-  /*
-   * Font stack: Inter (self-hosted WOFF2 via next/font, font-display:swap) with
-   * system-font fallbacks so text renders immediately before Inter loads.
-   * WSG 2.13 — use system fonts as fallback to minimise render-blocking.
-   */
-  --font-family-base:
-    var(--font-inter, system-ui), ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    Roboto, 'Helvetica Neue', Arial, sans-serif;
-
   /*
    * scroll-padding-bottom: height of the fixed BottomNav (4 rem / h-16).
    * Prevents keyboard-focused elements from being hidden under the nav bar.
    * WCAG 2.4.11 Focus Not Obscured (Minimum) — AA (WCAG 2.2).
    */
-  scroll-padding-bottom: 4rem;
-
-  /*
-   * WCAG 1.4.3 — override Park UI green token so white text on solid buttons
-   * and active-nav links meet the 4.5:1 AA contrast requirement.
-   * #13874f yields ~4.56:1 against white (pa11y-recommended value).
-   *
-   * The solid button recipe uses `colorPalette.default` which resolves via:
-   *   --colors-color-palette-default → --colors-green-default → --colors-green-light-9
-   * So --colors-green-light-9 is the authoritative variable to override.
-   * --colors-green-default (semantic alias) and --colors-green-9 (shorthand for
-   * direct green.9 token usage, e.g. grade badges) are kept in sync.
-   * --colors-accent-default/--colors-accent-9 are kept for any component that
-   * uses bg: 'accent.default' / bg: 'accent.9' Panda utilities directly.
-   * Unlayered :root wins over @layer tokens from the Park UI preset.
-   */
-  --colors-green-light-9: #13874f;
-  --colors-green-default: var(--colors-green-light-9);
-  --colors-accent-default: var(--colors-green-light-9);
-  --colors-accent-9: var(--colors-green-light-9);
-  --colors-green-9: var(--colors-green-light-9);
-
-  /*
-   * WCAG 1.4.3 — define missing Radix color tokens for grade badge circles
-   * (B=blue, D=orange, F=red). Park UI's createPreset only injects green and
-   * slate palettes; blue/orange/red CSS variables are absent from the generated
-   * token output.  Pa11y checks aria-hidden contrast too, so all badge colours
-   * must meet 4.5:1 with their text colour.
-   * Values chosen as darker variants of Radix .9 steps (≥4.5:1 with white):
-   *   blue:   #0055b3  ≈ 7.1:1 with white
-   *   orange: #ad4800  ≈ 5.7:1 with white
-   *   red:    #c7272d  ≈ 5.6:1 with white (overrides Panda's built-in red.9
-   *           #e5484d which is only 3.91:1 — also improves fail-count text)
-   */
-  --colors-blue-9: #0055b3;
-  --colors-orange-9: #ad4800;
-  --colors-red-9: #c7272d;
+   scroll-padding-bottom: 4rem;
 }
 
 /* --- Reduced motion --- */
@@ -82,21 +37,20 @@ html,
 body {
   max-width: 100vw;
   min-height: 100vh;
-  font-family: var(--font-family-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* Skip link — hidden until focused (WSG 3.9)
- * Uses Park UI semantic tokens for proper theming */
+ * Uses Verdant semantic tokens for proper theming */
 .skip-link {
   position: absolute;
   top: -100%;
   left: 1rem;
   z-index: 200;
   padding: 0.5rem 1rem;
-  background-color: token(colors.accent.default);
-  color: token(colors.accent.fg);
+  background-color: token(colors.accent);
+  color: token(colors.accent.ink);
   border-radius: 0 0 0.25rem 0.25rem;
   font-weight: 600;
   text-decoration: none;
@@ -109,6 +63,6 @@ body {
 
 /* Ensure focus indicators are always visible */
 :focus-visible {
-  outline: 2px solid token(colors.accent.default);
+  outline: 2px solid token(colors.focusRing);
   outline-offset: 2px;
 }

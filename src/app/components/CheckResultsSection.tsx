@@ -12,12 +12,12 @@ interface CheckResultsSectionProps {
   readonly checks: ReadonlyArray<CheckResult>
 }
 
-const statusColor: Readonly<Record<string, { bg: string; fg: string }>> = {
-  pass: { bg: 'green.9', fg: 'white' },
-  fail: { bg: 'red.9', fg: 'white' },
-  warn: { bg: 'amber.9', fg: 'white' },
-  info: { bg: 'blue.9', fg: 'white' },
-  'not-applicable': { bg: 'gray.7', fg: 'white' },
+const statusClass: Readonly<Record<string, string>> = {
+  pass: css({ bg: 'positive', color: 'surface.100' }),
+  fail: css({ bg: 'critical', color: 'surface.100' }),
+  warn: css({ bg: 'warning', color: 'surface.100' }),
+  info: css({ bg: 'info', color: 'surface.100' }),
+  'not-applicable': css({ bg: 'surface.100', color: 'ink.muted' }),
 }
 
 const statusLabel: Readonly<Record<string, string>> = {
@@ -32,7 +32,7 @@ const checkRowClass = css({
   px: '4',
   py: '3',
   borderBottomWidth: '1px',
-  borderColor: 'border.default',
+  borderColor: 'border',
   _last: { borderBottomWidth: '0' },
 })
 
@@ -63,17 +63,17 @@ const accordionStyles = accordion()
 /** Check details text — extracted for clarity. */
 const CheckDetails = ({ check }: { readonly check: CheckResult }) => (
   <styled.div flex="1">
-    <styled.p fontSize="sm" fontWeight="medium" color="fg.default">
+    <styled.p fontSize="sm" fontWeight="medium" color="ink">
       {check.guidelineName}{' '}
-      <styled.span color="fg.muted" fontSize="xs">
+      <styled.span color="ink.muted" fontSize="xs">
         ({guidelineLabel(check)})
       </styled.span>
     </styled.p>
-    <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed" mt="0.5">
+    <styled.p fontSize="sm" color="ink" lineHeight="relaxed" mt="0.5">
       {check.message}
     </styled.p>
     {check.details && (
-      <styled.p fontSize="xs" color="fg.muted" mt="0.5" fontStyle="italic">
+      <styled.p fontSize="xs" color="ink.muted" mt="0.5" fontStyle="italic">
         {check.details}
       </styled.p>
     )}
@@ -85,9 +85,10 @@ const CheckRow = ({ check }: { readonly check: CheckResult }) => (
   <styled.li role="listitem" className={checkRowClass}>
     <styled.div display="flex" gap="3" alignItems="flex-start">
       <styled.span
-        className={badge({ variant: 'solid', size: 'sm' })}
-        bg={statusColor[check.status]?.bg ?? 'gray.7'}
-        color={statusColor[check.status]?.fg ?? 'white'}
+        className={cx(
+          badge({ variant: 'solid', size: 'sm' }),
+          statusClass[check.status] ?? css({ bg: 'surface.100', color: 'ink.muted' })
+        )}
         flexShrink="0"
         aria-label={`Status: ${statusLabel[check.status] ?? check.status}`}
       >
@@ -108,10 +109,10 @@ const CategorySummary = ({
   readonly failCount: number
   readonly warnCount: number
 }) => (
-  <styled.span display="flex" gap="2" alignItems="center" fontSize="xs" color="fg.muted">
-    <styled.span color="green.9">✓ {passCount}</styled.span>
-    {failCount > 0 && <styled.span color="red.9">✗ {failCount}</styled.span>}
-    {warnCount > 0 && <styled.span color="amber.9">⚠ {warnCount}</styled.span>}
+  <styled.span display="flex" gap="2" alignItems="center" fontSize="xs" color="ink.muted">
+    <styled.span color="positive">✓ {passCount}</styled.span>
+    {failCount > 0 && <styled.span color="critical">✗ {failCount}</styled.span>}
+    {warnCount > 0 && <styled.span color="warning">⚠ {warnCount}</styled.span>}
     <Accordion.ItemIndicator
       className={cx(accordionStyles.itemIndicator, css({ display: 'inline-block' }))}
     >

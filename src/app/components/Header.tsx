@@ -10,13 +10,13 @@ const homeLinkClass = cx(
 
 /**
  * Minimal, distraction-free site header (WSG 2.6).
- * Uses Park UI design tokens for automatic light/dark mode support.
+ * Uses Verdant design tokens for automatic light/dark mode support.
  */
 export const Header = () => (
   <styled.header
-    bg="bg.default"
+    bg="surface.200"
     borderBottomWidth="1px"
-    borderColor="border.default"
+    borderColor="border"
     px="4"
     h="14"
     display="flex"

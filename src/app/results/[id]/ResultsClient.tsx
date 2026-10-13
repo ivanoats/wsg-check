@@ -5,13 +5,14 @@ import Link from 'next/link'
 import { Progress } from '@ark-ui/react'
 import { styled } from 'styled-system/jsx'
 import { cx, css } from 'styled-system/css'
-import { button, card, avatar, progress, code } from 'styled-system/recipes'
+import { card, avatar, progress, code } from 'styled-system/recipes'
 import type { SustainabilityReport, Recommendation, ReportSummary } from '@/report/types'
 import type { CategoryScore } from '@/core/types'
 import type { CheckResponseBody } from '@/api/types'
 import { CheckResultsSection } from '@/app/components/CheckResultsSection'
 import { SectionHeading } from '@/app/components/SectionHeading'
 import { guidelineLabel } from '@/report/formatters/labels'
+import { secondaryButtonClass } from '@/app/design-system'
 
 const RESULT_STORAGE_PREFIX = 'wsg-check:result:'
 const RESULT_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -53,43 +54,43 @@ const fetchReportFromApi = async (id: string): Promise<SustainabilityReport | nu
  * unreliable (Panda's extractor skips them; vars may not be defined).
  */
 const gradeCircleBgClass: Readonly<Record<string, string>> = {
-  A: css({ bg: 'green.9' }), // green.9 in Park UI preset ✓
-  B: css({ bg: '[#0055b3]' }), // blue.9 token absent → arbitrary hex (≈7.1:1)
-  C: css({ bg: '[#ffb224]' }), // amber.9 token absent → arbitrary hex (≈7.1:1 with #4d2000)
-  D: css({ bg: '[#ad4800]' }), // orange.9 token absent → arbitrary hex (≈5.7:1)
-  F: css({ bg: '[#c7272d]' }), // darker red than Panda's red.9 (≈5.6:1)
+  A: css({ bg: 'positive' }),
+  B: css({ bg: 'info' }),
+  C: css({ bg: 'warning' }),
+  D: css({ bg: 'warning' }),
+  F: css({ bg: 'critical' }),
 }
 
 const gradeCircleFgClass: Readonly<Record<string, string>> = {
-  A: css({ color: 'white' }),
-  B: css({ color: 'white' }),
-  C: css({ color: '[#4d2000]' }),
-  D: css({ color: 'white' }),
-  F: css({ color: 'white' }),
+  A: css({ color: 'surface.100' }),
+  B: css({ color: 'surface.100' }),
+  C: css({ color: 'surface.100' }),
+  D: css({ color: 'surface.100' }),
+  F: css({ color: 'surface.100' }),
 }
 
 const cardStyles = card()
 const avatarStyles = avatar({ size: '2xl' })
 const progressStyles = progress()
 
-const impactColors: Readonly<Record<string, { bg: string }>> = {
-  high: { bg: 'red.9' },
-  medium: { bg: 'amber.9' },
-  low: { bg: 'gray.7' },
+const impactColors: Readonly<Record<string, string>> = {
+  high: css({ bg: 'critical' }),
+  medium: css({ bg: 'warning' }),
+  low: css({ bg: 'ink.muted' }),
 }
 
-const impactDot = (impact: string): string => impactColors[impact]?.bg ?? 'gray.7'
+const impactDot = (impact: string): string => impactColors[impact] ?? css({ bg: 'ink.muted' })
 
 /** Static config for the summary count grid — counts are bound at render time. */
 const SUMMARY_CONFIG: ReadonlyArray<{
   readonly label: string
   readonly key: keyof ReportSummary
-  readonly colorToken: string
+  readonly colorClass: string
 }> = [
-  { label: 'Passed', key: 'passed', colorToken: 'green.9' },
-  { label: 'Failed', key: 'failed', colorToken: 'red.9' },
-  { label: 'Warnings', key: 'warnings', colorToken: 'amber.10' },
-  { label: 'N/A', key: 'notApplicable', colorToken: 'gray.7' },
+  { label: 'Passed', key: 'passed', colorClass: css({ color: 'positive' }) },
+  { label: 'Failed', key: 'failed', colorClass: css({ color: 'critical' }) },
+  { label: 'Warnings', key: 'warnings', colorClass: css({ color: 'warning' }) },
+  { label: 'N/A', key: 'notApplicable', colorClass: css({ color: 'ink.muted' }) },
 ]
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -98,25 +99,25 @@ const SUMMARY_CONFIG: ReadonlyArray<{
 const SummaryCountCard = ({
   label,
   count,
-  colorToken,
+  colorClass,
 }: {
   readonly label: string
   readonly count: number
-  readonly colorToken: string
+  readonly colorClass: string
 }) => (
   <styled.div
     role="listitem"
     p="3"
     borderWidth="1px"
-    borderColor="border.default"
+    borderColor="border"
     borderRadius="md"
-    bg="bg.subtle"
+    bg="surface.100"
     textAlign="center"
   >
-    <styled.p fontWeight="bold" fontSize="xl" color={colorToken}>
+    <styled.p className={colorClass} fontWeight="bold" fontSize="xl">
       {count}
     </styled.p>
-    <styled.p fontSize="xs" color="fg.muted">
+    <styled.p fontSize="xs" color="ink.muted">
       {label}
     </styled.p>
   </styled.div>
@@ -139,7 +140,7 @@ const ReportHeader = ({
       className={cx(
         avatarStyles.root,
         css({ flexShrink: '0' }),
-        gradeCircleBgClass[grade] ?? css({ bg: 'gray.7' })
+        gradeCircleBgClass[grade] ?? css({ bg: 'ink.muted' })
       )}
       aria-label={`Grade ${grade}`}
     >
@@ -147,7 +148,7 @@ const ReportHeader = ({
         className={cx(
           avatarStyles.fallback,
           css({ fontSize: '2xl', fontWeight: 'bold' }),
-          gradeCircleFgClass[grade] ?? css({ color: 'white' })
+          gradeCircleFgClass[grade] ?? css({ color: 'surface.100' })
         )}
       >
         {grade}
@@ -158,16 +159,16 @@ const ReportHeader = ({
         id="results-heading"
         fontSize={{ base: 'xl', md: '2xl' }}
         fontWeight="bold"
-        color="fg.default"
+        color="ink"
         mb="1"
       >
         Score: {score}/100
       </styled.h1>
-      <styled.p fontSize="sm" color="fg.muted" style={{ wordBreak: 'break-all' }}>
+      <styled.p fontSize="sm" color="ink.muted" style={{ wordBreak: 'break-all' }}>
         {url}
       </styled.p>
       {specVersion ? (
-        <styled.p fontSize="sm" color="fg.muted">
+        <styled.p fontSize="sm" color="ink.muted">
           Checked against WSG {specVersion}
         </styled.p>
       ) : null}
@@ -185,29 +186,29 @@ const SummarySection = ({ summary }: { readonly summary: ReportSummary }) => (
     role="list"
     aria-label="Check summary"
   >
-    {SUMMARY_CONFIG.map(({ label, key, colorToken }) => (
-      <SummaryCountCard key={label} label={label} count={summary[key]} colorToken={colorToken} />
+    {SUMMARY_CONFIG.map(({ label, key, colorClass }) => (
+      <SummaryCountCard key={label} label={label} count={summary[key]} colorClass={colorClass} />
     ))}
   </styled.div>
 )
 
 /** Determine bar color based on category score. */
 const getScoreBarColor = (score: number): string => {
-  if (score >= 75) return 'green.9'
-  if (score >= 50) return 'amber.9'
-  return 'red.9'
+  if (score >= 75) return css({ bg: 'positive' })
+  if (score >= 50) return css({ bg: 'warning' })
+  return css({ bg: 'critical' })
 }
 
 /** Single category score row — extracted to limit JSX nesting depth. */
 const CategoryScoreBar = ({ cat }: { readonly cat: CategoryScore }) => {
   const barColor = getScoreBarColor(cat.score)
   return (
-    <styled.div className={cardStyles.root}>
+    <styled.div className={cardStyles}>
       <styled.div display="flex" justifyContent="space-between" alignItems="center" mb="1">
-        <styled.span fontSize="sm" fontWeight="medium" color="fg.default">
+        <styled.span fontSize="sm" fontWeight="medium" color="ink">
           {cat.category.toUpperCase()}
         </styled.span>
-        <styled.span fontSize="sm" fontWeight="bold" color="fg.default">
+        <styled.span fontSize="sm" fontWeight="bold" color="ink">
           {cat.score}/100
         </styled.span>
       </styled.div>
@@ -220,7 +221,7 @@ const CategoryScoreBar = ({ cat }: { readonly cat: CategoryScore }) => {
       >
         <Progress.Track className={cx(progressStyles.track, css({ h: '2', borderRadius: 'full' }))}>
           <Progress.Range
-            className={cx(progressStyles.range, css({ bg: barColor, borderRadius: 'full' }))}
+            className={cx(progressStyles.range, barColor, css({ borderRadius: 'full' }))}
           />
         </Progress.Track>
       </Progress.Root>
@@ -249,9 +250,9 @@ const CategoryScoresSection = ({
 
 /** Recommendation guideline name + ID line — extracted to reduce JSX nesting depth. */
 const RecommendationTitle = ({ name, id }: { readonly name: string; readonly id: string }) => (
-  <styled.p fontWeight="semibold" fontSize="sm" color="fg.default" mb="0.5">
+  <styled.p fontWeight="semibold" fontSize="sm" color="ink" mb="0.5">
     {name}{' '}
-    <styled.span color="fg.muted" fontSize="xs">
+    <styled.span color="ink.muted" fontSize="xs">
       ({id})
     </styled.span>
   </styled.p>
@@ -259,7 +260,7 @@ const RecommendationTitle = ({ name, id }: { readonly name: string; readonly id:
 
 /** Single recommendation card — extracted to limit JSX nesting depth. */
 const RecommendationItem = ({ rec }: { readonly rec: Recommendation }) => (
-  <styled.li className={cardStyles.root}>
+  <styled.li className={cardStyles}>
     <styled.div display="flex" gap="2" alignItems="flex-start">
       <styled.span
         w="2"
@@ -267,7 +268,7 @@ const RecommendationItem = ({ rec }: { readonly rec: Recommendation }) => (
         borderRadius="full"
         mt="1.5"
         flexShrink="0"
-        bg={impactDot(rec.impact)}
+        className={impactDot(rec.impact)}
         aria-label={`${rec.impact} impact`}
       />
       <styled.div flex="1">
@@ -275,7 +276,7 @@ const RecommendationItem = ({ rec }: { readonly rec: Recommendation }) => (
           name={rec.guidelineName}
           id={rec.related === true ? 'related, not scored' : guidelineLabel(rec)}
         />
-        <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed">
+        <styled.p fontSize="sm" color="ink" lineHeight="relaxed">
           {rec.recommendation}
         </styled.p>
       </styled.div>
@@ -359,7 +360,7 @@ const ExportSection = ({
           <a
             href={dataUrl}
             download={`wsg-report-${id}.json`}
-            className={button({ variant: 'outline', size: 'sm' })}
+            className={secondaryButtonClass}
           >
             Download JSON
           </a>
@@ -367,18 +368,18 @@ const ExportSection = ({
             href={blobUrl ?? '#'}
             target="_blank"
             rel="noopener noreferrer"
-            className={button({ variant: 'ghost', size: 'sm' })}
+            className={secondaryButtonClass}
             aria-label="View JSON (opens in new tab)"
           >
             View JSON
           </a>
         </styled.div>
       ) : (
-        <styled.p fontSize="xs" color="fg.muted" mt="3">
+        <styled.p fontSize="xs" color="ink.muted" mt="3">
           JSON export will be available once this report has fully loaded in your browser.
         </styled.p>
       )}
-      <styled.p fontSize="xs" color="fg.muted" mt="3">
+      <styled.p fontSize="xs" color="ink.muted" mt="3">
         Share this result:{' '}
         <code className={code({ size: 'sm' })} style={{ wordBreak: 'break-all' }}>
           {`/results/${id}`}
@@ -396,11 +397,11 @@ const MethodologySection = ({
 }) => (
   <styled.section aria-labelledby="methodology-heading" mt="6">
     <SectionHeading id="methodology-heading">Methodology</SectionHeading>
-    <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed">
+    <styled.p fontSize="sm" color="ink" lineHeight="relaxed">
       {methodology.disclaimer}
     </styled.p>
     {methodology.coreWebVitalsNote && (
-      <styled.p fontSize="sm" color="fg.default" lineHeight="relaxed" mt="2">
+      <styled.p fontSize="sm" color="ink" lineHeight="relaxed" mt="2">
         {methodology.coreWebVitalsNote}
       </styled.p>
     )}
@@ -451,11 +452,11 @@ export const ResultsClient = ({ id }: ResultsClientProps) => {
     return (
       <styled.section aria-label="Loading results" py="6" maxW="2xl" mx="auto">
         <styled.div mb="4">
-          <Link href="/" className={button({ variant: 'ghost', size: 'sm' })}>
+          <Link href="/" className={secondaryButtonClass}>
             ← New check
           </Link>
         </styled.div>
-        <styled.p color="fg.default">Loading results…</styled.p>
+        <styled.p color="ink">Loading results…</styled.p>
       </styled.section>
     )
   }
@@ -464,11 +465,11 @@ export const ResultsClient = ({ id }: ResultsClientProps) => {
     return (
       <styled.section aria-label="Result not found" py="6" maxW="2xl" mx="auto">
         <styled.div mb="4">
-          <Link href="/" className={button({ variant: 'ghost', size: 'sm' })}>
+          <Link href="/" className={secondaryButtonClass}>
             ← New check
           </Link>
         </styled.div>
-        <styled.p color="fg.default">
+        <styled.p color="ink">
           Result not found. It may have expired. Please run a new check.
         </styled.p>
       </styled.section>
@@ -479,7 +480,7 @@ export const ResultsClient = ({ id }: ResultsClientProps) => {
     <styled.section aria-labelledby="results-heading" py="6" maxW="2xl" mx="auto">
       {/* Back link */}
       <styled.div mb="4">
-        <Link href="/" className={button({ variant: 'ghost', size: 'sm' })}>
+        <Link href="/" className={secondaryButtonClass}>
           ← New check
         </Link>
       </styled.div>
