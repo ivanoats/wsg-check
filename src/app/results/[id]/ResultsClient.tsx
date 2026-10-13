@@ -357,11 +357,7 @@ const ExportSection = ({
       <SectionHeading id="export-heading">Export &amp; Share</SectionHeading>
       {dataUrl !== null ? (
         <styled.div display="flex" gap="3" flexWrap="wrap">
-          <a
-            href={dataUrl}
-            download={`wsg-report-${id}.json`}
-            className={secondaryButtonClass}
-          >
+          <a href={dataUrl} download={`wsg-report-${id}.json`} className={secondaryButtonClass}>
             Download JSON
           </a>
           <a

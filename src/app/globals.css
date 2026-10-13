@@ -18,7 +18,7 @@
    * Prevents keyboard-focused elements from being hidden under the nav bar.
    * WCAG 2.4.11 Focus Not Obscured (Minimum) — AA (WCAG 2.2).
    */
-   scroll-padding-bottom: 4rem;
+  scroll-padding-bottom: 4rem;
 }
 
 /* --- Reduced motion --- */

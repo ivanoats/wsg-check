@@ -30,11 +30,7 @@ const parkPresetWithoutOverlappingRecipes = {
 
 export default defineConfig({
   preflight: true,
-  presets: [
-    '@pandacss/dev/presets',
-    parkPresetWithoutOverlappingRecipes,
-    verdantPreset,
-  ],
+  presets: ['@pandacss/dev/presets', parkPresetWithoutOverlappingRecipes, verdantPreset],
   include: ['./src/**/*.{js,jsx,ts,tsx}'],
   exclude: [],
   jsxFramework: 'react',

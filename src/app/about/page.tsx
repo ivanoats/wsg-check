@@ -47,13 +47,7 @@ interface GradeScaleItemProps {
 
 /** Single grade-scale card — extracted to limit JSX nesting depth. */
 const GradeScaleItem = ({ grade, range }: GradeScaleItemProps) => (
-  <styled.div
-    role="listitem"
-    className={cardStyles}
-    display="flex"
-    gap="3"
-    alignItems="center"
-  >
+  <styled.div role="listitem" className={cardStyles} display="flex" gap="3" alignItems="center">
     <span className={cx(gradeCircleBase, gradeCircleColor[grade] ?? '')} aria-hidden="true">
       {grade}
     </span>

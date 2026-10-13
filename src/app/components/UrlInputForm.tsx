@@ -110,11 +110,7 @@ const RecentCheckButton = ({ url, onSelect }: RecentCheckButtonProps) => {
   }, [url, onSelect])
 
   return (
-    <button
-      type="button"
-      className={secondaryButtonClass}
-      onClick={handleClick}
-    >
+    <button type="button" className={secondaryButtonClass} onClick={handleClick}>
       {url}
     </button>
   )
