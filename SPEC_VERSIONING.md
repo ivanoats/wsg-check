@@ -29,7 +29,7 @@ The spec repo tags quarterly-ish snapshots:
 | `July-2026`       | 2026-07-29 | Group Note Draft | 71 (17 / 16 / 12 / 26)                     |
 | `September-2026`¹ | 2026-09-24 | Group Note Draft | **71 (17 / 16 / 12 / 26)**                 |
 
-¹ Not tagged upstream. It is commit [`c794dbc`](https://github.com/w3c/sustainableweb-wsg/commit/c794dbc23cc20299d460ef2e6d1cce4c31456c32) (PR #481, "JSON API Improvements"), the source of the dated TR publication `DNOTE-web-sustainability-guidelines-20260924`. Every guideline and success-criterion anchor in `guidelines.json` at that commit exists on the dated TR page. `guidelines.json` still has `lastModified: 2026-07-28`, although its contents changed.
+¹ Not tagged upstream. It is commit [`c794dbc`](https://github.com/w3c/sustainableweb-wsg/commit/c794dbc23cc20299d460ef2e6d1cce4c31456c32) (PR #481, "Misc Updates"), the source of the dated TR publication `DNOTE-web-sustainability-guidelines-20260924`. Every guideline and success-criterion anchor in `guidelines.json` at that commit exists on the dated TR page. `guidelines.json` still has `lastModified: 2026-07-28`, although its contents changed.
 
 ## 3. What is new in the July-2026 release
 

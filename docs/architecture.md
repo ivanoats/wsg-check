@@ -2,7 +2,7 @@
 
 [Documentation index](README.md) · [Decision log](adl.md)
 
-Reviewed against source commit [`fb9ee7e`](https://github.com/ivanoats/wsg-check/commit/fb9ee7e061e1c0681dc5d4d463d1a6048e86ddbd) on 2026-09-24. This describes current source. WSG release pinning, slug identities, related checks, and report spec provenance shipped after v0.1.2; the pinned release is September-2026.
+This describes current source. WSG release pinning, slug identities, related checks, and report spec provenance shipped after v0.1.2; the pinned release is September-2026.
 
 ## Components and boundaries
 
