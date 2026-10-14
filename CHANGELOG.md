@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.2](https://github.com/ivanoats/wsg-check/compare/v0.6.1...v0.6.2) (2026-10-14)
+
+
+### Fixed
+
+* target WSG September-2026 ([#216](https://github.com/ivanoats/wsg-check/issues/216)) ([a980297](https://github.com/ivanoats/wsg-check/commit/a980297e513aeecdefb5f06902d90436f55a1db4))
+
 ## [0.6.1](https://github.com/ivanoats/wsg-check/compare/v0.6.0...v0.6.1) (2026-09-27)
 
 

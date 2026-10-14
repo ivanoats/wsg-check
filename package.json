@@ -1,6 +1,6 @@
 {
   "name": "@sustainablewebsites/wsg-check",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "mcpName": "io.github.ivanoats/wsg-check",
   "publishConfig": {
     "access": "public"
