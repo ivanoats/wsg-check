@@ -15,8 +15,8 @@ export const metadata: Metadata = {
 const cardStyles = card()
 
 /*
- * Per-grade badge colours — each `css()` call uses a *literal* object so
- * Literal css() calls ensure Panda extracts each grade colour at build time.
+ * Per-grade badge colours — each `css()` call uses a *literal* object, so Panda
+ * extracts each grade colour at build time.
  */
 const gradeCircleBase = css({
   display: 'inline-flex',

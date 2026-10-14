@@ -19,7 +19,7 @@ const { withProvider, withContext } = createStyleContext(field)
 const FieldRoot = withProvider(Field.Root, 'root')
 const FieldLabel = withContext(Field.Label, 'label')
 const FieldErrorText = withContext(Field.ErrorText, 'errorText')
-// Input uses the standalone `input` recipe (not the `field__input` slot) for full border/padding styling.
+// Input uses the standalone `fieldInput` recipe (not the `field__input` slot) for full border/padding styling.
 const FieldInput = styled(Field.Input, fieldInput)
 
 const alertStyles = alert()
