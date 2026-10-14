@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 // Activate manual mocks
 vi.mock('next/link')
@@ -77,13 +79,9 @@ describe('RootLayout — rendered output', () => {
     expect(noscript).not.toBeNull()
   })
 
-  it('does not load a web font', () => {
-    render(
-      <RootLayout>
-        <p>test content</p>
-      </RootLayout>
-    )
-    expect(document.documentElement.className).not.toContain('font-inter')
+  it('does not load a web font (uses the Verdant system-font stack)', () => {
+    const source = readFileSync(resolve(__dirname, '../../../src/app/layout.tsx'), 'utf8')
+    expect(source).not.toMatch(/next\/font/)
   })
 
   it('sets lang="en" on the html element', () => {

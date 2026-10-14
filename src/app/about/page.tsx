@@ -34,8 +34,10 @@ const gradeCircleColor: Readonly<Record<string, string>> = {
   A: css({ bg: 'positive', color: 'surface.100' }),
   B: css({ bg: 'info', color: 'surface.100' }),
   C: css({ bg: 'warning', color: 'surface.100' }),
-  D: css({ bg: 'warning', color: 'surface.100' }),
-  F: css({ bg: 'critical', color: 'surface.100' }),
+  D: css({ bg: 'critical', color: 'surface.100' }),
+  // Verdant has four status colours for five grades; F uses the inverted ink
+  // colour so it stays distinct from D in both light and dark themes.
+  F: css({ bg: 'ink', color: 'surface.100' }),
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────

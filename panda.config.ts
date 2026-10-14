@@ -30,6 +30,10 @@ const parkPresetWithoutOverlappingRecipes = {
 
 export default defineConfig({
   preflight: true,
+  // Park UI's preset defines `dark` as `.dark &`, which wins over Verdant's
+  // media-query condition. Restore the media query so Verdant's dark tokens
+  // follow the OS setting, matching its prefers-contrast dark overrides.
+  conditions: { extend: { dark: '@media (prefers-color-scheme: dark)' } },
   presets: ['@pandacss/dev/presets', parkPresetWithoutOverlappingRecipes, verdantPreset],
   include: ['./src/**/*.{js,jsx,ts,tsx}'],
   exclude: [],

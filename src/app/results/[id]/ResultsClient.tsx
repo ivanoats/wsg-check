@@ -57,8 +57,8 @@ const gradeCircleBgClass: Readonly<Record<string, string>> = {
   A: css({ bg: 'positive' }),
   B: css({ bg: 'info' }),
   C: css({ bg: 'warning' }),
-  D: css({ bg: 'warning' }),
-  F: css({ bg: 'critical' }),
+  D: css({ bg: 'critical' }),
+  F: css({ bg: 'ink' }), // inverted ink keeps F distinct from D (see about page)
 }
 
 const gradeCircleFgClass: Readonly<Record<string, string>> = {
@@ -148,6 +148,9 @@ const ReportHeader = ({
         className={cx(
           avatarStyles.fallback,
           css({ fontSize: '2xl', fontWeight: 'bold' }),
+          // Park's avatar fallback paints its own background over the root, so
+          // repeat the grade colour here or the letter sits on a grey disc.
+          gradeCircleBgClass[grade] ?? css({ bg: 'ink.muted' }),
           gradeCircleFgClass[grade] ?? css({ color: 'surface.100' })
         )}
       >
