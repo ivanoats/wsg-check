@@ -16,7 +16,7 @@ const TESTABILITY = ['automated', 'semi-automated', 'manual-only'] as const
 // ─── Schemas ──────────────────────────────────────────────────────────────────
 
 const specSchema = z.object({
-  release: z.string().describe('The WSG release, e.g. "July-2026"'),
+  release: z.string().describe('The WSG release, e.g. "September-2026"'),
   url: z.string(),
 })
 

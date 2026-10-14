@@ -468,9 +468,9 @@ describe('Full pipeline integration — WsgChecker.check()', () => {
     expect(report).toHaveProperty('metadata')
   })
 
-  // ── Guideline identity (WSG July-2026) ───────────────────────────────────
+  // ── Guideline identity (WSG September-2026) ───────────────────────────────────
 
-  it('reports every result under its July-2026 guideline or as a related check', async () => {
+  it('reports every result under its September-2026 guideline or as a related check', async () => {
     setupMocks(GOOD_HTML)
     const result = await buildChecker().check('https://example.com')
     expect(result.ok).toBe(true)

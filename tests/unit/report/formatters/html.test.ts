@@ -58,7 +58,7 @@ function makeReport(overrides: Partial<RunResult> = {}): SustainabilityReport {
 
 describe('formatHtml', () => {
   it('names the WSG release the report was scored against', () => {
-    expect(formatHtml(makeReport())).toContain('<strong>WSG release:</strong> July-2026')
+    expect(formatHtml(makeReport())).toContain('<strong>WSG release:</strong> September-2026')
   })
 
   it('returns a string starting with <!DOCTYPE html>', () => {

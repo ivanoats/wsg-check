@@ -9,7 +9,7 @@ Check a website against automated heuristics based on the [W3C Web Sustainabilit
 
 The latest release is v0.6.0. <!-- x-release-please-version -->
 
-It targets WSG July-2026 (Group Note Draft). It includes an MCP server for AI assistants, with the `check_url`, `list_guidelines`, and `get_guideline` tools, listed in the [MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.ivanoats/wsg-check`. The server first shipped in v0.4.0; v0.3.0 was tagged on GitHub but not published to npm. See the [changelog](CHANGELOG.md) and [spec versioning policy](SPEC_VERSIONING.md).
+Source on `main` targets WSG September-2026, the [24 September 2026 Group Note Draft](https://www.w3.org/TR/2026/DNOTE-web-sustainability-guidelines-20260924/); v0.6.1 and earlier target July-2026. It includes an MCP server for AI assistants, with the `check_url`, `list_guidelines`, and `get_guideline` tools, listed in the [MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.ivanoats/wsg-check`. The server first shipped in v0.4.0; v0.3.0 was tagged on GitHub but not published to npm. See the [changelog](CHANGELOG.md) and [spec versioning policy](SPEC_VERSIONING.md).
 
 Scores from different spec versions should not be treated as directly comparable. The package version and check selection also matter when comparing reports.
 

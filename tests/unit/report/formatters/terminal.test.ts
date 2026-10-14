@@ -63,7 +63,7 @@ const stripAnsi = (str: string): string => str.replace(ANSI_RE, '')
 
 describe('formatTerminal', () => {
   it('names the WSG release the report was scored against', () => {
-    expect(formatTerminal(makeReport(), { colors: false })).toContain('WSG:      July-2026')
+    expect(formatTerminal(makeReport(), { colors: false })).toContain('WSG:      September-2026')
   })
 
   it('returns a non-empty string', () => {

@@ -118,7 +118,7 @@ const SPEC_LINK_PREFIX = 'https://www.w3.org/TR/web-sustainability-guidelines/#'
 
 /**
  * Rewrites a result's guideline identity: the slug, title, number and spec
- * link of its July-2026 guideline, or the related-check ID and name.
+ * link of its September-2026 guideline, or the related-check ID and name.
  */
 const reportAs = (result: CheckResult, identity: GuidelineEntry | RelatedCheck): CheckResult => {
   const { resources = [], ...rest } = result
@@ -157,7 +157,7 @@ const guidelineFor = (slug: string): GuidelineEntry => {
  * attaches that identity as static properties for pre-execution filtering:
  *
  * - `guidelineId`: the legacy numeric ID the check was registered under.
- * - `guidelineSlug`: the July-2026 guideline the check implements.
+ * - `guidelineSlug`: the September-2026 guideline the check implements.
  * - `relatedId`: set instead of a slug for related (unscored) checks.
  *
  * The identity is declared per check because some legacy IDs are shared by
@@ -200,7 +200,7 @@ const withGuidelineId = (
 /**
  * All Phase 4.1 Performance & Efficiency checks bundled for convenience.
  *
- * | Check                 | July-2026 | Testability |
+ * | Check                 | September-2026 | Testability |
  * | --------------------- | --------- | ----------- |
  * | `checkMinification`   | 3.2       | automated   |
  * | `checkRenderBlocking` | 3.7       | automated   |
@@ -215,7 +215,7 @@ export const performanceChecks: ReadonlyArray<CheckFnWithId> = [
 /**
  * All Phase 4.2 Semantic & Standards checks bundled for convenience.
  *
- * | Check                    | July-2026            | Testability    |
+ * | Check                    | September-2026            | Testability    |
  * | ------------------------ | -------------------- | -------------- |
  * | `checkSemanticHtml`      | 3.6                  | automated      |
  * | `checkAccessibilityAids` | 2.4                  | automated      |
@@ -234,7 +234,7 @@ export const semanticChecks: ReadonlyArray<CheckFnWithId> = [
 /**
  * All Phase 4.3 Sustainability-Specific checks bundled for convenience.
  *
- * | Check                         | July-2026 | Testability |
+ * | Check                         | September-2026 | Testability |
  * | ----------------------------- | --------- | ----------- |
  * | `checkCssRedundancy`          | 3.4       | automated   |
  * | `checkThirdParty`             | 3.5       | automated   |
@@ -261,7 +261,7 @@ export const sustainabilityChecks: ReadonlyArray<CheckFnWithId> = [
 /**
  * All Phase 4.4 Security & Maintenance checks bundled for convenience.
  *
- * | Check                  | July-2026            | Testability |
+ * | Check                  | September-2026            | Testability |
  * | ---------------------- | -------------------- | ----------- |
  * | `checkSecurityHeaders` | related (not scored) | automated   |
  * | `checkDependencyCount` | 3.12                 | automated   |
@@ -286,7 +286,7 @@ export const securityChecks: ReadonlyArray<CheckFnWithId> = [
 /**
  * All Phase 5.1 UX Design checks bundled for convenience.
  *
- * | Check                        | July-2026            | Testability    |
+ * | Check                        | September-2026            | Testability    |
  * | ---------------------------- | -------------------- | -------------- |
  * | `checkNonEssentialContent`   | 2.5                  | automated      |
  * | `checkNavigationStructure`   | 2.4                  | automated      |
@@ -337,7 +337,7 @@ export const uxDesignChecks: ReadonlyArray<CheckFnWithId> = [
 /**
  * All Phase 5.2 Hosting & Infrastructure checks bundled for convenience.
  *
- * | Check                     | July-2026 | Testability    |
+ * | Check                     | September-2026 | Testability    |
  * | ------------------------- | --------- | -------------- |
  * | `checkSustainableHosting` | 4.1       | automated      |
  * | `checkCaching`            | 4.2       | automated      |

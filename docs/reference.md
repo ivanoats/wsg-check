@@ -2,7 +2,7 @@
 
 [Documentation index](README.md) · [Architecture](architecture.md)
 
-This reference describes the source tree, including unreleased July-2026 spec support. Check thresholds are implementation heuristics, not W3C certification criteria.
+This reference describes the source tree, which targets WSG September-2026. Check thresholds are implementation heuristics, not W3C certification criteria.
 
 ## Utils Module
 
@@ -113,7 +113,7 @@ Checks accept `PageData` and return a `CheckResult` or a promise. Most inspect s
 
 ### Performance & Efficiency Checks
 
-| Check                 | File                 | Guideline (WSG July-2026)                            | Impact |
+| Check                 | File                 | Guideline (WSG September-2026)                       | Impact |
 | --------------------- | -------------------- | ---------------------------------------------------- | ------ |
 | `checkMinification`   | `minification.ts`    | 3.2 Minify and remove unused code                    | medium |
 | `checkRenderBlocking` | `render-blocking.ts` | 3.7 Defer the loading of non-critical resources      | high   |
@@ -156,7 +156,7 @@ Checks the HTML document size and total referenced resource count against sustai
 
 ### Semantic & Standards Checks
 
-| Check                    | File                    | Guideline (WSG July-2026)                          | Impact |
+| Check                    | File                    | Guideline (WSG September-2026)                     | Impact |
 | ------------------------ | ----------------------- | -------------------------------------------------- | ------ |
 | `checkSemanticHtml`      | `semantic-html.ts`      | 3.6 Ensure code follows good semantic practices    | medium |
 | `checkAccessibilityAids` | `accessibility-aids.ts` | 2.4 Design efficient and streamlined user journeys | medium |
@@ -219,7 +219,7 @@ Checks for Schema.org JSON-LD structured data that enables rich search results, 
 
 ### Sustainability-Specific Checks
 
-| Check                         | File                          | Guideline (WSG July-2026)                                       | Impact |
+| Check                         | File                          | Guideline (WSG September-2026)                                  | Impact |
 | ----------------------------- | ----------------------------- | --------------------------------------------------------------- | ------ |
 | `checkCssRedundancy`          | `redundancy.ts`               | 3.4 Avoid redundancy and duplication in code                    | medium |
 | `checkThirdParty`             | `third-party.ts`              | 3.5 Treat third parties the same as first parties               | high   |
@@ -266,7 +266,7 @@ Detects signals of unnecessary JavaScript: external script count, `document.writ
 
 ### Security & Maintenance Checks
 
-| Check                  | File                  | Guideline (WSG July-2026)                         | Impact |
+| Check                  | File                  | Guideline (WSG September-2026)                    | Impact |
 | ---------------------- | --------------------- | ------------------------------------------------- | ------ |
 | `checkSecurityHeaders` | `security-headers.ts` | Related: Security headers (not scored)            | high   |
 | `checkDependencyCount` | `dependency-count.ts` | 3.12 Use dependencies sparingly and maintain them | high   |
@@ -325,7 +325,7 @@ Checks that the document uses the HTML5 standard and avoids deprecated elements:
 
 ### UX Design Checks (Section 2)
 
-| Check                        | File                        | Guideline (WSG July-2026)                                     | Impact |
+| Check                        | File                        | Guideline (WSG September-2026)                                | Impact |
 | ---------------------------- | --------------------------- | ------------------------------------------------------------- | ------ |
 | `checkNonEssentialContent`   | `non-essential-content.ts`  | 2.5 Design to assist and not to distract                      | medium |
 | `checkNavigationStructure`   | `navigation-structure.ts`   | 2.4 Design efficient and streamlined user journeys            | medium |
@@ -445,7 +445,7 @@ Detects `<a href>` links pointing to downloadable document formats: `.pdf`, `.do
 
 ### Hosting & Infrastructure Checks (Section 4)
 
-| Check                     | File                     | Guideline (WSG July-2026)                                 | Impact |
+| Check                     | File                     | Guideline (WSG September-2026)                            | Impact |
 | ------------------------- | ------------------------ | --------------------------------------------------------- | ------ |
 | `checkSustainableHosting` | `sustainable-hosting.ts` | 4.1 Use sustainable hosting                               | high   |
 | `checkCaching`            | `caching.ts`             | 4.2 Optimize caching and support offline access           | high   |

@@ -22,7 +22,7 @@ describe('health/openapi routes', () => {
     expect(body.status).toBe('ok')
     expect(body.service).toBe('wsg-check-api')
     expect(body.version).toMatch(/^\d+\.\d+\.\d+/)
-    expect(body.specVersion).toBe('July-2026')
+    expect(body.specVersion).toBe('September-2026')
   })
 
   it('OPTIONS /api/health returns CORS preflight response', () => {

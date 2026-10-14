@@ -2,7 +2,7 @@
 
 [Documentation index](README.md) · [Decision log](adl.md)
 
-Reviewed against source commit [`fb9ee7e`](https://github.com/ivanoats/wsg-check/commit/fb9ee7e061e1c0681dc5d4d463d1a6048e86ddbd) on 2026-09-24. This describes current source. WSG July-2026 pinning, slug identities, related checks, and report spec provenance are unreleased since v0.1.2.
+Reviewed against source commit [`fb9ee7e`](https://github.com/ivanoats/wsg-check/commit/fb9ee7e061e1c0681dc5d4d463d1a6048e86ddbd) on 2026-09-24. This describes current source. WSG release pinning, slug identities, related checks, and report spec provenance shipped after v0.1.2; the pinned release is September-2026.
 
 ## Components and boundaries
 
@@ -48,7 +48,7 @@ flowchart TD
 
 `PageFetcher` returns a typed `Result<PageData>` for fetch/parse failures. `CheckRunner` isolates individual check failures with `Promise.allSettled`, retaining registered guideline identity on failures. The wrappers in [check registration](../src/checks/index.ts) apply spec slugs, titles, display numbers, and links; direct raw check exports do not perform that normalization.
 
-The registry is built from the vendored July-2026 snapshot. It serves guideline API requests without fetching a moving upstream spec. Numeric legacy inputs remain compatibility aliases; display numbers are not canonical identities. See [ADR-0005](adr/0005-pin-wsg-spec.md).
+The registry is built from the vendored September-2026 snapshot. It serves guideline API requests without fetching a moving upstream spec. Numeric legacy inputs remain compatibility aliases; display numbers are not canonical identities. See [ADR-0005](adr/0005-pin-wsg-spec.md).
 
 ## Scoring and report contracts
 

@@ -47,6 +47,6 @@ export interface HealthResponseBody {
   readonly timestamp: string
   /** wsg-check package version. */
   readonly version: string
-  /** WSG release the checks target, e.g. `"July-2026"`. */
+  /** WSG release the checks target, e.g. `"September-2026"`. */
   readonly specVersion: string
 }

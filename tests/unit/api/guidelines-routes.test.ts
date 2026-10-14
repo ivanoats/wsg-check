@@ -24,7 +24,7 @@ describe('guidelines routes', () => {
 
   it('GET /api/guidelines returns list and spec release', async () => {
     loadGuidelinesMock.mockReturnValue({
-      spec: { release: 'July-2026' },
+      spec: { release: 'September-2026' },
       guidelines: [{ id: 'use-sustainable-hosting' }],
     })
 
@@ -32,12 +32,12 @@ describe('guidelines routes', () => {
     const body = await response.json()
 
     expect(response.status).toBe(200)
-    expect(body.spec.release).toBe('July-2026')
+    expect(body.spec.release).toBe('September-2026')
     expect(body.guidelines).toHaveLength(1)
   })
 
   it('GET /api/guidelines/:id returns 404 when missing', async () => {
-    findGuidelineByIdMock.mockReturnValue({ spec: { release: 'July-2026' } })
+    findGuidelineByIdMock.mockReturnValue({ spec: { release: 'September-2026' } })
 
     const response = await getGuideline({} as NextRequest, {
       params: Promise.resolve({ id: '9.9' }),
@@ -50,7 +50,7 @@ describe('guidelines routes', () => {
 
   it('GET /api/guidelines/:id returns guideline details when found', async () => {
     findGuidelineByIdMock.mockReturnValue({
-      spec: { release: 'July-2026' },
+      spec: { release: 'September-2026' },
       guideline: { id: 'use-sustainable-hosting', title: 'Guideline' },
     })
 
@@ -62,7 +62,7 @@ describe('guidelines routes', () => {
     expect(response.status).toBe(200)
     expect(findGuidelineByIdMock).toHaveBeenCalledWith('use-sustainable-hosting')
     expect(body.guideline.id).toBe('use-sustainable-hosting')
-    expect(body.spec.release).toBe('July-2026')
+    expect(body.spec.release).toBe('September-2026')
   })
 
   it('OPTIONS on both guideline routes returns a CORS preflight response', () => {

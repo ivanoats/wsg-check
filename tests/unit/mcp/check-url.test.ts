@@ -37,7 +37,7 @@ const report = (overrides: Partial<SustainabilityReport> = {}): SustainabilityRe
     duration: 10,
     overallScore: 70,
     grade: 'C',
-    specVersion: 'July-2026',
+    specVersion: 'September-2026',
     categories: [{ category: 'web-dev', score: 70 }],
     checks: [],
     summary: {

@@ -66,13 +66,13 @@ export const TESTABILITY_OVERLAY: ReadonlyMap<string, Testability> = new Map<str
 
 /**
  * Pre-2025 draft guideline numbers used by wsg-check's checks (and therefore
- * by `--guidelines` filters and reports), mapped to the July-2026 slug that
+ * by `--guidelines` filters and reports), mapped to the September-2026 slug that
  * now covers the same scope. Used to look up a guideline by a legacy ID;
  * numeric IDs are deprecated as input because they are ambiguous across spec
  * releases.
  *
  * Do not use this map to decide which checks implement a guideline: `2.17`
- * is shared by the alt-text check (no July-2026 guideline) and the
+ * is shared by the alt-text check (no September-2026 guideline) and the
  * downloadable-documents check. Each check declares its own slug instead
  * (`CheckFnWithId.guidelineSlug`); see {@link checkMatchesGuideline}.
  */

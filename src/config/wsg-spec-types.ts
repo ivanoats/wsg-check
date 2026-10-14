@@ -2,9 +2,10 @@
  * TypeScript types for the W3C Web Sustainability Guidelines (WSG) JSON data
  * (`guidelines.json`), as published at a spec release tag.
  *
- * These types match the July-2026 release schema, in which guideline IDs are
- * slugs and the per-guideline `benefits` / `GRI` data and per-criterion
- * `resources` links were removed.
+ * These types match the September-2026 release schema. Guideline IDs are
+ * slugs (since July-2026, which also removed the per-guideline `benefits` /
+ * `GRI` data and per-criterion `resources` links), and each success criterion
+ * has its own slug and spec URL (added in September-2026).
  *
  * @see https://github.com/w3c/sustainableweb-wsg
  * @see https://www.w3.org/TR/web-sustainability-guidelines/
@@ -12,6 +13,13 @@
 
 /** A single success criterion within a guideline. */
 export interface WsgSpecCriterion {
+  /**
+   * Slug identifier, e.g. `"impact-analysis"`. It is also the fragment of the
+   * criterion's URL in the specification.
+   */
+  readonly id: string
+  /** Canonical URL to the success criterion in the W3C spec. */
+  readonly url: string
   readonly title: string
   readonly description: string
 }

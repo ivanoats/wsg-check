@@ -8,7 +8,7 @@
  * Enhancements over the Phase 6.1 stub in `types.ts`:
  *   - For WSG 3.1 (Set goals based on performance and energy impact) and
  *     WSG 3.7 (Defer the loading of non-critical resources), numbered as in
- *     the July-2026 release: a parameterised Google PageSpeed Insights link is
+ *     the September-2026 release: a parameterised Google PageSpeed Insights link is
  *     appended to `resources` so that the reader knows where to obtain live
  *     Core Web Vitals data, which static analysis cannot measure.
  *   - Exports `COMPLEMENTARY_TOOLS`: structured references to external tools

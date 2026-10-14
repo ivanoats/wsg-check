@@ -32,7 +32,7 @@ const MOCK_REPORT: SustainabilityReport = {
   duration: 1000,
   overallScore: 80,
   grade: 'B',
-  specVersion: 'July-2026',
+  specVersion: 'September-2026',
   categories: [],
   checks: [],
   summary: {
@@ -118,7 +118,7 @@ describe('ResultsClient', () => {
 
     render(<ResultsClient id={validId} />)
 
-    expect(screen.getByText('Checked against WSG July-2026')).toBeDefined()
+    expect(screen.getByText('Checked against WSG September-2026')).toBeDefined()
   })
 
   it('does not call fetch for an invalid id and shows not found message', async () => {

@@ -114,7 +114,7 @@ describe('buildProgram', () => {
   })
 
   it('reports the package version and the targeted WSG release', () => {
-    expect(buildProgram().version()).toMatch(/^\d+\.\d+\.\d+.* \(WSG July-2026\)$/)
+    expect(buildProgram().version()).toMatch(/^\d+\.\d+\.\d+.* \(WSG September-2026\)$/)
   })
 
   it('has the expected top-level options', () => {
@@ -264,7 +264,7 @@ describe('runCheck', () => {
 
     const stderrOutput = stderrSpy.mock.calls.map((c: unknown[]) => c[0]).join('')
     expect(stderrOutput).toContain(
-      'numeric guideline ID "3.3" is deprecated; use "minify-and-remove-unused-code" (WSG July-2026)'
+      'numeric guideline ID "3.3" is deprecated; use "minify-and-remove-unused-code" (WSG September-2026)'
     )
     expect(stderrOutput).toContain(
       'numeric guideline ID "3.15" is deprecated; use "security-headers" (related check, not scored)'
@@ -279,7 +279,7 @@ describe('runCheck', () => {
 
     const stderrOutput = stderrSpy.mock.calls.map((c: unknown[]) => c[0]).join('')
     expect(stderrOutput).toContain(
-      'numeric guideline ID "2.17" is deprecated; use "reduce-the-impact-of-downloadable-and-physical-documents" (WSG July-2026); use "image-alt-text" (related check, not scored)'
+      'numeric guideline ID "2.17" is deprecated; use "reduce-the-impact-of-downloadable-and-physical-documents" (WSG September-2026); use "image-alt-text" (related check, not scored)'
     )
     expect(await getLastChecks()).toHaveLength(2)
   })

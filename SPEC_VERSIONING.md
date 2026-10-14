@@ -2,7 +2,7 @@
 
 How wsg-check tracks the [W3C Web Sustainability Guidelines](https://www.w3.org/TR/web-sustainability-guidelines/) (WSG), what changed in the spec since wsg-check was built, and the implemented policy for versioning wsg-check alongside the spec.
 
-The September 2026 changes are implemented on `main` but unreleased since v0.1.2. See the [architecture overview](docs/architecture.md) and [decision log](docs/adl.md), especially ADRs 0003 and 0005–0007. Sections 1–4 preserve the migration analysis; section 5 describes the implemented policy.
+wsg-check pins the `September-2026` release, the [24 September 2026 Group Note Draft](https://www.w3.org/TR/2026/DNOTE-web-sustainability-guidelines-20260924/). See the [architecture overview](docs/architecture.md) and [decision log](docs/adl.md), especially ADRs 0003 and 0005–0007. Sections 1–4 preserve the July-2026 migration analysis, and section 3.3 covers the move to September-2026. Section 5 describes the implemented policy.
 
 Source for everything below: the spec repository [`w3c/sustainableweb-wsg`](https://github.com/w3c/sustainableweb-wsg), compared at its release tags. Numbers such as `3.2` are the **position** of a guideline inside its section at a given release.
 
@@ -20,15 +20,16 @@ This section describes wsg-check before it pinned the July-2026 release (step 2 
 
 The spec repo tags quarterly-ish snapshots:
 
-| Tag         | Date       | `edition`        | Guidelines (UX / Dev / Hosting / Business) |
-| ----------- | ---------- | ---------------- | ------------------------------------------ |
-| `Q1-2025`   | 2025-03-25 | Editor's Draft   | 93 (29 / 23 / 12 / 29)                     |
-| `Q2-2025`   | 2025-06-30 | Editor's Draft   | 92 (29 / 22 / 12 / 29)                     |
-| `Q3-2025`   | 2025-09-15 | Editor's Draft   | 92 (29 / 22 / 12 / 29)                     |
-| `Q4-2025`   | 2025-12-15 | Draft Note       | 80 (21 / 20 / 12 / 27)                     |
-| `July-2026` | 2026-07-29 | Group Note Draft | **71 (17 / 16 / 12 / 26)**                 |
+| Tag               | Date       | `edition`        | Guidelines (UX / Dev / Hosting / Business) |
+| ----------------- | ---------- | ---------------- | ------------------------------------------ |
+| `Q1-2025`         | 2025-03-25 | Editor's Draft   | 93 (29 / 23 / 12 / 29)                     |
+| `Q2-2025`         | 2025-06-30 | Editor's Draft   | 92 (29 / 22 / 12 / 29)                     |
+| `Q3-2025`         | 2025-09-15 | Editor's Draft   | 92 (29 / 22 / 12 / 29)                     |
+| `Q4-2025`         | 2025-12-15 | Draft Note       | 80 (21 / 20 / 12 / 27)                     |
+| `July-2026`       | 2026-07-29 | Group Note Draft | 71 (17 / 16 / 12 / 26)                     |
+| `September-2026`¹ | 2026-09-24 | Group Note Draft | **71 (17 / 16 / 12 / 26)**                 |
 
-`main` has only editorial changes since `July-2026` (introduction text, credits). `guidelines.json` has `lastModified: 2026-07-28` on both.
+¹ Not tagged upstream. It is commit [`c794dbc`](https://github.com/w3c/sustainableweb-wsg/commit/c794dbc23cc20299d460ef2e6d1cce4c31456c32) (PR #481, "JSON API Improvements"), the source of the dated TR publication `DNOTE-web-sustainability-guidelines-20260924`. Every guideline and success-criterion anchor in `guidelines.json` at that commit exists on the dated TR page. `guidelines.json` still has `lastModified: 2026-07-28`, although its contents changed.
 
 ## 3. What is new in the July-2026 release
 
@@ -91,6 +92,25 @@ The spec repo tags quarterly-ish snapshots:
 
 Every other guideline kept its title and slug but most were **renumbered**, because removals shift positions. For example, _Defer the loading of non-critical resources_ moved from 3.8 to 3.7. Success-criteria text was also rewritten across all four sections in July 2026 (the upstream `UX*`, `WD*`, `HIS*` and `BSPM*` PRs).
 
+### 3.3 What is new in the September-2026 release
+
+Compared with `July-2026` (`071d86c` → `c794dbc`), `guidelines.json` changed in two ways and `index.html` only editorially (introduction, editor credits, references, and the impact ratings link now pointing at https://www.w3.org/TR/wsg-ir/).
+
+**Additive schema change.** Each success criterion now has an `id` slug and a `url`, e.g. `"impact-analysis"` and `https://www.w3.org/TR/web-sustainability-guidelines/#impact-analysis`. All 196 criterion slugs are unique. `WsgSpecCriterion` has the two new fields; the registry and API do not expose criteria yet.
+
+**No guideline changes.** No guideline was added, removed, renamed or renumbered. The section counts stay 17 / 16 / 12 / 26, every slug and title is unchanged, and so are all 196 criterion titles. No check mapping, legacy alias or testability overlay entry changed.
+
+**Editorial wording fixes:**
+
+| Guideline                                                    | Field                      | Change                                                                                         |
+| ------------------------------------------------------------ | -------------------------- | ---------------------------------------------------------------------------------------------- |
+| 2.6 `avoid-being-manipulative-or-deceptive`                  | `tags`                     | Duplicate `JavaScript` tag removed                                                             |
+| 4.1 `use-sustainable-hosting`                                | criterion 3 description    | Double full stop removed                                                                       |
+| 5.16 `share-decision-making-power-with-affected-parties`     | `subheading`               | "…transparency, and challenge mechanisms…" → "…transparency, and create challenge mechanisms…" |
+| 5.17 `use-diversity-equity-justice-inclusion-deji-practices` | `subheading`, criteria 1–3 | Acronym "DEIJ" → "DEJI", matching the slug                                                     |
+
+The `subheading` changes show up in `get_guideline` / `list_guidelines` descriptions and `/api/guidelines`. Under 5.4 this is a patch-level spec bump: wording only, no ID or scoring change.
+
 ## 4. What this means for each check
 
 The legacy check ID is the numeric compatibility ID passed to `withGuidelineId` in `src/checks/index.ts`; current reported IDs are slugs or related-check IDs.
@@ -131,13 +151,16 @@ The legacy check ID is the numeric compatibility ID passed to `withGuidelineId` 
 
 The four checks with no guideline needed a decision. The options were to drop them, keep them as unscored related checks (outside the WSG score), or re-home them where a criterion partly fits. For example, _Beneficial files_ in 3.13 names `security.txt`, and _Alternative browsing_ in 3.10 covers assistive technology.
 
+These mappings are unchanged in September-2026, which kept every slug and position (see 3.3).
+
 **Decision (step 3):** keep them as related checks. They run and appear in their own "Related checks (not scored)" report section, under the IDs `security-headers`, `form-validation`, `native-form-features` and `image-alt-text`. They are left out of every score.
 
 ## 5. Implemented policy: versioning wsg-check alongside the spec
 
 ### 5.1 Pin one spec release and vendor it
 
-- Commit the tagged `guidelines.json` to the repo, e.g. `src/config/spec/wsg-july-2026.json`, together with its tag and upstream commit (`071d86c`).
+- Commit the tagged `guidelines.json` to the repo, e.g. `src/config/spec/wsg-september-2026.json`, together with its tag and upstream commit.
+- When W3C publishes a dated TR snapshot whose commit upstream has not tagged (as with `September-2026`), vendor that commit. Name the release after the TR publication month, and set `WSG_SPEC.tag` to `null`. Once upstream tags the commit, the watcher (5.5) opens an issue. Record the tag in `WSG_SPEC.tag` and `upstream-tags.txt` then, and rename `release` to match it only if the names differ.
 - Generate `GUIDELINES_REGISTRY` from that file, keeping `TESTABILITY_OVERLAY` as the only hand-written part, so the registry and the spec cannot drift apart.
 - Stop serving live data from `guidelines.json` on `main`. It changes without notice, as the July 2026 schema change showed. Detect drift with the tag watcher in 5.5 instead.
 
@@ -151,10 +174,10 @@ The four checks with no guideline needed a decision. The options were to drop th
 
 ### 5.3 Report the spec version everywhere
 
-- The single source is `WSG_SPEC` in `src/config/spec/index.ts` (release tag, commit, edition, `lastModified`, URL), next to the vendored JSON. It is not duplicated into `package.json`, so the two cannot disagree.
-- CLI `--version`: `<version> (WSG July-2026)`.
+- The single source is `WSG_SPEC` in `src/config/spec/index.ts` (release name, upstream tag or `null`, commit, edition, `lastModified`, URL), next to the vendored JSON. It is not duplicated into `package.json`, so the two cannot disagree.
+- CLI `--version`: `<version> (WSG September-2026)`.
 - Reports (`SustainabilityReport.specVersion`, shown in the JSON, HTML, Markdown and terminal formats and on the results page) and `/api/health` (`specVersion`, plus the package `version`) name the release, so a stored report says which rule set produced the score.
-- README badge and intro: "WSG July-2026 (Group Note Draft)".
+- README "Release status": names the release `main` targets and the release the latest npm version targets.
 
 ### 5.4 Keep the npm version independent, with a clear bump policy
 
@@ -170,7 +193,7 @@ Each spec bump gets one CHANGELOG entry (`feat!: target WSG July-2026`) that lin
 
 ### 5.5 Automate drift detection
 
-- The weekly `WSG spec watch` workflow (`.github/workflows/wsg-spec-watch.yml`) lists the tags in https://github.com/w3c/sustainableweb-wsg and opens an issue for each tag missing from `src/config/spec/upstream-tags.txt`, unless one already exists. After reviewing a release, add its tag to that file, whether or not wsg-check moves to it. A unit test checks that the vendored release is listed.
+- The weekly `WSG spec watch` workflow (`.github/workflows/wsg-spec-watch.yml`) lists the tags in https://github.com/w3c/sustainableweb-wsg and opens an issue for each tag missing from `src/config/spec/upstream-tags.txt`, unless one already exists. After reviewing a release, add its tag to that file, whether or not wsg-check moves to it. A unit test checks that the vendored release's tag is listed, when it has one.
 - A unit test asserts that every `guidelineId` in `src/checks/index.ts` exists in the vendored spec, and that every overlay key does too. With that test in place, this drift could not have happened silently. (Added in step 2: `tests/unit/config/guidelines-registry.test.ts`.)
 
 ### 5.6 Implementation history
@@ -179,3 +202,4 @@ Each spec bump gets one CHANGELOG entry (`feat!: target WSG July-2026`) that lin
 2. **Done:** vendor `July-2026`, generate the registry, and switch to slug IDs with a numeric alias table (`feat!:`). `/api/guidelines` now serves the vendored release and reports it in `spec`; the live `guidelines.json` fetch was removed.
 3. **Done:** remap checks per section 4 and decide what to do with the four orphaned checks. Results now report the July-2026 slug, title, display number and spec link, set when each check is registered in `src/checks/index.ts`. The four orphans run as unscored related checks (see §4).
 4. **Done:** `specVersion` in the CLI, reports and API (5.3), plus the tag-watcher workflow (5.5). The drift test is already in place.
+5. **Done:** move to `September-2026` (3.3), vendored from untagged commit `c794dbc` (`fix:`, patch bump). Criterion `id` / `url` were added to the spec types and covered by a uniqueness and anchor test.

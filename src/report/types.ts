@@ -178,8 +178,8 @@ export interface SustainabilityReport {
   /** Letter grade derived from `overallScore`. */
   readonly grade: Grade
   /**
-   * WSG release the checks were scored against, e.g. `"July-2026"` (a tag in
-   * w3c/sustainableweb-wsg). Scores are only comparable within one release.
+   * WSG release the checks were scored against, e.g. `"September-2026"` (see
+   * `WSG_SPEC` for its upstream tag and commit). Scores are only comparable within one release.
    */
   readonly specVersion: string
   /** Per-category score breakdown. */

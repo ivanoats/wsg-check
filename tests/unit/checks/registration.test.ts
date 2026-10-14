@@ -20,7 +20,7 @@ const errorFrom = async (check: CheckFnWithId | undefined): Promise<unknown> => 
 const securityHeaders = securityChecks.find((check) => check.relatedId === 'security-headers')
 
 describe('check registration', () => {
-  it('re-throws a WSG check error as a CheckError under its July-2026 slug', async () => {
+  it('re-throws a WSG check error as a CheckError under its September-2026 slug', async () => {
     const error = await errorFrom(performanceChecks[0])
 
     expect(error).toBeInstanceOf(CheckError)

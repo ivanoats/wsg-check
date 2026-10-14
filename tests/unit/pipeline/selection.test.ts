@@ -37,7 +37,7 @@ describe('selectChecks', () => {
 
   it('does not select the alt-text check for the downloadable-documents slug', () => {
     // Alt text and downloadable documents both report legacy 2.17; only the
-    // documents check implements this July-2026 guideline.
+    // documents check implements this September-2026 guideline.
     const bySlug = checksFor(['ux'], ['reduce-the-impact-of-downloadable-and-physical-documents'])
     expect(bySlug).toHaveLength(1)
     expect(bySlug[0]?.guidelineSlug).toBe(
@@ -75,7 +75,7 @@ describe('selectChecks', () => {
       {
         level: 'warning',
         message:
-          'numeric guideline ID "3.3" is deprecated; use "minify-and-remove-unused-code" (WSG July-2026).',
+          'numeric guideline ID "3.3" is deprecated; use "minify-and-remove-unused-code" (WSG September-2026).',
       },
     ])
   })

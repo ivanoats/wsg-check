@@ -60,8 +60,8 @@ describe('GUIDELINES_REGISTRY', () => {
     expect(uniqueIds.size).toBe(ids.length)
   })
 
-  it('matches the July-2026 release (17 / 16 / 12 / 26 guidelines)', () => {
-    expect(WSG_SPEC.release).toBe('July-2026')
+  it('matches the September-2026 release (17 / 16 / 12 / 26 guidelines)', () => {
+    expect(WSG_SPEC.release).toBe('September-2026')
     expect(getGuidelinesByCategory('ux')).toHaveLength(17)
     expect(getGuidelinesByCategory('web-dev')).toHaveLength(16)
     expect(getGuidelinesByCategory('hosting')).toHaveLength(12)
@@ -125,7 +125,7 @@ describe('check guideline slugs', () => {
     }
   })
 
-  it('leaves only the four checks without a July-2026 guideline unmapped', () => {
+  it('leaves only the four checks without a September-2026 guideline unmapped', () => {
     // form validation 3.10, security headers 3.15, minimal forms 2.19, alt text 2.17
     const unmapped = ALL_CHECKS.filter((check) => check.guidelineSlug === null)
     expect(unmapped.map((check) => check.guidelineId).sort((a, b) => a.localeCompare(b))).toEqual([
@@ -213,8 +213,8 @@ describe('resolveGuidelineId', () => {
     expect(resolveGuidelineId('3.3')).toBe('minify-and-remove-unused-code')
   })
 
-  it('does not treat a July-2026 position number as an ID', () => {
-    // 3.2 is minify's position in July-2026, but not a legacy check ID.
+  it('does not treat a September-2026 position number as an ID', () => {
+    // 3.2 is minify's position in September-2026, but not a legacy check ID.
     expect(resolveGuidelineId('3.2')).toBeUndefined()
   })
 
