@@ -27,7 +27,7 @@ const HowItWorksStep = ({ step, title, detail }: HowItWorksStepProps) => (
       <span
         className={cx(
           stepAvatarStyles.fallback,
-          css({ color: 'accent.ink', fontWeight: 'bold', fontSize: 'sm' })
+          css({ bg: 'accent', color: 'accent.ink', fontWeight: 'bold', fontSize: 'sm' })
         )}
       >
         {step}
