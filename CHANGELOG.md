@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.3](https://github.com/ivanoats/wsg-check/compare/v0.6.2...v0.6.3) (2026-10-14)
+
+
+### Fixed
+
+* **deepsource:** move exclude and test patterns to top level ([#224](https://github.com/ivanoats/wsg-check/issues/224)) ([fe1f286](https://github.com/ivanoats/wsg-check/commit/fe1f286703697425ae1673d5026e9baf57962950))
+
+
+### Dependencies
+
+* resolve patched Dependabot alerts ([#226](https://github.com/ivanoats/wsg-check/issues/226)) ([aac9148](https://github.com/ivanoats/wsg-check/commit/aac9148378ab38dc94aa30978f69d92d9fdbbfd4))
+
 ## [0.6.2](https://github.com/ivanoats/wsg-check/compare/v0.6.1...v0.6.2) (2026-10-14)
 
 
