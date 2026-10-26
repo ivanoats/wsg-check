@@ -75,6 +75,7 @@ export class WsgChecker {
       timeout: config.timeout,
       userAgent: config.userAgent,
       followRedirects: config.followRedirects,
+      headers: config.headers,
       hostPolicy: config.hostPolicy,
       signal: config.signal,
     })

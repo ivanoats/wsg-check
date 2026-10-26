@@ -79,8 +79,11 @@ npx @sustainablewebsites/wsg-check https://example.com --fail-threshold 70
 | `--fail-threshold <n>` |       | Exit code 1 if overall score < _n_ (0–100)                                                                              | `0`               |
 | `--verbose`            | `-v`  | Enable verbose logging                                                                                                  | `false`           |
 | `--config <path>`      |       | Path to `wsg-check.config.json` or `.wsgcheckrc.json`                                                                   | _(auto-discover)_ |
+| `--header <header>`    | `-H`  | Send a request header (`Name: value`, repeatable) to the start URL's host only; never to `robots.txt` or other hosts    | _(none)_          |
 | `--version`            |       | Print version and exit                                                                                                  |                   |
 | `--help`               |       | Print help and exit                                                                                                     |                   |
+
+`--header` values land in shell history and CI logs, and a malformed one is echoed in the error. For a secret, set `"headers": {"Cookie": "..."}` in a `wsg-check.config.json` kept out of version control. `--header` replaces the config file's `headers` entirely. Headers are not sent over plain `http` after an `https` hop. To change the user agent, use `WSG_USER_AGENT` or the config's `userAgent`. The web API and MCP server do not accept request headers.
 
 ### CI integration
 

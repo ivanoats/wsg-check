@@ -271,6 +271,35 @@ describe('Full pipeline integration — WsgChecker.check()', () => {
     expect(result.ok).toBe(false)
   })
 
+  it('forwards config.headers to the page request but not to robots.txt', async () => {
+    setupMocks(GOOD_HTML)
+    const result = await new WsgChecker({ headers: { Cookie: 's=1' } }, []).check(
+      'https://example.com/'
+    )
+
+    expect(result.ok).toBe(true)
+    const calls = mockGet.mock.calls as Array<[string, { headers?: unknown }]>
+    const robotsCall = calls.find(([url]) => url.includes('/robots.txt'))
+    const pageCall = calls.find(([url]) => url === 'https://example.com/')
+    expect(robotsCall?.[1]).not.toHaveProperty('headers')
+    expect(pageCall?.[1].headers).toEqual({ Cookie: 's=1' })
+  })
+
+  it('never passes header values to the logger', async () => {
+    setupMocks(GOOD_HTML)
+    const log = vi.fn()
+    const logger = { debug: log, info: log, warn: log, error: log }
+    const result = await new WsgChecker(
+      { headers: { Cookie: 'SECRET' } },
+      ALL_CHECKS,
+      logger
+    ).check('https://example.com/')
+
+    expect(result.ok).toBe(true)
+    expect(log).toHaveBeenCalled()
+    expect(JSON.stringify(log.mock.calls)).not.toContain('SECRET')
+  })
+
   // ── Shape & structure ──────────────────────────────────────────────────────
 
   it('returns ok:true with a RunResult for a valid page', async () => {
