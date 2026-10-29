@@ -10,6 +10,13 @@ function makeScript(url: string): ResourceReference {
   return { type: 'script', url, attributes: { src: url } }
 }
 
+/** A `<link rel="preload" as="script">` hint. */
+const makePreloadScript = (url: string): ResourceReference => ({
+  type: 'script',
+  url,
+  attributes: { rel: 'preload', as: 'script', href: url },
+})
+
 function makeStylesheet(url: string): ResourceReference {
   return { type: 'stylesheet', url, attributes: { href: url } }
 }
@@ -142,5 +149,13 @@ describe('checkThirdParty (WSG 3.6)', () => {
     const result = await checkThirdParty(makePageData(resources))
     const firstResource = expectRecommendationAndResources(result)
     expect(firstResource).toContain('w3.org')
+  })
+
+  it('counts a preloaded third-party script once but keeps the hint in the resource total', async () => {
+    const url = 'https://cdn.example.net/x.js'
+    const result = await checkThirdParty(makePageData([makePreloadScript(url), makeScript(url)]))
+    expect(result.message).toContain('1 third-party script(s)')
+    expect(result.message).toContain('2 third-party resource(s) total')
+    expect((result.details ?? '').split(url).length - 1).toBe(1)
   })
 })

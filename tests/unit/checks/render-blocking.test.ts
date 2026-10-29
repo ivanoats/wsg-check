@@ -10,6 +10,13 @@ function makeScript(url: string, attrs: Record<string, string> = {}): ResourceRe
   return { type: 'script', url, attributes: { src: url, ...attrs } }
 }
 
+/** A `<link rel="preload" as="script">` hint. */
+const makePreloadScript = (url: string): ResourceReference => ({
+  type: 'script',
+  url,
+  attributes: { rel: 'preload', as: 'script', href: url },
+})
+
 function makeImage(url: string, attrs: Record<string, string> = {}): ResourceReference {
   return { type: 'image', url, attributes: { src: url, ...attrs } }
 }
@@ -193,5 +200,22 @@ describe('checkRenderBlocking (WSG 3.8)', () => {
     expect(result.status).toBe('warn')
     expect(result.message).toContain('2')
     expect(result.message).toContain('3')
+  })
+
+  it('ignores a preload hint when the only script is async', async () => {
+    const resources = [
+      makePreloadScript('https://example.com/a.js'),
+      makeScript('https://example.com/a.js', { async: '' }),
+    ]
+    const result = await checkRenderBlocking(makePageData(resources))
+    expect(result.status).toBe('pass')
+    expect(result.score).toBe(100)
+  })
+
+  it('returns not-applicable when the only script resource is a preload hint', async () => {
+    const result = await checkRenderBlocking(
+      makePageData([makePreloadScript('https://example.com/a.js')])
+    )
+    expect(result.status).toBe('not-applicable')
   })
 })

@@ -53,7 +53,10 @@ export const checkSustainableJs: CheckFn = (page) => {
   const body = page.fetchResult.body
 
   // ── External scripts ──────────────────────────────────────────────────────
-  const externalScripts = page.parsedPage.resources.filter((r) => r.type === 'script')
+  // Preload hints share type 'script' but have no src.
+  const externalScripts = page.parsedPage.resources.filter(
+    (r) => r.type === 'script' && 'src' in r.attributes
+  )
   const externalScriptCount = externalScripts.length
 
   // ── Inline scripts ────────────────────────────────────────────────────────
