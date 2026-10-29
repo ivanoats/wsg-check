@@ -60,7 +60,7 @@ The four unscored related IDs are `security-headers`, `form-validation`, `native
 
 ## Measurement limits
 
-The runtime fetches HTML and inspects response headers and resource references. It does not execute page JavaScript or measure rendered performance. External asset bytes are not collected. The CO₂ calculation uses `pageWeight.htmlSize` and SWD v4; it is an estimate for HTML bytes, not a full-page energy measurement. Green-hosting lookup failures return `false`, indistinguishable from an unlisted domain in this boolean interface.
+The runtime fetches HTML and inspects response headers and resource references. It does not execute page JavaScript or measure rendered performance. Results describe one page, but most checks read the server or content shared by a site template, so pages on one site usually score alike. Scores differ mainly on page-specific content such as images, forms, and inline styles or scripts. External asset bytes are not collected. The CO₂ calculation uses `pageWeight.htmlSize` and SWD v4; it is an estimate for HTML bytes, not a full-page energy measurement. Green-hosting lookup failures return `false`, indistinguishable from an unlisted domain in this boolean interface.
 
 `RunResult.pageMetrics` carries the HTML size, resource count, and third-party count from `PageData`, and `fromRunResult` uses them for the report metadata by default. Page weight is the HTML size (from `Content-Length` when present), not the total of all assets.
 
