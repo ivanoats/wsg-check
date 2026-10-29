@@ -16,7 +16,7 @@ A configurable, sustainability-aware HTTP client built on [Axios](https://axios-
 
 - **In-memory caching** — duplicate fetches for the same URL within a session are served from cache.
 - **Retry with back-off** — transient network errors are retried up to `maxRetries` times with an exponential delay.
-- **robots.txt support (WSG 4.6)** — fetches and caches the target site's `robots.txt` before making requests; returns an error `Result` containing `FetchError` if the crawler is disallowed.
+- **robots.txt support (WSG 4.6)** — fetches and caches the target site's `robots.txt` before making requests; returns an error `Result` containing `FetchError` if the crawler is disallowed. For sites you operate, the CLI's `--ignore-robots` flag (`ignoreRobots` in config, `WSG_IGNORE_ROBOTS` in the environment) skips both, and `WsgChecker` adds `(ignore-robots)` to the User-Agent so site owners can tell. The web API and MCP `check_url` don't expose it.
 - **Redirect chain tracking (WSG 4.4)** — follows redirects manually so every hop is recorded in `FetchResult.redirectChain`.
 
 ```typescript

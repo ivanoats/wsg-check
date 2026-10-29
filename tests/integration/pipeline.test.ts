@@ -16,6 +16,7 @@ import type { RunResult } from '@/core/types'
 // ─── Mock: HTTP transport ─────────────────────────────────────────────────────
 
 const mockGet = vi.fn()
+const axiosCreateConfigs: Array<{ readonly headers?: Readonly<Record<string, string>> }> = []
 
 vi.mock('axios', () => {
   class MockAxiosError extends Error {
@@ -33,7 +34,12 @@ vi.mock('axios', () => {
     }
   }
   return {
-    default: { create: () => ({ get: mockGet }) },
+    default: {
+      create: (config: (typeof axiosCreateConfigs)[number]) => {
+        axiosCreateConfigs.push(config)
+        return { get: mockGet }
+      },
+    },
     AxiosError: MockAxiosError,
   }
 })
@@ -519,5 +525,47 @@ describe('Full pipeline integration — WsgChecker.check()', () => {
       'native-form-features',
       'security-headers',
     ])
+  })
+
+  describe('robots.txt handling', () => {
+    const setupDisallowAll = (): void => {
+      mockGet.mockImplementation((url: string) =>
+        Promise.resolve(
+          String(url).includes('/robots.txt')
+            ? { status: 200, data: 'User-agent: *\nDisallow: /', headers: {} }
+            : { status: 200, data: GOOD_HTML, headers: { 'content-type': 'text/html' } }
+        )
+      )
+    }
+
+    it('refuses a page that robots.txt disallows by default', async () => {
+      setupDisallowAll()
+      const result = await new WsgChecker({}, ALL_CHECKS).check('https://example.com/')
+      expect(result.ok).toBe(false)
+      if (result.ok) return
+      expect(result.error.message).toContain('robots.txt')
+    })
+
+    it('checks the page without fetching robots.txt when ignoreRobots is set', async () => {
+      setupDisallowAll()
+      const result = await new WsgChecker({ ignoreRobots: true }, ALL_CHECKS).check(
+        'https://example.com/'
+      )
+      expect(result.ok).toBe(true)
+      const requested = mockGet.mock.calls.map((c: unknown[]) => String(c[0]))
+      expect(requested.some((u) => u.includes('/robots.txt'))).toBe(false)
+    })
+
+    it('marks the User-Agent only when ignoreRobots is set', () => {
+      const userAgentFor = (config: { ignoreRobots?: boolean; userAgent?: string }): string => {
+        expect(() => new WsgChecker(config, ALL_CHECKS)).not.toThrow()
+        return axiosCreateConfigs.at(-1)?.headers?.['User-Agent'] ?? ''
+      }
+      expect(userAgentFor({})).not.toContain('ignore-robots')
+      expect(userAgentFor({ ignoreRobots: true })).toMatch(/wsg-check\/.+ \(ignore-robots\)$/)
+      expect(userAgentFor({ ignoreRobots: true, userAgent: 'my-bot/1.0' })).toBe(
+        'my-bot/1.0 (ignore-robots)'
+      )
+    })
   })
 })

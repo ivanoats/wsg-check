@@ -26,6 +26,10 @@ describe('DEFAULT_CONFIG', () => {
     expect(DEFAULT_CONFIG.followRedirects).toBe(true)
   })
 
+  it('does not ignore robots.txt by default', () => {
+    expect(DEFAULT_CONFIG.ignoreRobots).toBe(false)
+  })
+
   it('defaults to terminal format', () => {
     expect(DEFAULT_CONFIG.format).toBe('terminal')
   })

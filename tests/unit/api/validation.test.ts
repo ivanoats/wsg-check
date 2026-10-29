@@ -65,6 +65,16 @@ describe('validateCheckPayload', () => {
       expect(result.value.format).toBe('json')
     }
   })
+
+  it('drops unknown keys such as ignoreRobots', () => {
+    const result = validateCheckPayload({ url: 'https://example.com', ignoreRobots: true })
+
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.value).not.toHaveProperty('ignoreRobots')
+      expect(result.value.url).toBe('https://example.com')
+    }
+  })
 })
 
 describe('validateTargetUrl', () => {

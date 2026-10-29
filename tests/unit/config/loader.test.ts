@@ -86,6 +86,18 @@ describe('loadFromEnv', () => {
     expect(cfg.verbose).toBe(true)
   })
 
+  it('parses WSG_IGNORE_ROBOTS true', () => {
+    process.env.WSG_IGNORE_ROBOTS = 'true'
+    const cfg = loadFromEnv()
+    expect(cfg.ignoreRobots).toBe(true)
+  })
+
+  it('treats WSG_IGNORE_ROBOTS=false as false', () => {
+    process.env.WSG_IGNORE_ROBOTS = 'false'
+    const cfg = loadFromEnv()
+    expect(cfg.ignoreRobots).toBe(false)
+  })
+
   it('parses WSG_FAIL_THRESHOLD as a number', () => {
     process.env.WSG_FAIL_THRESHOLD = '75'
     const cfg = loadFromEnv()

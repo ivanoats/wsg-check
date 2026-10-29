@@ -79,6 +79,7 @@ npx @sustainablewebsites/wsg-check https://example.com --fail-threshold 70
 | `--guidelines <list>`  | `-g`  | Comma-separated guideline slugs to run, e.g. `minify-and-remove-unused-code` (numeric IDs such as `3.3` are deprecated) | all               |
 | `--fail-threshold <n>` |       | Exit code 1 if overall score < _n_ (0–100)                                                                              | `0`               |
 | `--verbose`            | `-v`  | Enable verbose logging                                                                                                  | `false`           |
+| `--ignore-robots`      |       | Skip robots.txt for a site you operate; adds `(ignore-robots)` to the User-Agent                                        | `false`           |
 | `--config <path>`      |       | Path to `wsg-check.config.json` or `.wsgcheckrc.json`                                                                   | _(auto-discover)_ |
 | `--version`            |       | Print version and exit                                                                                                  |                   |
 | `--help`               |       | Print help and exit                                                                                                     |                   |
