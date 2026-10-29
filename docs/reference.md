@@ -250,7 +250,7 @@ Checks for `prefers-color-scheme`, `prefers-reduced-motion`, and `prefers-reduce
 
 #### `checkResponsiveDesign` — WSG 3.10
 
-Checks for a `<meta name="viewport">` tag, responsive images (any `<img>` with `srcset`), and at least one CSS media query in inline styles or style blocks.
+Checks for a `<meta name="viewport">` tag, responsive images (any raster `<img>` with `srcset`; SVG images are excluded), and at least one CSS media query in inline styles or style blocks.
 
 #### `checkSustainableJs` — WSG 3.11
 
@@ -370,15 +370,15 @@ Both conditions return `warn` (50) with a note that manual review is recommended
 
 Checks that images use modern, efficient formats and include explicit dimensions:
 
-1. **Modern image formats** — at least one image should use WebP or AVIF; none using modern formats → `fail`.
+1. **Modern image formats** — at least one raster image should use WebP or AVIF; SVG images are excluded from this test but still need dimensions; raster images present and none modern → `fail`.
 2. **Explicit `width` / `height` attributes** — prevents Cumulative Layout Shift (CLS) during image load.
 
-| Condition                                    | Status           | Score |
-| -------------------------------------------- | ---------------- | ----- |
-| No images                                    | `not-applicable` | —     |
-| No images use WebP/AVIF                      | `fail`           | 0     |
-| Modern formats used, some lack dimensions    | `warn`           | 50    |
-| All images in modern formats with dimensions | `pass`           | 100   |
+| Condition                                                | Status           | Score |
+| -------------------------------------------------------- | ---------------- | ----- |
+| No images                                                | `not-applicable` | —     |
+| Raster images present, none use WebP/AVIF                | `fail`           | 0     |
+| No format issue (modern or vector), some lack dimensions | `warn`           | 50    |
+| All images in modern or vector formats with dimensions   | `pass`           | 100   |
 
 #### `checkLazyLoading` — WSG 2.9
 

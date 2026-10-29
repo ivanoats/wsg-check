@@ -11,7 +11,8 @@
  *   2. Responsive images — `<img>` elements should carry a `srcset` attribute
  *      so that mobile devices download appropriately sized images rather than
  *      full-resolution desktop images.  This is one of the highest-impact
- *      bandwidth savings available on image-heavy pages.
+ *      bandwidth savings available on image-heavy pages.  SVG images are
+ *      vector and are excluded from the srcset test.
  *
  *   3. CSS media queries — the presence of at least one `@media` rule in
  *      inline `<style>` blocks is a positive signal that layout adapts to
@@ -27,11 +28,12 @@
  */
 
 import type { CheckFn } from '../core/types'
+import { isVectorImage } from '../utils/image-format'
 
 const GUIDELINE_ID = '3.13'
 const GUIDELINE_NAME = 'Responsive Layouts'
 const SUCCESS_CRITERION =
-  'Pages must include a viewport meta tag; images should use srcset; CSS should use media queries'
+  'Pages must include a viewport meta tag; raster images should use srcset; CSS should use media queries'
 const RESOURCES = ['https://www.w3.org/TR/web-sustainability-guidelines/#responsive-layouts']
 
 /** Matches any `@media` rule inside a `<style>` block. */
@@ -71,11 +73,13 @@ export const checkResponsiveDesign: CheckFn = (page) => {
   const imageResources = page.parsedPage.resources.filter(
     (r) => r.type === 'image' && 'src' in r.attributes
   )
-  const imagesWithSrcset = imageResources.filter((r) => 'srcset' in r.attributes)
+  // srcset is meaningless for a vector image, so only raster images count.
+  const rasterImages = imageResources.filter((r) => !isVectorImage(r.url))
+  const imagesWithSrcset = rasterImages.filter((r) => 'srcset' in r.attributes)
 
-  if (imageResources.length > 0 && imagesWithSrcset.length === 0) {
+  if (rasterImages.length > 0 && imagesWithSrcset.length === 0) {
     issues.push(
-      `${imageResources.length} image(s) found but none use the srcset attribute` +
+      `${rasterImages.length} raster image(s) found but none use the srcset attribute` +
         ' — add srcset to serve appropriately sized images to each device'
     )
   }
@@ -98,7 +102,7 @@ export const checkResponsiveDesign: CheckFn = (page) => {
       status: 'pass',
       score: 100,
       message:
-        'Viewport meta tag is present, images use srcset, and CSS media queries are detected.',
+        'Viewport meta tag is present, raster images use srcset, and CSS media queries are detected.',
       impact: 'high',
       category: 'web-dev',
       machineTestable: true,
