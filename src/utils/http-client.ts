@@ -70,7 +70,9 @@ export interface HttpClientOptions {
   /**
    * Network access policy applied to the initial URL (before robots.txt is
    * fetched) and to every redirect hop. When omitted, only redirect hops are
-   * checked, and every private or loopback target is refused.
+   * checked, by name and by DNS, and private or loopback targets are refused.
+   * The one exception is a hop that stays on a start host the caller named as
+   * local (`localhost`, `*.local`, or a private IP literal).
    */
   hostPolicy?: HostPolicy
   /** Aborts in-flight requests and stops retries, e.g. when a caller cancels. */
@@ -293,7 +295,7 @@ export class HttpClient {
         const nextUrl = new URL(location, currentUrl).href
 
         // SSRF guard: validate the redirect target before following it.
-        currentClass = await this.checkRedirectTarget(nextUrl, startUrl, currentClass)
+        currentClass = await this.checkRedirectTarget(nextUrl, currentUrl, startUrl, currentClass)
         currentUrl = nextUrl
         continue
       }
@@ -311,6 +313,7 @@ export class HttpClient {
    */
   private async checkRedirectTarget(
     nextUrl: string,
+    fromUrl: string,
     startUrl: string,
     fromClass: AddressClass | undefined
   ): Promise<AddressClass | undefined> {
@@ -327,11 +330,15 @@ export class HttpClient {
 
     const nextHostname = new URL(nextUrl).hostname
     if (isDisallowedHost(nextHostname)) {
+      // A local name here can only be the caller's own start host: the API refuses
+      // one at validation, and a hop that introduces one is refused just below.
+      if (nextHostname === new URL(fromUrl).hostname) return undefined
       throw new FetchError(
         `Redirect target host is not allowed for security reasons: ${nextHostname}`,
         startUrl
       )
     }
+    // Same-host hops are not exempt: the name may resolve somewhere else by now.
     if (await dnsResolvesToPrivateAddress(nextHostname)) {
       throw new FetchError(
         `Redirect target resolves to a private or unreachable address: ${nextHostname}`,
