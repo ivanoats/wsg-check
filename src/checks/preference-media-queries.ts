@@ -16,15 +16,17 @@
  * Detection approach:
  *   1. Scan all inline `<style>` block content for the preference patterns.
  *   2. Inspect `<link>` element `media` attributes for the preference patterns.
+ *   3. If neither finds any and external CSS is linked (stylesheet or
+ *      `@import`), report `info` instead of `warn`.
  *
  * Limitation: external CSS files are not fetched, so preference media queries
  * that live exclusively in linked stylesheets will not be detected.  A pass
- * result from this check gives only a partial signal.
+ * result gives only a partial signal.
  *
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#preference-media-queries
  */
 
-import type { CheckFn } from '../core/types'
+import type { CheckFn, CheckResult } from '../core/types'
 
 const GUIDELINE_ID = '3.12'
 const GUIDELINE_NAME = 'Preference Media Queries'
@@ -47,6 +49,13 @@ type PreferenceFeature = (typeof PREFERENCE_FEATURES)[number]
 /** Matches `<style ...> ... </style>` blocks (case-insensitive). */
 const STYLE_BLOCK_PATTERN = /<style\b[^>]*>([\s\S]*?)<\/style>/gi
 
+/** An inline `@import` pulls in external CSS the parser does not list as a resource. */
+const CSS_IMPORT_PATTERN = /@import\b/i
+
+// A commented-out @import or prefers-* query must not count, so comments are
+// dropped before any search. Stripped per block: each <style> is its own stylesheet.
+const CSS_COMMENT_PATTERN = /\/\*[\s\S]*?\*\//g
+
 /**
  * Extract all inline `<style>` block contents from raw HTML.
  */
@@ -55,10 +64,40 @@ function extractStyleBlockContent(body: string): string {
   const regex = new RegExp(STYLE_BLOCK_PATTERN.source, 'gi')
   let match: RegExpExecArray | null
   while ((match = regex.exec(body)) !== null) {
-    contents.push(match[1])
+    contents.push(match[1].replace(CSS_COMMENT_PATTERN, ''))
   }
   return contents.join('\n')
 }
+
+const buildRecommendation = (missing: ReadonlyArray<PreferenceFeature>): string => {
+  const darkModeNote = missing.includes('prefers-color-scheme')
+    ? ' Dark mode (prefers-color-scheme) reduces energy consumption on OLED' +
+      ' screens by up to 47% and improves accessibility for users with photosensitivity.'
+    : ''
+  return (
+    `Add CSS @media rules for user preference features: ${missing.join(', ')}.${darkModeNote}` +
+    ' Supporting prefers-reduced-motion prevents vestibular disruption for users' +
+    ' with motion sensitivities, and prefers-reduced-data helps users on metered connections.'
+  )
+}
+
+/** Nothing found inline; a linked stylesheet may declare the queries. */
+const externalCssResult = (missing: ReadonlyArray<PreferenceFeature>): CheckResult => ({
+  guidelineId: GUIDELINE_ID,
+  guidelineName: GUIDELINE_NAME,
+  successCriterion: SUCCESS_CRITERION,
+  status: 'info',
+  score: 0,
+  message:
+    'No preference media queries detected in inline CSS or <link media> attributes; ' +
+    'external CSS is not analysed, so this check could not be assessed.',
+  details: `Not detected: ${missing.join(', ')}. The linked stylesheet(s) may declare them.`,
+  recommendation: buildRecommendation(missing),
+  resources: RESOURCES,
+  impact: 'medium',
+  category: 'web-dev',
+  machineTestable: true,
+})
 
 export const checkPreferenceMediaQueries: CheckFn = (page) => {
   const body = page.fetchResult.body
@@ -98,15 +137,17 @@ export const checkPreferenceMediaQueries: CheckFn = (page) => {
     }
   }
 
+  // ── None found, but external CSS is linked ────────────────────────────────
+  const hasExternalCss =
+    page.parsedPage.resources.some((r) => r.type === 'stylesheet') ||
+    CSS_IMPORT_PATTERN.test(inlineCss)
+  if (found.length === 0 && hasExternalCss) {
+    return externalCssResult(missing)
+  }
+
   // ── Some or none found ────────────────────────────────────────────────────
   const foundLabel = found.length > 0 ? `Found: ${found.join(', ')}. ` : ''
   const missingLabel = `Missing: ${missing.join(', ')}.`
-
-  const hasDarkMode = found.includes('prefers-color-scheme')
-  const darkModeNote = hasDarkMode
-    ? ''
-    : ' Dark mode (prefers-color-scheme) reduces energy consumption on OLED' +
-      ' screens by up to 47% and improves accessibility for users with photosensitivity.'
 
   return {
     guidelineId: GUIDELINE_ID,
@@ -116,10 +157,7 @@ export const checkPreferenceMediaQueries: CheckFn = (page) => {
     score: 50,
     message: `${missing.length} preference media query feature(s) not detected in inline CSS.`,
     details: `${foundLabel}${missingLabel} Note: external CSS files are not analysed — results may be incomplete.`,
-    recommendation:
-      `Add CSS @media rules for user preference features: ${missing.join(', ')}.${darkModeNote}` +
-      ' Supporting prefers-reduced-motion prevents vestibular disruption for users' +
-      ' with motion sensitivities, and prefers-reduced-data helps users on metered connections.',
+    recommendation: buildRecommendation(missing),
     resources: RESOURCES,
     impact: 'medium',
     category: 'web-dev',

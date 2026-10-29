@@ -248,9 +248,13 @@ Counts third-party scripts loaded by the page. Each third-party script adds a ne
 
 Checks for `prefers-color-scheme`, `prefers-reduced-motion`, and `prefers-reduced-data` CSS media queries. These signals indicate support for user preferences; this static check does not measure energy savings.
 
+Only inline `<style>` blocks and `<link media>` attributes are searched. If none of the three is found and the page links external CSS, the check returns `info` (not scored).
+
 #### `checkResponsiveDesign` — WSG 3.10
 
 Checks for a `<meta name="viewport">` tag, responsive images (any raster `<img>` with `srcset`; SVG images are excluded), and at least one CSS media query in inline styles or style blocks.
+
+Only inline `<style>` blocks are searched for media queries. If none is found and the page links external CSS, that signal is noted as not verifiable rather than reported as an issue; if viewport and srcset raise nothing, the check returns `info` (not scored).
 
 #### `checkSustainableJs` — WSG 3.11
 
@@ -409,7 +413,7 @@ Scans inline `<style>` blocks for CSS animation declarations (`@keyframes`, `ani
 Checks font delivery for efficiency and readability:
 
 1. **WOFF2 format** — at least one font file should use `.woff2` (30% smaller than WOFF).
-2. **`font-display` descriptor** — prevents invisible text during font load (FOIT).
+2. **`font-display` descriptor** — prevents invisible text during font load (FOIT). Only inline `<style>` blocks are searched. With external CSS linked and no inline `@font-face`, it is noted as not verifiable rather than missing; if WOFF2 and file count raise nothing, the check returns `info` (not scored).
 3. **Font file count** — warns if more than 4 font files are referenced (each requires a separate download).
 
 Not using WOFF2 at all → `fail`; other issues → `warn`.
@@ -483,9 +487,9 @@ Verifies the page response includes effective HTTP caching directives:
 Checks for offline/PWA support via two standard mechanisms:
 
 1. **Web App Manifest** — `<link rel="manifest">` in the document `<head>`.
-2. **Service Worker** — `navigator.serviceWorker.register(...)` call in the page source.
+2. **Service Worker** — `navigator.serviceWorker.register(...)` call in inline `<script>` content. External scripts are not fetched.
 
-Both present → `pass`; one present → `warn`; neither → `fail`.
+Both present → `pass`; one present → `warn`; neither → `fail`. When the manifest is present, no inline registration is found, and the page links external scripts, the check returns `info` (not scored) because the registration may live in those scripts.
 
 #### `checkCompression` — WSG 4.3
 

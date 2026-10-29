@@ -2,12 +2,18 @@ import { describe, it, expect } from 'vitest'
 import { checkPreferenceMediaQueries } from '@/checks/preference-media-queries'
 import type { PageData } from '@/core/types'
 import { expectRecommendationAndResources } from './helpers'
-import type { LinkRef } from '@/utils/html-parser'
+import { parseHtml } from '@/utils/html-parser'
+import type { LinkRef, ParsedPage, ResourceReference } from '@/utils/html-parser'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
-function makePageData(body: string, links: LinkRef[] = []): PageData {
-  return {
+function makePageData(
+  body: string,
+  links: LinkRef[] = [],
+  resources: ReadonlyArray<ResourceReference> = [],
+  parsedPage?: ParsedPage
+): PageData {
+  const page = {
     url: 'https://example.com',
     fetchResult: {
       url: 'https://example.com',
@@ -24,7 +30,7 @@ function makePageData(body: string, links: LinkRef[] = []): PageData {
       lang: 'en',
       metaTags: [],
       links,
-      resources: [],
+      resources: [...resources],
       headings: [],
       hasSkipLink: false,
       landmarks: [],
@@ -42,7 +48,19 @@ function makePageData(body: string, links: LinkRef[] = []): PageData {
       byType: { stylesheet: 0, script: 0, image: 0, font: 0, media: 0, other: 0 },
     },
   } as PageData
+  return parsedPage ? { ...page, parsedPage } : page
 }
+
+/** A linked external stylesheet, as the parser reports `<link rel="stylesheet">`. */
+const STYLESHEET: ResourceReference = {
+  type: 'stylesheet',
+  url: 'https://example.com/s.css',
+  attributes: { rel: 'stylesheet', href: '/s.css' },
+}
+
+/** Repro fixture: one linked stylesheet, no inline CSS. */
+const EXTERNAL_CSS_ONLY_HTML = `<!DOCTYPE html><html lang=en><head><meta charset="utf-8"><title>t</title>
+<link rel="stylesheet" href="/s.css"></head><body><p>x</p></body></html>`
 
 /** HTML with all three preference media queries in an inline style block. */
 const ALL_PREFERENCES_HTML = `<!DOCTYPE html><html lang="en"><head><title>T</title>
@@ -146,5 +164,67 @@ describe('checkPreferenceMediaQueries (WSG 3.12)', () => {
     const result = await checkPreferenceMediaQueries(makePageData(NO_STYLE_HTML))
     const firstResource = expectRecommendationAndResources(result)
     expect(firstResource).toContain('w3.org')
+  })
+
+  describe('with a linked external stylesheet', () => {
+    it('returns info when no preference features are found inline', async () => {
+      const result = await checkPreferenceMediaQueries(
+        makePageData(NO_PREFERENCES_HTML, [], [STYLESHEET])
+      )
+      expect(result.status).toBe('info')
+      expect(result.score).toBe(0)
+      expect(result.message).toContain('external CSS is not analysed')
+      expect(result.machineTestable).toBe(true)
+    })
+
+    it('info result still carries a recommendation and resources', async () => {
+      const result = await checkPreferenceMediaQueries(
+        makePageData(NO_PREFERENCES_HTML, [], [STYLESHEET])
+      )
+      const firstResource = expectRecommendationAndResources(result)
+      expect(firstResource).toContain('w3.org')
+      expect(result.recommendation).toContain('OLED')
+    })
+
+    it('returns info when the only external CSS is an inline @import', async () => {
+      const body =
+        '<!DOCTYPE html><html lang="en"><head><style>@import url("/s.css");</style></head><body></body></html>'
+      const result = await checkPreferenceMediaQueries(makePageData(body))
+      expect(result.status).toBe('info')
+    })
+
+    it('ignores a commented-out @import, so no external CSS is assumed', async () => {
+      const body =
+        '<!DOCTYPE html><html lang="en"><head><style>/* @import url("/s.css"); */</style></head><body></body></html>'
+      const result = await checkPreferenceMediaQueries(makePageData(body))
+      expect(result.status).toBe('warn')
+    })
+
+    it('does not credit preference features inside a CSS comment', async () => {
+      const body = `<!DOCTYPE html><html lang="en"><head><style>
+/* @media (prefers-color-scheme: dark) { body { background: #000; } } */
+@media (prefers-reduced-motion: reduce) { * { animation: none; } }
+</style></head><body></body></html>`
+      const result = await checkPreferenceMediaQueries(makePageData(body))
+      expect(result.status).toBe('warn')
+      expect(result.details).toContain('Found: prefers-reduced-motion.')
+      expect(result.details).toContain('Missing: prefers-color-scheme, prefers-reduced-data.')
+    })
+
+    it('still warns when some preference features are found inline', async () => {
+      const result = await checkPreferenceMediaQueries(
+        makePageData(COLOR_SCHEME_ONLY_HTML, [], [STYLESHEET])
+      )
+      expect(result.status).toBe('warn')
+      expect(result.score).toBe(50)
+    })
+
+    it('returns info for a parsed document whose only CSS is a linked stylesheet', async () => {
+      const parsed = parseHtml(EXTERNAL_CSS_ONLY_HTML, 'https://example.com')
+      const result = await checkPreferenceMediaQueries(
+        makePageData(EXTERNAL_CSS_ONLY_HTML, [], [], parsed)
+      )
+      expect(result.status).toBe('info')
+    })
   })
 })
