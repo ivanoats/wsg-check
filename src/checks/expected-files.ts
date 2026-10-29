@@ -8,13 +8,13 @@
  *   engines rely on for correct presentation and indexing:
  *     - Favicon    — `<link rel="icon">` (or `rel="shortcut icon"`)
  *     - Web App Manifest — `<link rel="manifest">`
- *     - Sitemap    — `<link rel="sitemap">` in the document head
+ *     - Sitemap    — a robots.txt `Sitemap:` line or `<link rel="sitemap">`
  *
  *   Missing these files wastes browser round-trips (a 404 on favicon is fetched
  *   by every browser), produces poor search-engine previews, and degrades the
  *   user experience on mobile home-screen installs.
  *
- *   Scoring (based on references found in HTML `<link>` elements):
+ *   Scoring:
  *     - All 3 referenced        → pass  (100)
  *     - 1–2 missing             → warn   (50)
  *     - All 3 missing           → fail    (0)
@@ -39,7 +39,7 @@ import type { CheckFn } from '../core/types'
 
 const EF_GUIDELINE_ID = '3.17'
 const EF_GUIDELINE_NAME = 'Expected Files Present'
-const EF_SUCCESS_CRITERION = 'Pages should link to a favicon, a web app manifest, and a sitemap'
+const EF_SUCCESS_CRITERION = 'Pages should provide a favicon, a web app manifest, and a sitemap'
 const EF_RESOURCES = [
   'https://www.w3.org/TR/web-sustainability-guidelines/#provide-information-about-file-provenance',
 ]
@@ -47,17 +47,25 @@ const EF_RESOURCES = [
 /** `rel` values that indicate a favicon `<link>` element. */
 const FAVICON_RELS = new Set(['icon', 'shortcut icon', 'apple-touch-icon'])
 
+/** Lower-cased hostname with one leading `www.` removed; scheme and port ignored. */
+const siteOf = (url: string): string => new URL(url).hostname.toLowerCase().replace(/^www\./, '')
+
 export const checkExpectedFiles: CheckFn = (page) => {
   const { links } = page.parsedPage
+  const { originalUrl, url, robotsSitemaps } = page.fetchResult
 
   const hasFavicon = links.some((l) => l.rel && FAVICON_RELS.has(l.rel.toLowerCase()))
   const hasManifest = links.some((l) => l.rel?.toLowerCase() === 'manifest')
-  const hasSitemap = links.some((l) => l.rel?.toLowerCase() === 'sitemap')
+  // robots.txt was read from the requested host. After a redirect to a different
+  // site, its Sitemap: lines describe a site the scored page is not on, so they
+  // would give the destination unearned credit.
+  const robotsApply = (robotsSitemaps?.length ?? 0) > 0 && siteOf(originalUrl) === siteOf(url)
+  const hasSitemap = links.some((l) => l.rel?.toLowerCase() === 'sitemap') || robotsApply
 
   const missing: string[] = []
   if (!hasFavicon) missing.push('favicon (<link rel="icon">)')
   if (!hasManifest) missing.push('web app manifest (<link rel="manifest">)')
-  if (!hasSitemap) missing.push('sitemap (<link rel="sitemap">)')
+  if (!hasSitemap) missing.push('sitemap (robots.txt Sitemap: line or <link rel="sitemap">)')
 
   if (missing.length === 0) {
     return {
@@ -84,8 +92,10 @@ export const checkExpectedFiles: CheckFn = (page) => {
     message: `${missing.length} expected file reference(s) missing.`,
     details: `Missing: ${missing.join('; ')}`,
     recommendation:
-      'Add a <link rel="icon"> for the favicon, a <link rel="manifest"> for the web app ' +
-      'manifest, and a <link rel="sitemap" href="/sitemap.xml"> to the document <head>. ' +
+      'Add a <link rel="icon"> for the favicon and a <link rel="manifest"> for the web app ' +
+      'manifest to the document <head>, and declare your sitemap with a ' +
+      '"Sitemap: https://example.com/sitemap.xml" line in robots.txt (or a ' +
+      '<link rel="sitemap" href="/sitemap.xml"> in the <head>). ' +
       'The favicon prevents a 404 round-trip on every page load; the manifest enables ' +
       'home-screen installs on mobile; the sitemap reference helps search engines index ' +
       'your content efficiently.',

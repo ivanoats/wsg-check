@@ -298,13 +298,13 @@ Counts the total number of third-party resources (scripts, stylesheets, images, 
 
 #### `checkExpectedFiles` — WSG 3.13 (Expected)
 
-Checks that the page's HTML `<head>` links to three standard files that browsers and search engines rely on:
+Checks that the page provides three standard files that browsers and search engines rely on:
 
 - **Favicon** — `<link rel="icon">` (or `rel="shortcut icon"`, `rel="apple-touch-icon"`)
 - **Web App Manifest** — `<link rel="manifest">`
-- **Sitemap** — `<link rel="sitemap">`
+- **Sitemap** — a `Sitemap:` line in robots.txt (from the robots.txt already fetched for WSG 4.6) or `<link rel="sitemap">`
 
-Missing all three → `fail`; partially missing → `warn`.
+Missing all three → `fail`; partially missing → `warn`. `Sitemap:` lines count only when the requested URL's own robots.txt returns 200 and the page ends on the same site (`www.` and http/https differences are ignored), never with `ignoreRobots`.
 
 #### `checkBeneficialFiles` — WSG 3.13 (Beneficial)
 

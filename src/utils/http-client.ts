@@ -49,6 +49,12 @@ export interface FetchResult {
   contentLength: number
   contentEncoding?: string
   contentType?: string
+  /**
+   * `Sitemap:` URLs from the requested origin's robots.txt. Empty if it declared
+   * none or didn't return 200; absent if robots.txt was skipped (`ignoreRobots`).
+   * A cached result keeps the value from the fetch that filled the cache.
+   */
+  robotsSitemaps?: ReadonlyArray<string>
 }
 
 export interface HttpClientOptions {
@@ -172,6 +178,11 @@ export class HttpClient {
     return robots.isAllowed(url, this.opts.userAgent) !== false
   }
 
+  /** Sitemap URLs from the cached robots.txt of `url`'s origin, if it was consulted. */
+  private robotsSitemapsFor(url: string): ReadonlyArray<string> | undefined {
+    return this.robotsCache.get(new URL(url).origin)?.getSitemaps()
+  }
+
   // ── Public fetch ────────────────────────────────────────────────────────────
 
   /**
@@ -212,7 +223,10 @@ export class HttpClient {
     }
 
     try {
-      const result = await this.fetchWithRetry(url, startClass)
+      const fetched = await this.fetchWithRetry(url, startClass)
+      const robotsSitemaps = options?.ignoreRobots ? undefined : this.robotsSitemapsFor(url)
+      // An empty array is kept: it records that robots.txt was consulted.
+      const result = robotsSitemaps ? { ...fetched, robotsSitemaps } : fetched
       this.cache.set(url, result)
       return ok(result)
     } catch (e) {

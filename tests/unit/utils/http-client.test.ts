@@ -321,6 +321,67 @@ describe('HttpClient', () => {
     if (result.ok) return
     expect(result.error).toBeInstanceOf(FetchError)
   })
+
+  it('exposes Sitemap: lines from robots.txt on the result', async () => {
+    mockGet.mockResolvedValueOnce(
+      axiosResp(
+        200,
+        'User-agent: *\nAllow: /\nSitemap: https://example.com/sitemap.xml\nSitemap: https://example.com/news.xml'
+      )
+    )
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    const client = new HttpClient()
+    const result = await client.fetch('https://example.com/page')
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.robotsSitemaps).toEqual([
+      'https://example.com/sitemap.xml',
+      'https://example.com/news.xml',
+    ])
+    expect(mockGet).toHaveBeenCalledTimes(2)
+  })
+
+  it('returns an empty robotsSitemaps when robots.txt is unavailable', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    const client = new HttpClient()
+    const result = await client.fetch('https://example.com/page')
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.robotsSitemaps).toEqual([])
+  })
+
+  it('omits robotsSitemaps when ignoreRobots is true', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    const client = new HttpClient()
+    const result = await client.fetch('https://example.com/page', { ignoreRobots: true })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.robotsSitemaps).toBeUndefined()
+    expect(mockGet).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps robotsSitemaps on a cached fetch', async () => {
+    mockGet.mockResolvedValueOnce(
+      axiosResp(200, 'User-agent: *\nSitemap: https://example.com/sitemap.xml')
+    )
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    const client = new HttpClient()
+    await client.fetch('https://example.com/page')
+    const second = await client.fetch('https://example.com/page')
+
+    expect(second.ok).toBe(true)
+    if (!second.ok) return
+    expect(second.value.fromCache).toBe(true)
+    expect(second.value.robotsSitemaps).toEqual(['https://example.com/sitemap.xml'])
+  })
 })
 
 describe('HttpClient — host policy', () => {
