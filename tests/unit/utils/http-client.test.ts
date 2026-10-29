@@ -243,6 +243,49 @@ describe('HttpClient', () => {
     expect(result.value.contentLength).toBe(body.length)
   })
 
+  it('recovers content-encoding from raw response headers when axios has removed it', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, ''))
+    mockGet.mockResolvedValueOnce({
+      ...axiosResp(200, '<html/>', { 'content-type': 'text/html', 'content-length': '56' }),
+      request: {
+        res: {
+          rawHeaders: [
+            'Content-Type',
+            'text/html',
+            'Content-Encoding',
+            'gzip',
+            'Content-Length',
+            '56',
+          ],
+        },
+      },
+    })
+
+    const client = new HttpClient()
+    const result = await client.fetch('https://example.com/')
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.contentEncoding).toBe('gzip')
+    expect(result.value.headers['content-encoding']).toBe('gzip')
+    expect(result.value.contentLength).toBe(56)
+  })
+
+  it('keeps an explicit content-encoding header over raw headers', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, ''))
+    mockGet.mockResolvedValueOnce({
+      ...axiosResp(200, '<html/>', { 'content-encoding': 'br' }),
+      request: { res: { rawHeaders: ['Content-Encoding', 'gzip'] } },
+    })
+
+    const client = new HttpClient()
+    const result = await client.fetch('https://example.com/')
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.contentEncoding).toBe('br')
+  })
+
   it('isAllowedByRobots returns true when path is allowed', async () => {
     mockGet.mockResolvedValueOnce(axiosResp(200, 'User-agent: *\nAllow: /'))
 

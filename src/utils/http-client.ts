@@ -47,6 +47,7 @@ export interface FetchResult {
    * (e.g. chunked transfer encoding).
    */
   contentLength: number
+  /** `Content-Encoding` as sent by the server, even after axios strips it. */
   contentEncoding?: string
   contentType?: string
   /**
@@ -90,6 +91,38 @@ const DEFAULT_OPTIONS: Required<Omit<HttpClientOptions, 'hostPolicy' | 'signal'>
 }
 
 const MAX_REDIRECTS = 10
+
+// ─── Response headers ─────────────────────────────────────────────────────────
+
+/** Shape of axios's Node adapter request: `ClientRequest.res` is the `IncomingMessage`. */
+interface RawHeaderSource {
+  readonly res?: { readonly rawHeaders?: ReadonlyArray<string> }
+}
+
+/**
+ * Reads a header from the raw Node response headers. `name` must be lower-case.
+ * Returns `undefined` without a Node response (XHR or fetch adapters, mocks).
+ */
+const rawHeaderValue = (request: unknown, name: string): string | undefined => {
+  const raw = (request as RawHeaderSource | undefined)?.res?.rawHeaders ?? []
+  const index = raw.findIndex((entry, i) => i % 2 === 0 && entry.toLowerCase() === name)
+  return index === -1 ? undefined : raw[index + 1]
+}
+
+const responseHeaders = (resp: AxiosResponse<string>): Record<string, string> => {
+  const headers: Record<string, string> = Object.fromEntries(
+    Object.entries(resp.headers as Record<string, unknown>).flatMap(([key, value]) => {
+      if (typeof value === 'string') return [[key, value]]
+      if (Array.isArray(value)) return [[key, (value as string[]).join(', ')]]
+      return []
+    })
+  )
+
+  // axios deletes Content-Encoding after decompressing; the compression check needs it.
+  if (headers['content-encoding'] !== undefined) return headers
+  const recovered = rawHeaderValue(resp.request, 'content-encoding')
+  return recovered === undefined ? headers : { ...headers, 'content-encoding': recovered }
+}
 
 // ─── HttpClient ───────────────────────────────────────────────────────────────
 
@@ -354,14 +387,7 @@ export class HttpClient {
     resp: AxiosResponse<string>,
     redirectChain: RedirectEntry[]
   ): FetchResult {
-    const headers: Record<string, string> = {}
-    for (const [key, value] of Object.entries(resp.headers as Record<string, unknown>)) {
-      if (typeof value === 'string') {
-        headers[key] = value
-      } else if (Array.isArray(value)) {
-        headers[key] = (value as string[]).join(', ')
-      }
-    }
+    const headers = responseHeaders(resp)
 
     const body = typeof resp.data === 'string' ? resp.data : String(resp.data)
 
