@@ -180,7 +180,7 @@ export function parseHtml(html: string, baseUrl?: string): ParsedPage {
         node.type === 'directive' &&
         (node as { data?: string }).data?.toLowerCase().startsWith('!doctype')
       ) {
-        doctype = `<!${(node as { data?: string }).data ?? ''}>`
+        doctype = `<${(node as { data?: string }).data ?? ''}>`
       }
     })
 
