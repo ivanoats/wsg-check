@@ -323,7 +323,9 @@ Encourages voluntary disclosure files that improve transparency:
 - **`humans.txt`** — credits the people who built the site
 - **`carbon.txt`** — discloses sustainable hosting details
 
-All missing → `warn` (these are nice-to-have, not required, so the maximum severity is `warn`).
+A file counts as provided when its standard path on the page's origin returns 200 with a non-HTML content type (`/.well-known/security.txt`, which must be `text/plain`; `/humans.txt`; `/carbon.txt` or `/.well-known/carbon.txt`). A `CarbonTxt-Location` response header also counts for `carbon.txt`, and a `<link>` or `<meta>` naming a file counts for any of them. The fetcher requests these four paths once per run, without following redirects.
+
+Any missing → `warn` (these are nice-to-have, not required, so the maximum severity is `warn`).
 
 #### `checkHtmlVersion` — WSG 3.15
 

@@ -87,7 +87,8 @@ describe('HttpClient', () => {
     await client.fetch('https://example.com/')
     const cached = await client.fetch('https://example.com/')
 
-    expect(mockGet).toHaveBeenCalledTimes(2)
+    // robots, page and four standard-file probes; the second fetch is cached
+    expect(mockGet).toHaveBeenCalledTimes(6)
     expect(cached.ok).toBe(true)
     if (!cached.ok) return
     expect(cached.value.fromCache).toBe(true)
@@ -110,7 +111,8 @@ describe('HttpClient', () => {
     const client = new HttpClient()
     const result = await client.fetch('https://example.com/', { ignoreRobots: true })
 
-    expect(mockGet).toHaveBeenCalledTimes(1)
+    // page and four standard-file probes
+    expect(mockGet).toHaveBeenCalledTimes(5)
     expect(result.ok).toBe(true)
     if (!result.ok) return
     expect(result.value.statusCode).toBe(200)
@@ -518,13 +520,13 @@ describe('HttpClient — host policy', () => {
     expect(result.error.message).toContain('into loopback are not allowed')
   })
 
-  it('pins the robots.txt and page requests to the approved address class', async () => {
+  it('pins the robots.txt, page and standard-file requests to the approved address class', async () => {
     mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
     mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
 
     await new HttpClient({ hostPolicy: LOCAL_DEV }).fetch('https://example.com/')
 
-    expect(mockGet).toHaveBeenCalledTimes(2)
+    expect(mockGet).toHaveBeenCalledTimes(6)
     for (const [, config] of mockGet.mock.calls) {
       expect(typeof (config as { lookup?: unknown }).lookup).toBe('function')
     }
