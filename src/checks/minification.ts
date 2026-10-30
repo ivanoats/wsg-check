@@ -74,7 +74,7 @@ export const checkMinification: CheckFn = (page) => {
 
   if (commentCount > COMMENT_COUNT_THRESHOLD) {
     issues.push(
-      `${commentCount} HTML comments found in page source (excluding conditional comments, empty comments and React markers)`
+      `${commentCount} HTML comments found in page source (excluding conditional comments, whitespace-only comments and React markers)`
     )
   }
 
