@@ -402,17 +402,20 @@ describe('checkBeneficialFiles against a real server', () => {
     expect(result.status).toBe('pass')
   })
 
-  it('does not count HTML catch-all pages, a non-text/plain security.txt, or redirects', async () => {
-    const base = await serve(
-      {
-        '/': PAGE,
-        '/.well-known/security.txt': { type: 'application/octet-stream', body: 'Contact: x' },
-        '/humans.txt': { status: 301, headers: { Location: '/team.txt' } },
-        '/team.txt': TEXT,
-      },
-      // A single-page app answers every path with its HTML shell.
-      { type: 'text/html', body: '<!DOCTYPE html><html></html>' }
-    )
+  /** Every file is served as plain text except the one at `path`, which gets `route`. */
+  function allServedExcept(path: string, route: Route): Record<string, Route> {
+    return {
+      '/': PAGE,
+      '/.well-known/security.txt': TEXT,
+      '/humans.txt': TEXT,
+      '/carbon.txt': TEXT,
+      [path]: route,
+    }
+  }
+
+  it('does not count an HTML catch-all page as a file', async () => {
+    // A single-page app answers every path with its HTML shell.
+    const base = await serve({ '/': PAGE }, PAGE)
 
     const result = await checkSite(`${base}/`)
 
@@ -420,6 +423,43 @@ describe('checkBeneficialFiles against a real server', () => {
       '3 beneficial file(s) not provided: security.txt, humans.txt, carbon.txt.'
     )
   })
+
+  it('does not count a security.txt that is not text/plain', async () => {
+    const base = await serve(
+      allServedExcept('/.well-known/security.txt', {
+        type: 'application/octet-stream',
+        body: 'Contact: x',
+      })
+    )
+
+    const result = await checkSite(`${base}/`)
+
+    expect(result.message).toBe('1 beneficial file(s) not provided: security.txt.')
+  })
+
+  it('does not follow a redirect from a standard path', async () => {
+    const base = await serve({
+      ...allServedExcept('/humans.txt', { status: 301, headers: { Location: '/team.txt' } }),
+      '/team.txt': TEXT,
+    })
+
+    const result = await checkSite(`${base}/`)
+
+    expect(result.message).toBe('1 beneficial file(s) not provided: humans.txt.')
+  })
+
+  it.each([404, 403, 500])(
+    'does not count a text/plain answer with status %i',
+    async (status) => {
+      const base = await serve(
+        allServedExcept('/humans.txt', { status, type: 'text/plain', body: 'Not Found' })
+      )
+
+      const result = await checkSite(`${base}/`)
+
+      expect(result.message).toBe('1 beneficial file(s) not provided: humans.txt.')
+    }
+  )
 
   it('counts carbon.txt when the page response sends a CarbonTxt-Location header', async () => {
     const base = await serve({
