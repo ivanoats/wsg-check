@@ -105,6 +105,18 @@ describe('HttpClient', () => {
     expect(result.error).toBeInstanceOf(FetchError)
   })
 
+  it('bounds the standard-file requests even when the client timeout is 0 (unlimited)', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    await new HttpClient({ timeout: 0 }).fetch('https://example.com/')
+
+    const probeTimeouts = mockGet.mock.calls
+      .filter(([url]) => /\/(humans|security|carbon)\.txt$/.test(url as string))
+      .map(([, config]) => (config as { timeout?: number }).timeout)
+    expect(probeTimeouts).toEqual([5_000, 5_000, 5_000, 5_000])
+  })
+
   it('ignores robots.txt when ignoreRobots is true', async () => {
     mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
 

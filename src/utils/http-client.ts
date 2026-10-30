@@ -383,7 +383,7 @@ export class HttpClient {
     try {
       const resp = await this.axiosInstance.get<string>(url, {
         responseType: 'text',
-        timeout: Math.min(PROBE_TIMEOUT_MS, this.opts.timeout),
+        timeout: this.probeTimeout(),
         maxContentLength: PROBE_MAX_BYTES,
         ...this.connectOptions(addressClass),
       })
@@ -397,6 +397,18 @@ export class HttpClient {
     } catch {
       return false
     }
+  }
+
+  /**
+   * Never longer than the client timeout. A timeout of 0 means "unlimited" to
+   * axios (and WSG_TIMEOUT=0 or a non-number can produce one), but the probes
+   * are optional evidence and must always stay bounded.
+   */
+  private probeTimeout(): number {
+    const { timeout } = this.opts
+    return Number.isFinite(timeout) && timeout > 0
+      ? Math.min(PROBE_TIMEOUT_MS, timeout)
+      : PROBE_TIMEOUT_MS
   }
 
   // ── Internals ───────────────────────────────────────────────────────────────
