@@ -544,6 +544,37 @@ describe('HttpClient — host policy', () => {
     }
   })
 
+  it('pins standard-file requests after a cross-origin redirect to the class the redirect guard approved', async () => {
+    // a.example and b.example look public while the page is fetched, then
+    // b.example rebinds to loopback (TTL 0) before the standard files are requested.
+    lookupMock.mockReset()
+    lookupMock
+      .mockResolvedValueOnce([{ address: '93.184.216.34', family: 4 }]) // NOSONAR - intentional public IP
+      .mockResolvedValueOnce([{ address: '93.184.216.35', family: 4 }]) // NOSONAR - intentional public IP
+      .mockResolvedValue([{ address: '127.0.0.1', family: 4 }])
+    mockGet.mockResolvedValueOnce(axiosResp(302, '', { location: 'https://b.example/' }))
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    const result = await new HttpClient({ hostPolicy: LOCAL_DEV }).fetch('https://a.example/', {
+      ignoreRobots: true,
+    })
+
+    expect(result.ok).toBe(true)
+    const probes = mockGet.mock.calls.slice(2)
+    expect(probes).toHaveLength(4)
+    for (const [url, config] of probes) {
+      expect(url).toMatch(/^https:\/\/b\.example\//)
+      const { lookup } = config as {
+        lookup: (host: string, opts: object, cb: (err: Error | null) => void) => void
+      }
+      const error = await new Promise<Error | null>((resolve) =>
+        lookup('b.example', {}, (e) => resolve(e))
+      )
+      expect(error, 'probe connected to a loopback address').toBeInstanceOf(Error)
+      expect(error?.message).toContain('outside the approved public range')
+    }
+  })
+
   it('does not pin requests when no policy is set', async () => {
     mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
     mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))

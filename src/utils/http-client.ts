@@ -174,6 +174,12 @@ export const requestHeaders = (
   const downgraded = current.protocol === 'http:' && [startUrl, ...priorHops].some(isHttps)
   return sameHost && !downgraded ? { headers } : {}
 }
+/** A fetched page plus the address class its final hop was approved for. */
+interface FetchedPage {
+  page: FetchResult
+  finalClass: AddressClass | undefined
+}
+
 /**
  * Where each beneficial file is published. RFC 9116 defines only the
  * /.well-known/ path for security.txt and requires text/plain; carbontxt.org
@@ -327,10 +333,10 @@ export class HttpClient {
     }
 
     try {
-      const fetched = await this.fetchWithRetry(url, startClass)
-      const standardFiles = await this.findStandardFiles(fetched, startClass)
+      const { page, finalClass } = await this.fetchWithRetry(url, startClass)
+      const standardFiles = await this.findStandardFiles(page.url, finalClass)
       const robotsSitemaps = options?.ignoreRobots ? undefined : this.robotsSitemapsFor(url)
-      const withFiles = { ...fetched, standardFiles }
+      const withFiles = { ...page, standardFiles }
       // An empty array is kept: it records that robots.txt was consulted.
       const result = robotsSitemaps ? { ...withFiles, robotsSitemaps } : withFiles
       this.cache.set(url, result)
@@ -346,20 +352,17 @@ export class HttpClient {
    * Requests the beneficial files' standard paths on the origin of the page
    * that was actually fetched, so a redirect to another site is judged by that
    * site's files.
+   *
+   * @param addressClass - The class the redirect guard approved for the page's
+   *                       host. Reused rather than re-resolved, so a host that
+   *                       rebinds after the page fetch can't move the requests
+   *                       onto a range the redirect rules refused.
    */
   private async findStandardFiles(
-    page: FetchResult,
-    startClass: AddressClass | undefined
+    pageUrl: string,
+    addressClass: AddressClass | undefined
   ): Promise<string[]> {
-    const origin = new URL(page.url).origin
-    let addressClass = startClass
-    if (this.hostPolicy && origin !== new URL(page.originalUrl).origin) {
-      // The redirect guard approved this host; re-evaluate to pin the probes to its class.
-      const decision = await evaluateUrl(page.url, this.hostPolicy).catch(() => undefined)
-      if (!decision?.allowed) return []
-      addressClass = decision.addressClass
-    }
-
+    const origin = new URL(pageUrl).origin
     const found = await Promise.all(
       STANDARD_FILE_PATHS.map(async ({ name, path, plainTextOnly }) =>
         (await this.servesTextFile(`${origin}${path}`, plainTextOnly === true, addressClass))
@@ -417,7 +420,7 @@ export class HttpClient {
     url: string,
     startClass: AddressClass | undefined,
     attempt = 0
-  ): Promise<FetchResult> {
+  ): Promise<FetchedPage> {
     try {
       return await this.fetchFollowingRedirects(url, startClass)
     } catch (err) {
@@ -439,7 +442,7 @@ export class HttpClient {
   private async fetchFollowingRedirects(
     startUrl: string,
     startClass: AddressClass | undefined
-  ): Promise<FetchResult> {
+  ): Promise<FetchedPage> {
     const redirectChain: RedirectEntry[] = []
     let currentUrl = startUrl
     let currentClass = startClass
@@ -470,7 +473,10 @@ export class HttpClient {
       if (resp.status >= 300 && resp.status < 400) {
         if (!this.opts.followRedirects) {
           // Caller asked not to follow – return the redirect response as-is.
-          return HttpClient.buildResult(startUrl, currentUrl, resp, redirectChain, bytesReceived)
+          return {
+            page: HttpClient.buildResult(startUrl, currentUrl, resp, redirectChain, bytesReceived),
+            finalClass: currentClass,
+          }
         }
 
         const location = (resp.headers as Record<string, string>)['location']
@@ -492,7 +498,10 @@ export class HttpClient {
         continue
       }
 
-      return HttpClient.buildResult(startUrl, currentUrl, resp, redirectChain, bytesReceived)
+      return {
+        page: HttpClient.buildResult(startUrl, currentUrl, resp, redirectChain, bytesReceived),
+        finalClass: currentClass,
+      }
     }
 
     throw new FetchError(`Too many redirects (> ${MAX_REDIRECTS}) for ${startUrl}`, startUrl)
