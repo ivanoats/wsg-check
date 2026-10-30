@@ -152,4 +152,60 @@ describe('checkMinification (WSG 3.3)', () => {
     // Either blank lines or comment count could trigger the warn
     expect(result.status).toBe('warn')
   })
+
+  describe('React server-rendering markers', () => {
+    // Every comment react-dom 19 server rendering emits: text separators,
+    // Suspense and Activity boundaries, form-state markers, preamble markers.
+    const REACT_MARKERS_ONLY =
+      '<!DOCTYPE html><html><head><!--head--><title>T</title></head><body><!--body--><!--html-->' +
+      '<p>Total: <!-- -->3<!-- --> items<!-- -->.</p>' +
+      '<!--$--><div>done</div><!--/$-->' +
+      '<!--$?--><template id="B:0"></template><p>Loading</p><!--/$-->' +
+      '<!--$!--><template data-dgst="x"></template><!--/$-->' +
+      '<!--&--><div>activity</div><!--/&-->' +
+      '<form><!--F!--></form><form><!--F--></form>' +
+      '</body></html>'
+
+    const authorComments = (n: number) =>
+      Array.from({ length: n }, (_, i) => `<!-- section ${i + 1} -->`).join('')
+
+    it('passes for HTML whose only comments are React markers', async () => {
+      const result = await checkMinification(makePageData(REACT_MARKERS_ONLY))
+      expect(result.status).toBe('pass')
+    })
+
+    it('passes for whitespace-only comments', async () => {
+      const body = '<!DOCTYPE html><html><body><!----><!--   --><!--\n\t--><p>x</p></body></html>'
+      const result = await checkMinification(makePageData(body))
+      expect(result.status).toBe('pass')
+    })
+
+    it('passes for React markers plus 2 author comments', async () => {
+      const body = REACT_MARKERS_ONLY.replace('<p>Total', `${authorComments(2)}<p>Total`)
+      const result = await checkMinification(makePageData(body))
+      expect(result.status).toBe('pass')
+    })
+
+    it('warns for React markers plus 3 author comments, counting only the author comments', async () => {
+      const body = REACT_MARKERS_ONLY.replace('<p>Total', `${authorComments(3)}<p>Total`)
+      const result = await checkMinification(makePageData(body))
+      expect(result.status).toBe('warn')
+      expect(result.details).toMatch(/\b3 HTML comments/)
+    })
+
+    it('warns for 3 author comments on a single line (comment heuristic, not blank lines)', async () => {
+      const body = `<!DOCTYPE html><html><head>${authorComments(3)}<title>T</title></head><body></body></html>`
+      const result = await checkMinification(makePageData(body))
+      expect(result.status).toBe('warn')
+      expect(result.details).toMatch(/\b3 HTML comments/)
+      expect(result.details).not.toContain('blank')
+    })
+
+    it('still counts an author comment that only resembles a marker', async () => {
+      const body = `<!DOCTYPE html><html><head><!-- head --><!-- $ --><!-- F --><title>T</title></head><body></body></html>`
+      const result = await checkMinification(makePageData(body))
+      expect(result.status).toBe('warn')
+      expect(result.details).toMatch(/\b3 HTML comments/)
+    })
+  })
 })
