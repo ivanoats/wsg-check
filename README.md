@@ -85,7 +85,7 @@ npx @sustainablewebsites/wsg-check https://example.com --fail-threshold 70
 | `--version`            |       | Print version and exit                                                                                                  |                   |
 | `--help`               |       | Print help and exit                                                                                                     |                   |
 
-`--header` values land in shell history and CI logs, and a malformed one is echoed in the error. For a secret, set `"headers": {"Cookie": "..."}` in a `wsg-check.config.json` kept out of version control. `--header` replaces the config file's `headers` entirely. Headers are not sent over plain `http` after an `https` hop. To change the user agent, use `WSG_USER_AGENT` or the config's `userAgent`. The web API and MCP server do not accept request headers.
+`--header` values land in shell history and CI logs, and a malformed one is echoed in the error. For a secret, set `"headers": {"Cookie": "..."}` in a `wsg-check.config.json` kept out of version control. Header names in the config file are checked when it loads, and an error names the bad header without printing its value. `--header` replaces the config file's `headers` entirely. Headers are not sent over plain `http` after an `https` hop. To change the user agent, use `WSG_USER_AGENT` or the config's `userAgent`. The web API and MCP server do not accept request headers.
 
 ### CI integration
 

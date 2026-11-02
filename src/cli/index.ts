@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { Command, InvalidArgumentError } from 'commander'
 import { isEntryPoint } from '../utils/entry-point'
-import { resolveConfig } from '../config/loader'
+import { isHttpHeaderName, resolveConfig } from '../config/loader'
 import { WSG_SPEC } from '../config/spec/index'
 import type { OutputFormat, WSGCategory } from '../config/types'
 import { runReport, selectChecks, type SelectionNotice } from '../pipeline/index'
@@ -99,9 +99,6 @@ const renderReport = (report: SustainabilityReport, format: OutputFormat): strin
 
 // ─── CLI flag builder ─────────────────────────────────────────────────────────
 
-// RFC 9110 token characters. Node otherwise throws ERR_INVALID_HTTP_TOKEN only at request time, after retries.
-const HTTP_TOKEN = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/
-
 /**
  * Accumulates repeated `--header` flags into one record, splitting on the
  * first colon. The error omits the value (commander still quotes the argument).
@@ -113,7 +110,7 @@ const collectHeader = (
   const colon = value.indexOf(':')
   const name = value.slice(0, Math.max(colon, 0)).trim()
   // Also catches a missing colon, which leaves the name empty.
-  if (!HTTP_TOKEN.test(name)) {
+  if (!isHttpHeaderName(name)) {
     throw new InvalidArgumentError('expected "Name: value"; name must be an HTTP token')
   }
   return { ...previous, [name]: value.slice(colon + 1).trim() }
