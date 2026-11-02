@@ -28,8 +28,8 @@ vi.mock('@/core/index', () => {
   let lastChecks: unknown[] = []
   let lastConfig: unknown
   function WsgChecker(config: unknown, checks: unknown[]) {
-    lastConfig = config
     lastChecks = checks
+    lastConfig = config
     return { check: mockCheck }
   }
   return {
@@ -55,7 +55,7 @@ const getLastChecks = async (): Promise<Array<{ guidelineId?: string }>> => {
 }
 
 // Helper to retrieve the config that was passed to the last WsgChecker construction.
-const getLastConfig = async (): Promise<{ ignoreRobots?: boolean }> => {
+const getLastConfig = async (): Promise<{ headers?: unknown; ignoreRobots?: boolean }> => {
   const mod = await import('@/core/index')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (mod as any)._getLastConfig()
@@ -141,8 +141,46 @@ describe('buildProgram', () => {
     expect(optionNames).toContain('--fail-threshold')
     expect(optionNames).toContain('--verbose')
     expect(optionNames).toContain('--config')
+    expect(optionNames).toContain('--header')
     expect(optionNames).toContain('--ignore-robots')
   })
+
+  it('parses repeated --header values into a record, splitting on the first colon', () => {
+    const program = buildProgram().exitOverride()
+    program.parseOptions(['-H', 'Cookie: a=b', '-H', 'Authorization: Bearer x:y'])
+    expect(program.opts().header).toEqual({ Cookie: 'a=b', Authorization: 'Bearer x:y' })
+  })
+
+  it('rejects a --header value without a colon', () => {
+    const program = buildProgram()
+      .exitOverride()
+      .configureOutput({ writeErr: () => undefined })
+    let caught: { code?: string; message?: string } | undefined
+    try {
+      program.parse(['node', 'wsg-check', 'https://example.com', '-H', 'nocolon'])
+    } catch (e) {
+      caught = e as { code?: string; message?: string }
+    }
+    expect(caught?.code).toBe('commander.invalidArgument')
+    expect(caught?.message).toContain('expected "Name: value"')
+  })
+
+  it.each(['Set Cookie: x', 'a/b: x'])(
+    'rejects a --header name that is not an HTTP token (%s)',
+    (arg) => {
+      const program = buildProgram()
+        .exitOverride()
+        .configureOutput({ writeErr: () => undefined })
+      let caught: { code?: string; message?: string } | undefined
+      try {
+        program.parse(['node', 'wsg-check', 'https://example.com', '-H', arg])
+      } catch (e) {
+        caught = e as { code?: string; message?: string }
+      }
+      expect(caught?.code).toBe('commander.invalidArgument')
+      expect(caught?.message).toContain('name must be an HTTP token')
+    }
+  )
 
   it('accepts a <url> positional argument', () => {
     const program = buildProgram()
@@ -362,5 +400,52 @@ describe('runCheck', () => {
     await runCheck('https://example.com', { format: 'html' })
     const writtenArgs = stdoutSpy.mock.calls.map((c: unknown[]) => c[0]).join('')
     expect(writtenArgs).toContain('<!DOCTYPE html>')
+  })
+
+  it('forwards --header to the checker config', async () => {
+    const mockCheck = await getMockCheck()
+    mockCheck.mockResolvedValue({ ok: true, value: PASSING_RUN_RESULT })
+
+    await runCheck('https://example.com', { header: { Cookie: 'a=b' } })
+    expect((await getLastConfig()).headers).toEqual({ Cookie: 'a=b' })
+  })
+
+  it('config-file headers survive when --header is not given', async () => {
+    const mockCheck = await getMockCheck()
+    mockCheck.mockResolvedValue({ ok: true, value: PASSING_RUN_RESULT })
+    const dir = mkdtempSync(join(tmpdir(), 'wsg-headers-'))
+    writeFileSync(join(dir, 'wsg-check.config.json'), '{"headers":{"Cookie":"f=1"}}')
+
+    try {
+      await runCheck('https://example.com', { config: dir })
+      expect((await getLastConfig()).headers).toEqual({ Cookie: 'f=1' })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('--header replaces the config file headers object (no merge)', async () => {
+    const mockCheck = await getMockCheck()
+    mockCheck.mockResolvedValue({ ok: true, value: PASSING_RUN_RESULT })
+    const dir = mkdtempSync(join(tmpdir(), 'wsg-headers-'))
+    writeFileSync(join(dir, 'wsg-check.config.json'), '{"headers":{"Cookie":"f=1"}}')
+
+    try {
+      await runCheck('https://example.com', { config: dir, header: { Authorization: 'x' } })
+      expect((await getLastConfig()).headers).toEqual({ Authorization: 'x' })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('CLI output never contains header values', async () => {
+    const mockCheck = await getMockCheck()
+    mockCheck.mockResolvedValue({ ok: true, value: PASSING_RUN_RESULT })
+
+    await runCheck('https://example.com', { header: { Cookie: 'SECRET' }, verbose: true })
+    const written = [...stdoutSpy.mock.calls, ...stderrSpy.mock.calls]
+      .map((c: unknown[]) => String(c[0]))
+      .join('')
+    expect(written).not.toContain('SECRET')
   })
 })

@@ -83,6 +83,7 @@ export class WsgChecker {
         ? markRobotsOverride(config.userAgent ?? DEFAULT_CONFIG.userAgent)
         : config.userAgent,
       followRedirects: config.followRedirects,
+      headers: config.headers,
       hostPolicy: config.hostPolicy,
       signal: config.signal,
     })

@@ -18,11 +18,16 @@ A configurable, sustainability-aware HTTP client built on [Axios](https://axios-
 - **Retry with back-off** — transient network errors are retried up to `maxRetries` times with an exponential delay.
 - **robots.txt support (WSG 4.6)** — fetches and caches the target site's `robots.txt` before making requests; returns an error `Result` containing `FetchError` if the crawler is disallowed. For sites you operate, the CLI's `--ignore-robots` flag (`ignoreRobots` in config, `WSG_IGNORE_ROBOTS` in the environment) skips both, and `WsgChecker` adds `(ignore-robots)` to the User-Agent so site owners can tell. The web API and MCP `check_url` don't expose it.
 - **Redirect chain tracking (WSG 4.4)** — follows redirects manually so every hop is recorded in `FetchResult.redirectChain`.
+- **Per-request headers** — `headers` go only to the page fetch and redirect hops on the start URL's hostname, not to robots.txt, other hosts, or over plain http after an https hop. The CLI sets them with `-H/--header` or the config file; the web API and MCP server do not expose them.
 
 ```typescript
 import { HttpClient } from '@/utils'
 
-const client = new HttpClient({ timeout: 15_000, userAgent: 'my-bot/1.0' })
+const client = new HttpClient({
+  timeout: 15_000,
+  userAgent: 'my-bot/1.0',
+  headers: { Cookie: 'session=…' },
+})
 const result = await client.fetch('https://example.com')
 if (result.ok) {
   console.log(result.value.redirectChain, result.value.headers)

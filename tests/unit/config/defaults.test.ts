@@ -45,4 +45,8 @@ describe('DEFAULT_CONFIG', () => {
   it('has no outputPath by default', () => {
     expect(DEFAULT_CONFIG.outputPath).toBeUndefined()
   })
+
+  it('has no request headers by default', () => {
+    expect(DEFAULT_CONFIG.headers).toEqual({})
+  })
 })

@@ -3,6 +3,31 @@ import { existsSync, readFileSync } from 'fs'
 import type { WSGCheckConfig, PartialWSGCheckConfig, WSGCategory, OutputFormat } from './types'
 import { DEFAULT_CONFIG } from './defaults'
 
+// RFC 9110 token characters. Node otherwise throws ERR_INVALID_HTTP_TOKEN only at request time, after retries.
+const HTTP_TOKEN = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/
+
+/** `true` when `name` is a valid HTTP header name. */
+export const isHttpHeaderName = (name: string): boolean => HTTP_TOKEN.test(name)
+
+/**
+ * Rejects a config-file `headers` entry that Node would refuse at request time.
+ * The message names the file and header but never echoes a value, which may be a secret.
+ */
+const assertValidHeaders = (headers: unknown, filePath: string): void => {
+  if (headers === undefined) return
+  if (typeof headers !== 'object' || headers === null || Array.isArray(headers)) {
+    throw new Error(`Invalid "headers" in ${filePath}: expected an object of "Name": "value" pairs`)
+  }
+  for (const [name, value] of Object.entries(headers)) {
+    if (!isHttpHeaderName(name)) {
+      throw new Error(`Invalid "headers" in ${filePath}: "${name}" is not an HTTP header name`)
+    }
+    if (typeof value !== 'string') {
+      throw new Error(`Invalid "headers" in ${filePath}: the value of "${name}" must be a string`)
+    }
+  }
+}
+
 /**
  * Map environment variables to configuration fields.
  *
@@ -95,7 +120,9 @@ export function loadFromFile(dir: string = process.cwd()): PartialWSGCheckConfig
   for (const filePath of candidates) {
     if (existsSync(filePath)) {
       const raw = readFileSync(filePath, 'utf8')
-      return JSON.parse(raw) as PartialWSGCheckConfig
+      const parsed = JSON.parse(raw) as PartialWSGCheckConfig
+      assertValidHeaders(parsed.headers, filePath)
+      return parsed
     }
   }
 
