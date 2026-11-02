@@ -48,6 +48,7 @@ interface CliOptions {
   readonly verbose?: boolean
   readonly config?: string
   readonly header?: Readonly<Record<string, string>>
+  readonly ignoreRobots?: boolean
 }
 
 // ─── Spinner ──────────────────────────────────────────────────────────────────
@@ -134,6 +135,7 @@ const buildCliFlags = (url: string, opts: CliOptions) => ({
   ...(opts.verbose ? { verbose: true } : {}),
   // No commander default for --header, so an absent flag keeps config-file headers.
   ...(opts.header ? { headers: opts.header } : {}),
+  ...(opts.ignoreRobots ? { ignoreRobots: true } : {}),
 })
 
 // ─── Selection notices ────────────────────────────────────────────────────────
@@ -242,6 +244,10 @@ export const buildProgram = (): Command => {
       collectHeader
     )
     .option('-v, --verbose', 'enable verbose logging')
+    .option(
+      '--ignore-robots',
+      'skip robots.txt for a site you operate; adds "(ignore-robots)" to the User-Agent'
+    )
     .addHelpText(
       'after',
       '\nRun as an MCP server over stdio instead: wsg-check --mcp [--no-local] [--allow-private-network]'

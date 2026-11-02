@@ -29,6 +29,7 @@ export interface WSGCheckConfig {
   followRedirects: boolean
   /** Extra request headers sent to the checked site (same hostname only). CLI and config file only. */
   headers: Readonly<Record<string, string>>
+  ignoreRobots: boolean // Skip the robots.txt fetch and check, for sites the operator runs
 
   // Output
   format: OutputFormat

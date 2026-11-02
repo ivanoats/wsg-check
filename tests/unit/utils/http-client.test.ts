@@ -243,6 +243,49 @@ describe('HttpClient', () => {
     expect(result.value.contentLength).toBe(body.length)
   })
 
+  it('recovers content-encoding from raw response headers when axios has removed it', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, ''))
+    mockGet.mockResolvedValueOnce({
+      ...axiosResp(200, '<html/>', { 'content-type': 'text/html', 'content-length': '56' }),
+      request: {
+        res: {
+          rawHeaders: [
+            'Content-Type',
+            'text/html',
+            'Content-Encoding',
+            'gzip',
+            'Content-Length',
+            '56',
+          ],
+        },
+      },
+    })
+
+    const client = new HttpClient()
+    const result = await client.fetch('https://example.com/')
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.contentEncoding).toBe('gzip')
+    expect(result.value.headers['content-encoding']).toBe('gzip')
+    expect(result.value.contentLength).toBe(56)
+  })
+
+  it('keeps an explicit content-encoding header over raw headers', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, ''))
+    mockGet.mockResolvedValueOnce({
+      ...axiosResp(200, '<html/>', { 'content-encoding': 'br' }),
+      request: { res: { rawHeaders: ['Content-Encoding', 'gzip'] } },
+    })
+
+    const client = new HttpClient()
+    const result = await client.fetch('https://example.com/')
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.contentEncoding).toBe('br')
+  })
+
   it('isAllowedByRobots returns true when path is allowed', async () => {
     mockGet.mockResolvedValueOnce(axiosResp(200, 'User-agent: *\nAllow: /'))
 
@@ -320,6 +363,67 @@ describe('HttpClient', () => {
     expect(result.ok).toBe(false)
     if (result.ok) return
     expect(result.error).toBeInstanceOf(FetchError)
+  })
+
+  it('exposes Sitemap: lines from robots.txt on the result', async () => {
+    mockGet.mockResolvedValueOnce(
+      axiosResp(
+        200,
+        'User-agent: *\nAllow: /\nSitemap: https://example.com/sitemap.xml\nSitemap: https://example.com/news.xml'
+      )
+    )
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    const client = new HttpClient()
+    const result = await client.fetch('https://example.com/page')
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.robotsSitemaps).toEqual([
+      'https://example.com/sitemap.xml',
+      'https://example.com/news.xml',
+    ])
+    expect(mockGet).toHaveBeenCalledTimes(2)
+  })
+
+  it('returns an empty robotsSitemaps when robots.txt is unavailable', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    const client = new HttpClient()
+    const result = await client.fetch('https://example.com/page')
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.robotsSitemaps).toEqual([])
+  })
+
+  it('omits robotsSitemaps when ignoreRobots is true', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    const client = new HttpClient()
+    const result = await client.fetch('https://example.com/page', { ignoreRobots: true })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.robotsSitemaps).toBeUndefined()
+    expect(mockGet).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps robotsSitemaps on a cached fetch', async () => {
+    mockGet.mockResolvedValueOnce(
+      axiosResp(200, 'User-agent: *\nSitemap: https://example.com/sitemap.xml')
+    )
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    const client = new HttpClient()
+    await client.fetch('https://example.com/page')
+    const second = await client.fetch('https://example.com/page')
+
+    expect(second.ok).toBe(true)
+    if (!second.ok) return
+    expect(second.value.fromCache).toBe(true)
+    expect(second.value.robotsSitemaps).toEqual(['https://example.com/sitemap.xml'])
   })
 })
 
@@ -426,13 +530,92 @@ describe('HttpClient — host policy', () => {
     }
   })
 
-  it('keeps refusing loopback redirects when no policy is set', async () => {
+  it('follows a redirect back to the host that issued it when no policy is set', async () => {
     mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
     mockGet.mockResolvedValueOnce(axiosResp(307, '', { location: '/en' }))
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    const result = await new HttpClient().fetch('http://localhost:3000/')
+
+    expect(result.ok ? undefined : result.error.message).toBeUndefined()
+    if (!result.ok) return
+    expect(result.value.url).toBe('http://localhost:3000/en')
+    expect(result.value.redirectChain).toHaveLength(1)
+  })
+
+  it.each([
+    { kind: 'IPv6', start: 'http://[::1]:3000/slash', expected: 'http://[::1]:3000/slash/' },
+    // new URL() rewrites [::ffff:127.0.0.1] to the hex form [::ffff:7f00:1].
+    {
+      kind: 'IPv4-mapped',
+      start: 'http://[::ffff:127.0.0.1]:3000/slash',
+      expected: 'http://[::ffff:7f00:1]:3000/slash/',
+    },
+  ])(
+    'follows an $kind loopback self-redirect when no policy is set',
+    async ({ start, expected }) => {
+      // Real lookup() rejects a bracketed literal, so if the hop wrongly reaches
+      // the DNS guard instead of the local-name exemption it must be refused.
+      lookupMock.mockRejectedValue(new Error('ENOTFOUND'))
+      mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+      mockGet.mockResolvedValueOnce(axiosResp(308, '', { location: '/slash/' }))
+      mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+      const result = await new HttpClient().fetch(start)
+
+      expect(result.ok ? undefined : result.error.message).toBeUndefined()
+      if (!result.ok) return
+      expect(result.value.url).toBe(expected)
+      expect(result.value.redirectChain).toHaveLength(1)
+      expect(lookupMock).not.toHaveBeenCalled()
+    }
+  )
+
+  it('still refuses a redirect from a public host into loopback when no policy is set', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockResolvedValueOnce(axiosResp(302, '', { location: 'http://localhost:6379/' }))
+
+    const result = await new HttpClient().fetch('https://example.com/')
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error.message).toContain('not allowed for security reasons')
+    expect(mockGet).toHaveBeenCalledTimes(2)
+  })
+
+  it('re-checks DNS on a same-host redirect hop when no policy is set', async () => {
+    // The API validated attacker.example while it resolved publicly; by the
+    // time its page redirects to another port on the same name, the name
+    // resolves to loopback. The hop must be refused, not waved through as
+    // "same host". (The no-policy client makes no lookup for the start URL,
+    // so the first resolution is not mocked here.)
+    lookupMock.mockResolvedValue([{ address: '127.0.0.1', family: 4 }]) // NOSONAR - intentional loopback IP
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockResolvedValueOnce(
+      axiosResp(302, '', { location: 'https://attacker.example:6379/' })
+    )
+    mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
+
+    const result = await new HttpClient().fetch('https://attacker.example/')
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error.message).toContain('resolves to a private or unreachable address')
+    expect(lookupMock).toHaveBeenCalledWith('attacker.example', { all: true })
+    expect(mockGet).toHaveBeenCalledTimes(2)
+  })
+
+  it('compares the redirect target against the host that issued it, not the start URL', async () => {
+    mockGet.mockResolvedValueOnce(axiosResp(404, '')) // robots
+    mockGet.mockResolvedValueOnce(axiosResp(302, '', { location: 'https://example.com/' }))
+    mockGet.mockResolvedValueOnce(axiosResp(302, '', { location: 'http://localhost:3000/x' }))
 
     const result = await new HttpClient().fetch('http://localhost:3000/')
 
     expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error.message).toContain('not allowed for security reasons: localhost')
+    expect(mockGet).toHaveBeenCalledTimes(3)
   })
 
   it('passes the abort signal to every request', async () => {

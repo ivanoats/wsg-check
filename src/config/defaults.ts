@@ -16,6 +16,7 @@ export const DEFAULT_CONFIG: Omit<WSGCheckConfig, 'url'> = {
   userAgent: `Mozilla/5.0 (compatible; wsg-check/${VERSION}; +https://github.com/ivanoats/wsg-check)`,
   followRedirects: true,
   headers: {},
+  ignoreRobots: false, // honour robots.txt (WSG: respect opt-out signals)
 
   format: 'terminal',
   outputPath: undefined,

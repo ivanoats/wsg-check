@@ -152,4 +152,25 @@ describe('handleCheckUrl', () => {
     expect(sendNotification).toHaveBeenCalledOnce()
     expect(result.isError).toBeFalsy()
   })
+
+  it('does not forward unknown arguments such as ignoreRobots into the checker config', async () => {
+    let captured: Record<string, unknown> | undefined
+    runReportMock.mockImplementation(
+      (_url: string, { config }: { config: Record<string, unknown> }) => {
+        captured = config
+        return Promise.resolve({ ok: true, value: report() })
+      }
+    )
+    // A variable, not a literal, so the unknown key passes type-check.
+    const input = { url: 'https://example.com/', ignoreRobots: true }
+
+    await handleCheckUrl(
+      input,
+      { signal: new AbortController().signal, sendNotification: vi.fn() },
+      { hostPolicy: { allowLoopback: true, allowPrivateNetwork: false } }
+    )
+
+    expect(captured).toBeDefined()
+    expect(captured).not.toHaveProperty('ignoreRobots')
+  })
 })

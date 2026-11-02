@@ -18,6 +18,7 @@ import { DEFAULT_CONFIG } from './defaults'
  *   WSG_FORMAT              – output format (json|html|markdown|terminal)
  *   WSG_OUTPUT_PATH         – file path for output
  *   WSG_VERBOSE             – "true" | "false"
+ *   WSG_IGNORE_ROBOTS       – "true" | "false"
  *   WSG_FAIL_THRESHOLD      – number 0-100
  *   REQUEST_TIMEOUT_MS      – alias for WSG_TIMEOUT
  *   MAX_CRAWL_DEPTH         – alias for WSG_MAX_DEPTH
@@ -66,6 +67,11 @@ export function loadFromEnv(): PartialWSGCheckConfig {
   const verbose = process.env.WSG_VERBOSE
   if (verbose !== undefined) {
     cfg.verbose = verbose === 'true'
+  }
+
+  const ignoreRobots = process.env.WSG_IGNORE_ROBOTS
+  if (ignoreRobots !== undefined) {
+    cfg.ignoreRobots = ignoreRobots === 'true'
   }
 
   const failThreshold = process.env.WSG_FAIL_THRESHOLD

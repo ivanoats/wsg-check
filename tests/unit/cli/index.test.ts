@@ -55,7 +55,7 @@ const getLastChecks = async (): Promise<Array<{ guidelineId?: string }>> => {
 }
 
 // Helper to retrieve the config that was passed to the last WsgChecker construction.
-const getLastConfig = async (): Promise<{ headers?: unknown }> => {
+const getLastConfig = async (): Promise<{ headers?: unknown; ignoreRobots?: boolean }> => {
   const mod = await import('@/core/index')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (mod as any)._getLastConfig()
@@ -142,6 +142,7 @@ describe('buildProgram', () => {
     expect(optionNames).toContain('--verbose')
     expect(optionNames).toContain('--config')
     expect(optionNames).toContain('--header')
+    expect(optionNames).toContain('--ignore-robots')
   })
 
   it('parses repeated --header values into a record, splitting on the first colon', () => {
@@ -210,6 +211,8 @@ describe('runCheck', () => {
   beforeEach(async () => {
     stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
     stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
+    // runCheck reads the real environment; a host-exported WSG_IGNORE_ROBOTS would change the asserted default.
+    vi.stubEnv('WSG_IGNORE_ROBOTS', undefined) // skipcq: JS-W1042 (undefined unsets the variable; the argument is required)
     // Reset the mock before each test
     const mockCheck = await getMockCheck()
     mockCheck.mockReset()
@@ -217,6 +220,7 @@ describe('runCheck', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.unstubAllEnvs()
   })
 
   it('returns exit code 0 when the check succeeds and score meets threshold', async () => {
@@ -270,6 +274,22 @@ describe('runCheck', () => {
     await runCheck('https://example.com', {})
     const stderrOutput = stderrSpy.mock.calls.map((c: unknown[]) => c[0]).join('')
     expect(stderrOutput).toContain('Timeout')
+  })
+
+  it('passes --ignore-robots through to the checker', async () => {
+    const mockCheck = await getMockCheck()
+    mockCheck.mockResolvedValue({ ok: true, value: PASSING_RUN_RESULT })
+
+    await runCheck('https://example.com', { ignoreRobots: true })
+    expect((await getLastConfig()).ignoreRobots).toBe(true)
+  })
+
+  it('does not ignore robots.txt unless asked', async () => {
+    const mockCheck = await getMockCheck()
+    mockCheck.mockResolvedValue({ ok: true, value: PASSING_RUN_RESULT })
+
+    await runCheck('https://example.com', {})
+    expect((await getLastConfig()).ignoreRobots).toBe(false)
   })
 
   it('respects the --categories option', async () => {
