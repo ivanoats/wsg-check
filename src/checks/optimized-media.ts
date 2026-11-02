@@ -6,27 +6,29 @@
  *
  *   1. Modern image formats — WebP and AVIF offer significantly better
  *      compression than JPEG or PNG.  Pages should prefer these formats
- *      for content images.
+ *      for content images.  SVG (vector) images are excluded from the format
+ *      test; they still need dimensions.
  *
  *   2. Explicit `width` / `height` attributes — prevents Cumulative Layout
  *      Shift (CLS) by reserving space before the image loads, avoiding
  *      unnecessary re-paints and re-layouts.
  *
  * Scoring:
- *   - Images present but none use WebP/AVIF → fail  (0)
- *   - Modern formats used but some images lack dimensions → warn (50)
- *   - All images in modern formats with dimensions → pass (100)
+ *   - Raster images present but none use WebP/AVIF → fail  (0)
+ *   - No format issue (modern or vector) but some images lack dimensions → warn (50)
+ *   - All images in modern or vector formats with dimensions → pass (100)
  *   - No images found → not-applicable
  *
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#avoid-unnecessary-or-an-overabundance-of-assets
  */
 
 import type { CheckFn } from '../core/types'
+import { imagePathname, isVectorImage } from '../utils/image-format'
 
 const GUIDELINE_ID = '2.7'
 const GUIDELINE_NAME = 'Avoid Unnecessary or an Overabundance of Assets'
 const SUCCESS_CRITERION =
-  'Images should use modern formats (WebP/AVIF) and include width and height attributes'
+  'Raster images should use modern formats (WebP/AVIF); all images should include width and height attributes'
 const RESOURCES = [
   'https://www.w3.org/TR/web-sustainability-guidelines/#avoid-unnecessary-or-an-overabundance-of-assets',
 ]
@@ -36,15 +38,25 @@ const MODERN_IMAGE_FORMATS = ['.webp', '.avif']
 
 /** Returns `true` when the URL path ends with a modern image format extension. */
 function isModernFormat(url: string): boolean {
-  try {
-    const pathname = new URL(url).pathname.toLowerCase()
-    return MODERN_IMAGE_FORMATS.some((ext) => pathname.endsWith(ext))
-  } catch {
-    const lowerUrl = url.toLowerCase()
-    const pathOnly = lowerUrl.split(/[?#]/, 1)[0]
-    return MODERN_IMAGE_FORMATS.some((ext) => pathOnly.endsWith(ext))
-  }
+  const pathname = imagePathname(url)
+  return MODERN_IMAGE_FORMATS.some((ext) => pathname.endsWith(ext))
 }
+
+const FORMAT_RECOMMENDATION =
+  'Convert images to WebP or AVIF format using a build-time image pipeline or CDN ' +
+  'image transform.'
+const DIMENSION_RECOMMENDATION =
+  'Add explicit width and height attributes to every <img> element ' +
+  'to prevent layout shifts while images are loading.'
+
+/** Names only the problems found, so an SVG-only page is not told to convert. */
+const buildRecommendation = (hasFormatIssue: boolean, hasDimensionIssue: boolean): string =>
+  [
+    hasFormatIssue ? FORMAT_RECOMMENDATION : null,
+    hasDimensionIssue ? DIMENSION_RECOMMENDATION : null,
+  ]
+    .filter((s): s is string => s !== null)
+    .join(' ')
 
 export const checkOptimizedMedia: CheckFn = (page) => {
   // Only inspect primary image resources (those with an explicit src attribute).
@@ -69,10 +81,13 @@ export const checkOptimizedMedia: CheckFn = (page) => {
   const issues: string[] = []
 
   // ── 1. Modern image formats ───────────────────────────────────────────────
-  const modernFormatImages = imageResources.filter((r) => isModernFormat(r.url))
-  if (modernFormatImages.length === 0) {
+  // SVG has no WebP/AVIF equivalent, so only raster images count here.
+  const rasterImages = imageResources.filter((r) => !isVectorImage(r.url))
+  const modernFormatImages = rasterImages.filter((r) => isModernFormat(r.url))
+  const hasFormatIssue = rasterImages.length > 0 && modernFormatImages.length === 0
+  if (hasFormatIssue) {
     issues.push(
-      `${imageResources.length} image(s) found but none use WebP or AVIF format — ` +
+      `${rasterImages.length} raster image(s) found but none use WebP or AVIF format — ` +
         'modern formats reduce file size by 25–50% compared with JPEG/PNG'
     )
   }
@@ -81,7 +96,8 @@ export const checkOptimizedMedia: CheckFn = (page) => {
   const imagesWithDimensions = imageResources.filter(
     (r) => 'width' in r.attributes && 'height' in r.attributes
   )
-  if (imagesWithDimensions.length < imageResources.length) {
+  const hasDimensionIssue = imagesWithDimensions.length < imageResources.length
+  if (hasDimensionIssue) {
     const missing = imageResources.length - imagesWithDimensions.length
     issues.push(
       `${missing} of ${imageResources.length} image(s) lack explicit width and height attributes — ` +
@@ -96,15 +112,15 @@ export const checkOptimizedMedia: CheckFn = (page) => {
       successCriterion: SUCCESS_CRITERION,
       status: 'pass',
       score: 100,
-      message: `All ${imageResources.length} image(s) use modern formats and have explicit dimensions.`,
+      message: `All ${imageResources.length} image(s) use modern or vector formats and have explicit dimensions.`,
       impact: 'high',
       category: 'ux',
       machineTestable: true,
     }
   }
 
-  // No modern format images is the more critical issue.
-  const isCritical = modernFormatImages.length === 0
+  // A format issue is the more critical problem; dimension-only issues warn.
+  const isCritical = hasFormatIssue
 
   return {
     guidelineId: GUIDELINE_ID,
@@ -114,10 +130,7 @@ export const checkOptimizedMedia: CheckFn = (page) => {
     score: isCritical ? 0 : 50,
     message: 'Image optimisation issues detected.',
     details: issues.join('; '),
-    recommendation:
-      'Convert images to WebP or AVIF format using a build-time image pipeline or CDN ' +
-      'image transform. Add explicit width and height attributes to every <img> element ' +
-      'to prevent layout shifts while images are loading.',
+    recommendation: buildRecommendation(hasFormatIssue, hasDimensionIssue),
     resources: RESOURCES,
     impact: 'high',
     category: 'ux',

@@ -27,6 +27,7 @@ export interface WSGCheckConfig {
   maxDepth: number // Crawl depth (1 = single page)
   userAgent: string
   followRedirects: boolean
+  ignoreRobots: boolean // Skip the robots.txt fetch and check, for sites the operator runs
 
   // Output
   format: OutputFormat

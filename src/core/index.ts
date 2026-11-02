@@ -17,6 +17,7 @@
  * ```
  */
 
+import { DEFAULT_CONFIG } from '../config/defaults'
 import type { ResolvedConfig } from '../config/loader'
 import { FetchError, ParseError, type Result, err, ok } from '../utils/errors'
 import { raceAbort } from '../utils/abort'
@@ -50,6 +51,9 @@ export type CheckerConfig = Partial<ResolvedConfig> & {
   readonly onProgress?: (stage: CheckStage) => void
 }
 
+/** Lets site owners tell an operator's robots.txt override from the tool's normal behaviour. */
+const markRobotsOverride = (userAgent: string): string => `${userAgent} (ignore-robots)`
+
 /**
  * Top-level orchestrator that coordinates fetching, parsing, running checks,
  * and scoring for a single URL.
@@ -65,15 +69,19 @@ export class WsgChecker {
   private readonly logger: Logger
   private readonly onProgress?: (stage: CheckStage) => void
   private readonly signal?: AbortSignal
+  private readonly ignoreRobots: boolean
 
   constructor(
     config: CheckerConfig = {},
     checks: ReadonlyArray<CheckFn> = [],
     logger: Logger = defaultLogger
   ) {
+    const ignoreRobots = config.ignoreRobots ?? false
     this.fetcher = new PageFetcher({
       timeout: config.timeout,
-      userAgent: config.userAgent,
+      userAgent: ignoreRobots
+        ? markRobotsOverride(config.userAgent ?? DEFAULT_CONFIG.userAgent)
+        : config.userAgent,
       followRedirects: config.followRedirects,
       hostPolicy: config.hostPolicy,
       signal: config.signal,
@@ -83,6 +91,7 @@ export class WsgChecker {
     this.logger = logger
     this.onProgress = config.onProgress
     this.signal = config.signal
+    this.ignoreRobots = ignoreRobots
   }
 
   /**
@@ -97,7 +106,7 @@ export class WsgChecker {
     const start = Date.now()
 
     this.onProgress?.('fetching')
-    const pageResult = await this.fetcher.fetch(url)
+    const pageResult = await this.fetcher.fetch(url, { ignoreRobots: this.ignoreRobots })
     if (!pageResult.ok) {
       this.logger.error('Failed to fetch page', { url, error: pageResult.error.message })
       return pageResult

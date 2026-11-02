@@ -56,8 +56,15 @@ export interface FetchResult {
    * is exact for any charset. Set on every fetched response.
    */
   bodyByteLength?: number
+  /** `Content-Encoding` as sent by the server, even after axios strips it. */
   contentEncoding?: string
   contentType?: string
+  /**
+   * `Sitemap:` URLs from the requested origin's robots.txt. Empty if it declared
+   * none or didn't return 200; absent if robots.txt was skipped (`ignoreRobots`).
+   * A cached result keeps the value from the fetch that filled the cache.
+   */
+  robotsSitemaps?: ReadonlyArray<string>
 }
 
 export interface HttpClientOptions {
@@ -73,7 +80,9 @@ export interface HttpClientOptions {
   /**
    * Network access policy applied to the initial URL (before robots.txt is
    * fetched) and to every redirect hop. When omitted, only redirect hops are
-   * checked, and every private or loopback target is refused.
+   * checked, by name and by DNS, and private or loopback targets are refused.
+   * The one exception is a hop that stays on a start host the caller named as
+   * local (`localhost`, `*.local`, or a private IP literal).
    */
   hostPolicy?: HostPolicy
   /** Aborts in-flight requests and stops retries, e.g. when a caller cancels. */
@@ -91,6 +100,38 @@ const DEFAULT_OPTIONS: Required<Omit<HttpClientOptions, 'hostPolicy' | 'signal'>
 }
 
 const MAX_REDIRECTS = 10
+
+// ─── Response headers ─────────────────────────────────────────────────────────
+
+/** Shape of axios's Node adapter request: `ClientRequest.res` is the `IncomingMessage`. */
+interface RawHeaderSource {
+  readonly res?: { readonly rawHeaders?: ReadonlyArray<string> }
+}
+
+/**
+ * Reads a header from the raw Node response headers. `name` must be lower-case.
+ * Returns `undefined` without a Node response (XHR or fetch adapters, mocks).
+ */
+const rawHeaderValue = (request: unknown, name: string): string | undefined => {
+  const raw = (request as RawHeaderSource | undefined)?.res?.rawHeaders ?? []
+  const index = raw.findIndex((entry, i) => i % 2 === 0 && entry.toLowerCase() === name)
+  return index === -1 ? undefined : raw[index + 1]
+}
+
+const responseHeaders = (resp: AxiosResponse<unknown>): Record<string, string> => {
+  const headers: Record<string, string> = Object.fromEntries(
+    Object.entries(resp.headers as Record<string, unknown>).flatMap(([key, value]) => {
+      if (typeof value === 'string') return [[key, value]]
+      if (Array.isArray(value)) return [[key, (value as string[]).join(', ')]]
+      return []
+    })
+  )
+
+  // axios deletes Content-Encoding after decompressing; the compression check needs it.
+  if (headers['content-encoding'] !== undefined) return headers
+  const recovered = rawHeaderValue(resp.request, 'content-encoding')
+  return recovered === undefined ? headers : { ...headers, 'content-encoding': recovered }
+}
 
 /** Response body as bytes: a Buffer from the Node adapter, an ArrayBuffer elsewhere, a string from mocks. */
 const toBuffer = (data: unknown): Buffer => {
@@ -188,6 +229,11 @@ export class HttpClient {
     return robots.isAllowed(url, this.opts.userAgent) !== false
   }
 
+  /** Sitemap URLs from the cached robots.txt of `url`'s origin, if it was consulted. */
+  private robotsSitemapsFor(url: string): ReadonlyArray<string> | undefined {
+    return this.robotsCache.get(new URL(url).origin)?.getSitemaps()
+  }
+
   // ── Public fetch ────────────────────────────────────────────────────────────
 
   /**
@@ -228,7 +274,10 @@ export class HttpClient {
     }
 
     try {
-      const result = await this.fetchWithRetry(url, startClass)
+      const fetched = await this.fetchWithRetry(url, startClass)
+      const robotsSitemaps = options?.ignoreRobots ? undefined : this.robotsSitemapsFor(url)
+      // An empty array is kept: it records that robots.txt was consulted.
+      const result = robotsSitemaps ? { ...fetched, robotsSitemaps } : fetched
       this.cache.set(url, result)
       return ok(result)
     } catch (e) {
@@ -306,7 +355,7 @@ export class HttpClient {
         const nextUrl = new URL(location, currentUrl).href
 
         // SSRF guard: validate the redirect target before following it.
-        currentClass = await this.checkRedirectTarget(nextUrl, startUrl, currentClass)
+        currentClass = await this.checkRedirectTarget(nextUrl, currentUrl, startUrl, currentClass)
         currentUrl = nextUrl
         continue
       }
@@ -324,6 +373,7 @@ export class HttpClient {
    */
   private async checkRedirectTarget(
     nextUrl: string,
+    fromUrl: string,
     startUrl: string,
     fromClass: AddressClass | undefined
   ): Promise<AddressClass | undefined> {
@@ -340,11 +390,15 @@ export class HttpClient {
 
     const nextHostname = new URL(nextUrl).hostname
     if (isDisallowedHost(nextHostname)) {
+      // A local name here can only be the caller's own start host: the API refuses
+      // one at validation, and a hop that introduces one is refused just below.
+      if (nextHostname === new URL(fromUrl).hostname) return undefined
       throw new FetchError(
         `Redirect target host is not allowed for security reasons: ${nextHostname}`,
         startUrl
       )
     }
+    // Same-host hops are not exempt: the name may resolve somewhere else by now.
     if (await dnsResolvesToPrivateAddress(nextHostname)) {
       throw new FetchError(
         `Redirect target resolves to a private or unreachable address: ${nextHostname}`,
@@ -361,14 +415,7 @@ export class HttpClient {
     redirectChain: RedirectEntry[],
     contentLength: number
   ): FetchResult {
-    const headers: Record<string, string> = {}
-    for (const [key, value] of Object.entries(resp.headers as Record<string, unknown>)) {
-      if (typeof value === 'string') {
-        headers[key] = value
-      } else if (Array.isArray(value)) {
-        headers[key] = (value as string[]).join(', ')
-      }
-    }
+    const headers = responseHeaders(resp)
 
     // Decode as axios does for text responses: UTF-8, then drop a leading BOM.
     const bytes = toBuffer(resp.data)

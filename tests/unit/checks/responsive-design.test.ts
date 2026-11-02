@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { checkResponsiveDesign } from '@/checks/responsive-design'
 import type { PageData } from '@/core/types'
 import type { MetaTag, ResourceReference } from '@/utils/html-parser'
+import { parseHtml } from '@/utils/html-parser'
 import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
@@ -182,5 +183,46 @@ describe('checkResponsiveDesign (WSG 3.13)', () => {
     )
     const firstResource = expectRecommendationAndResources(result)
     expect(firstResource).toContain('w3.org')
+  })
+
+  describe('SVG (vector) images', () => {
+    it('passes without srcset when the only images are SVG', async () => {
+      const resources = [makeImage('https://example.com/logo.svg')]
+      const result = await checkResponsiveDesign(
+        makePageData({ metaTags: [VIEWPORT_META], resources, body: BODY_WITH_MEDIA_QUERY })
+      )
+      expect(result.status).toBe('pass')
+      expect(result.score).toBe(100)
+      expect(result.details ?? '').not.toContain('srcset')
+    })
+
+    it('still warns about srcset when a JPEG accompanies an SVG', async () => {
+      const resources = [
+        makeImage('https://example.com/logo.svg'),
+        makeImage('https://example.com/photo.jpg'),
+      ]
+      const result = await checkResponsiveDesign(
+        makePageData({ metaTags: [VIEWPORT_META], resources, body: BODY_WITH_MEDIA_QUERY })
+      )
+      expect(result.status).toBe('warn')
+      expect(result.details).toContain('srcset')
+      expect(result.details).toContain('1 raster image')
+    })
+
+    it('passes for an SVG-only page parsed from HTML', async () => {
+      const parsed = parseHtml(
+        '<img src="/icon.svg?v=2" width="40" height="40">' +
+          '<img src="data:image/svg+xml;base64,PHN2Zy8+" width="1" height="1">',
+        'https://x.test/'
+      )
+      const result = await checkResponsiveDesign(
+        makePageData({
+          metaTags: [VIEWPORT_META],
+          resources: parsed.resources,
+          body: BODY_WITH_MEDIA_QUERY,
+        })
+      )
+      expect(result.status).toBe('pass')
+    })
   })
 })

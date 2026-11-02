@@ -26,11 +26,18 @@ vi.mock('@/core/index', () => {
   const mockCheck = vi.fn()
   // Track the checks array passed to the constructor so tests can inspect filtering.
   let lastChecks: unknown[] = []
-  function WsgChecker(_config: unknown, checks: unknown[]) {
+  let lastConfig: unknown
+  function WsgChecker(config: unknown, checks: unknown[]) {
+    lastConfig = config
     lastChecks = checks
     return { check: mockCheck }
   }
-  return { WsgChecker, _mockCheck: mockCheck, _getLastChecks: () => lastChecks }
+  return {
+    WsgChecker,
+    _mockCheck: mockCheck,
+    _getLastChecks: () => lastChecks,
+    _getLastConfig: () => lastConfig,
+  }
 })
 
 // Helper to retrieve the mocked `check` function from the WsgChecker mock.
@@ -45,6 +52,13 @@ const getLastChecks = async (): Promise<Array<{ guidelineId?: string }>> => {
   const mod = await import('@/core/index')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (mod as any)._getLastChecks()
+}
+
+// Helper to retrieve the config that was passed to the last WsgChecker construction.
+const getLastConfig = async (): Promise<{ ignoreRobots?: boolean }> => {
+  const mod = await import('@/core/index')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (mod as any)._getLastConfig()
 }
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
@@ -127,6 +141,7 @@ describe('buildProgram', () => {
     expect(optionNames).toContain('--fail-threshold')
     expect(optionNames).toContain('--verbose')
     expect(optionNames).toContain('--config')
+    expect(optionNames).toContain('--ignore-robots')
   })
 
   it('accepts a <url> positional argument', () => {
@@ -158,6 +173,8 @@ describe('runCheck', () => {
   beforeEach(async () => {
     stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
     stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
+    // runCheck reads the real environment; a host-exported WSG_IGNORE_ROBOTS would change the asserted default.
+    vi.stubEnv('WSG_IGNORE_ROBOTS', undefined) // skipcq: JS-W1042 (undefined unsets the variable; the argument is required)
     // Reset the mock before each test
     const mockCheck = await getMockCheck()
     mockCheck.mockReset()
@@ -165,6 +182,7 @@ describe('runCheck', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.unstubAllEnvs()
   })
 
   it('returns exit code 0 when the check succeeds and score meets threshold', async () => {
@@ -218,6 +236,22 @@ describe('runCheck', () => {
     await runCheck('https://example.com', {})
     const stderrOutput = stderrSpy.mock.calls.map((c: unknown[]) => c[0]).join('')
     expect(stderrOutput).toContain('Timeout')
+  })
+
+  it('passes --ignore-robots through to the checker', async () => {
+    const mockCheck = await getMockCheck()
+    mockCheck.mockResolvedValue({ ok: true, value: PASSING_RUN_RESULT })
+
+    await runCheck('https://example.com', { ignoreRobots: true })
+    expect((await getLastConfig()).ignoreRobots).toBe(true)
+  })
+
+  it('does not ignore robots.txt unless asked', async () => {
+    const mockCheck = await getMockCheck()
+    mockCheck.mockResolvedValue({ ok: true, value: PASSING_RUN_RESULT })
+
+    await runCheck('https://example.com', {})
+    expect((await getLastConfig()).ignoreRobots).toBe(false)
   })
 
   it('respects the --categories option', async () => {

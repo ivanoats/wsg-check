@@ -47,6 +47,7 @@ interface CliOptions {
   readonly failThreshold?: string
   readonly verbose?: boolean
   readonly config?: string
+  readonly ignoreRobots?: boolean
 }
 
 // ─── Spinner ──────────────────────────────────────────────────────────────────
@@ -111,6 +112,7 @@ const buildCliFlags = (url: string, opts: CliOptions) => ({
   ...(opts.guidelines ? { guidelines: opts.guidelines.split(',').map((g) => g.trim()) } : {}),
   ...(opts.failThreshold ? { failThreshold: Number.parseInt(opts.failThreshold, 10) } : {}),
   ...(opts.verbose ? { verbose: true } : {}),
+  ...(opts.ignoreRobots ? { ignoreRobots: true } : {}),
 })
 
 // ─── Selection notices ────────────────────────────────────────────────────────
@@ -214,6 +216,10 @@ export const buildProgram = (): Command => {
     )
     .option('--config <path>', 'path to wsg-check.config.json or .wsgcheckrc.json')
     .option('-v, --verbose', 'enable verbose logging')
+    .option(
+      '--ignore-robots',
+      'skip robots.txt for a site you operate; adds "(ignore-robots)" to the User-Agent'
+    )
     .addHelpText(
       'after',
       '\nRun as an MCP server over stdio instead: wsg-check --mcp [--no-local] [--allow-private-network]'
