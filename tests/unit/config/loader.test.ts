@@ -139,6 +139,32 @@ describe('loadFromFile', () => {
     expect(cfg.verbose).toBe(true)
   })
 
+  it('keeps valid headers from the config file', () => {
+    writeFileSync(
+      path.join(tmpDir, 'wsg-check.config.json'),
+      JSON.stringify({ headers: { Cookie: 'session=abc' } })
+    )
+    expect(loadFromFile(tmpDir).headers).toEqual({ Cookie: 'session=abc' })
+  })
+
+  it.each([
+    ['an invalid header name', { 'Bad Name': 'x' }, 'is not an HTTP header name'],
+    ['a non-string value', { 'X-Count': 3 }, 'must be a string'],
+    ['a non-object', ['Cookie: a=b'], 'expected an object'],
+  ])('rejects %s in headers without echoing values', (_, headers, message) => {
+    writeFileSync(path.join(tmpDir, 'wsg-check.config.json'), JSON.stringify({ headers }))
+    expect(() => loadFromFile(tmpDir)).toThrow(message)
+  })
+
+  it('does not include a header value in the error message', () => {
+    writeFileSync(
+      path.join(tmpDir, 'wsg-check.config.json'),
+      JSON.stringify({ headers: { 'Bad Name': 'secret-token-value' } })
+    )
+    expect(() => loadFromFile(tmpDir)).toThrow('"Bad Name"')
+    expect(() => loadFromFile(tmpDir)).not.toThrow('secret-token-value')
+  })
+
   it('prefers wsg-check.config.json over .wsgcheckrc.json', () => {
     writeFileSync(path.join(tmpDir, 'wsg-check.config.json'), JSON.stringify({ timeout: 1000 }))
     writeFileSync(path.join(tmpDir, '.wsgcheckrc.json'), JSON.stringify({ timeout: 2000 }))

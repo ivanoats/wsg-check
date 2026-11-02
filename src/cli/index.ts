@@ -19,9 +19,9 @@
 import { writeFileSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { Command } from 'commander'
+import { Command, InvalidArgumentError } from 'commander'
 import { isEntryPoint } from '../utils/entry-point'
-import { resolveConfig } from '../config/loader'
+import { isHttpHeaderName, resolveConfig } from '../config/loader'
 import { WSG_SPEC } from '../config/spec/index'
 import type { OutputFormat, WSGCategory } from '../config/types'
 import { runReport, selectChecks, type SelectionNotice } from '../pipeline/index'
@@ -47,6 +47,7 @@ interface CliOptions {
   readonly failThreshold?: string
   readonly verbose?: boolean
   readonly config?: string
+  readonly header?: Readonly<Record<string, string>>
   readonly ignoreRobots?: boolean
 }
 
@@ -99,6 +100,23 @@ const renderReport = (report: SustainabilityReport, format: OutputFormat): strin
 // ─── CLI flag builder ─────────────────────────────────────────────────────────
 
 /**
+ * Accumulates repeated `--header` flags into one record, splitting on the
+ * first colon. The error omits the value (commander still quotes the argument).
+ */
+const collectHeader = (
+  value: string,
+  previous: Readonly<Record<string, string>> = {}
+): Readonly<Record<string, string>> => {
+  const colon = value.indexOf(':')
+  const name = value.slice(0, Math.max(colon, 0)).trim()
+  // Also catches a missing colon, which leaves the name empty.
+  if (!isHttpHeaderName(name)) {
+    throw new InvalidArgumentError('expected "Name: value"; name must be an HTTP token')
+  }
+  return { ...previous, [name]: value.slice(colon + 1).trim() }
+}
+
+/**
  * Maps raw commander option strings to typed config properties.
  * Extracted to keep `runCheck` below the cognitive-complexity threshold.
  */
@@ -112,6 +130,8 @@ const buildCliFlags = (url: string, opts: CliOptions) => ({
   ...(opts.guidelines ? { guidelines: opts.guidelines.split(',').map((g) => g.trim()) } : {}),
   ...(opts.failThreshold ? { failThreshold: Number.parseInt(opts.failThreshold, 10) } : {}),
   ...(opts.verbose ? { verbose: true } : {}),
+  // No commander default for --header, so an absent flag keeps config-file headers.
+  ...(opts.header ? { headers: opts.header } : {}),
   ...(opts.ignoreRobots ? { ignoreRobots: true } : {}),
 })
 
@@ -215,6 +235,11 @@ export const buildProgram = (): Command => {
       '0'
     )
     .option('--config <path>', 'path to wsg-check.config.json or .wsgcheckrc.json')
+    .option(
+      '-H, --header <name: value>',
+      'send an extra request header to the checked site (repeatable; e.g. "Cookie: session=..."). Sent only to the start URL\'s host.',
+      collectHeader
+    )
     .option('-v, --verbose', 'enable verbose logging')
     .option(
       '--ignore-robots',

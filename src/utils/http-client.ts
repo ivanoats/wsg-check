@@ -6,6 +6,7 @@
  *   - Configurable timeout, retry with exponential back-off, and user-agent
  *   - Respects robots.txt (WSG 4.6)
  *   - Records the full redirect chain (WSG 4.4)
+ *   - Optional per-request headers, scoped to the start URL's host
  */
 
 import axios, { AxiosError, type AxiosInstance, type AxiosResponse } from 'axios'
@@ -78,11 +79,15 @@ export interface HttpClientOptions {
   hostPolicy?: HostPolicy
   /** Aborts in-flight requests and stops retries, e.g. when a caller cancels. */
   signal?: AbortSignal
+  /** Extra headers (e.g. a Cookie) for the page fetch. Not sent to robots.txt, other hosts, or over plain http after an https hop. */
+  headers?: Readonly<Record<string, string>>
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const DEFAULT_OPTIONS: Required<Omit<HttpClientOptions, 'hostPolicy' | 'signal'>> = {
+type DefaultedOptions = Required<Omit<HttpClientOptions, 'hostPolicy' | 'signal' | 'headers'>>
+
+const DEFAULT_OPTIONS: DefaultedOptions = {
   timeout: 30_000,
   userAgent: `Mozilla/5.0 (compatible; wsg-check/${VERSION}; +https://github.com/ivanoats/wsg-check)`,
   followRedirects: true,
@@ -124,18 +129,44 @@ const responseHeaders = (resp: AxiosResponse<string>): Record<string, string> =>
   return recovered === undefined ? headers : { ...headers, 'content-encoding': recovered }
 }
 
+// ─── Request headers ──────────────────────────────────────────────────────────
+
+/**
+ * Headers for one hop: the configured set only if it stays on the start
+ * URL's hostname and is not a plaintext hop after any https hop, else none.
+ * `priorHops` are the redirects already followed in this chain.
+ */
+export const requestHeaders = (
+  headers: Readonly<Record<string, string>>,
+  startUrl: string,
+  currentUrl: string,
+  priorHops: ReadonlyArray<string>
+): { headers?: Readonly<Record<string, string>> } => {
+  if (Object.keys(headers).length === 0) return {}
+  const start = new URL(startUrl)
+  const current = new URL(currentUrl)
+  const sameHost = current.hostname === start.hostname
+  // The start URL alone cannot tell whether the chain has already moved to
+  // https (http -> https -> http), so look at every earlier hop.
+  const isHttps = (url: string): boolean => new URL(url).protocol === 'https:'
+  const downgraded = current.protocol === 'http:' && [startUrl, ...priorHops].some(isHttps)
+  return sameHost && !downgraded ? { headers } : {}
+}
+
 // ─── HttpClient ───────────────────────────────────────────────────────────────
 
 export class HttpClient {
   private readonly axiosInstance: AxiosInstance
-  private readonly opts: Required<Omit<HttpClientOptions, 'hostPolicy' | 'signal'>>
+  private readonly opts: DefaultedOptions
   private readonly hostPolicy?: HostPolicy
   private readonly signal?: AbortSignal
+  // Kept off the axios instance, which robots.txt and every hop share.
+  private readonly extraHeaders: Readonly<Record<string, string>>
   private readonly cache = new Map<string, FetchResult>()
   private readonly robotsCache = new Map<string, ReturnType<typeof robotsParser>>()
 
   constructor(options: HttpClientOptions = {}) {
-    const { hostPolicy, signal, ...rest } = options
+    const { hostPolicy, signal, headers, ...rest } = options
     // Ignore options passed as `undefined` so they don't erase the defaults
     // (WsgChecker forwards unset config fields as `undefined`).
     const provided = Object.fromEntries(
@@ -144,6 +175,7 @@ export class HttpClient {
     this.opts = { ...DEFAULT_OPTIONS, ...provided }
     this.hostPolicy = hostPolicy
     this.signal = signal
+    this.extraHeaders = headers ?? {}
 
     this.axiosInstance = axios.create({
       timeout: this.opts.timeout,
@@ -306,6 +338,12 @@ export class HttpClient {
       const resp = await this.axiosInstance.get<string>(currentUrl, {
         responseType: 'text',
         ...this.connectOptions(currentClass),
+        ...requestHeaders(
+          this.extraHeaders,
+          startUrl,
+          currentUrl,
+          redirectChain.map((entry) => entry.url)
+        ),
       })
 
       if (resp.status >= 300 && resp.status < 400) {
