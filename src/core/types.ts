@@ -166,7 +166,7 @@ export interface RunResult {
 
 /** Page-weight figures carried from `PageData` into the report. */
 export interface PageMetrics {
-  /** Byte size of the HTML response body. */
+  /** HTML transfer size: bytes received over the network, compressed when the server compressed them. */
   htmlSize: number
   /** External resource references parsed from the HTML (not counting the HTML itself). */
   resourceCount: number

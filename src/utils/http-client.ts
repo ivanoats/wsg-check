@@ -9,7 +9,12 @@
  *   - Optional per-request headers, scoped to the start URL's host
  */
 
-import axios, { AxiosError, type AxiosInstance, type AxiosResponse } from 'axios'
+import axios, {
+  AxiosError,
+  type AxiosInstance,
+  type AxiosRequestConfig,
+  type AxiosResponse,
+} from 'axios'
 import robotsParser from 'robots-parser'
 import { FetchError, type Result, ok, err } from './errors'
 import { isDisallowedHost, dnsResolvesToPrivateAddress } from './ssrf'
@@ -41,13 +46,17 @@ export interface FetchResult {
   /** `true` when the result was served from the in-memory cache. */
   fromCache: boolean
   /**
-   * Transfer size in bytes as reported by the `Content-Length` response header.
-   * This is the **compressed** size when `Content-Encoding` is present, giving an
-   * accurate picture of network bandwidth used (relevant for sustainability metrics).
-   * Falls back to the decompressed body byte-length when the header is absent
-   * (e.g. chunked transfer encoding).
+   * Transfer size: bytes of the final response body as received over the network,
+   * counted before decompression. This is the **compressed** size when
+   * `Content-Encoding` is present, and it does not depend on whether the server
+   * sent a `Content-Length` header or used chunked transfer encoding.
    */
   contentLength: number
+  /**
+   * Byte length of the body after decompression and before text decoding, so it
+   * is exact for any charset. Set on every fetched response.
+   */
+  bodyByteLength?: number
   /** `Content-Encoding` as sent by the server, even after axios strips it. */
   contentEncoding?: string
   contentType?: string
@@ -114,7 +123,7 @@ const rawHeaderValue = (request: unknown, name: string): string | undefined => {
   return index === -1 ? undefined : raw[index + 1]
 }
 
-const responseHeaders = (resp: AxiosResponse<string>): Record<string, string> => {
+const responseHeaders = (resp: AxiosResponse<unknown>): Record<string, string> => {
   const headers: Record<string, string> = Object.fromEntries(
     Object.entries(resp.headers as Record<string, unknown>).flatMap(([key, value]) => {
       if (typeof value === 'string') return [[key, value]]
@@ -127,6 +136,13 @@ const responseHeaders = (resp: AxiosResponse<string>): Record<string, string> =>
   if (headers['content-encoding'] !== undefined) return headers
   const recovered = rawHeaderValue(resp.request, 'content-encoding')
   return recovered === undefined ? headers : { ...headers, 'content-encoding': recovered }
+}
+
+/** Response body as bytes: a Buffer from the Node adapter, an ArrayBuffer elsewhere, a string from mocks. */
+const toBuffer = (data: unknown): Buffer => {
+  if (Buffer.isBuffer(data)) return data
+  if (data instanceof ArrayBuffer) return Buffer.from(data)
+  return typeof data === 'string' ? Buffer.from(data, 'utf8') : Buffer.alloc(0)
 }
 
 // ─── Request headers ──────────────────────────────────────────────────────────
@@ -335,8 +351,16 @@ export class HttpClient {
     let currentClass = startClass
 
     for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-      const resp = await this.axiosInstance.get<string>(currentUrl, {
-        responseType: 'text',
+      // axios counts download progress before it decompresses the body, so the
+      // final `loaded` is the number of bytes received whatever the framing.
+      // Its last event is delivered before the request promise settles.
+      let bytesReceived = 0
+      const request: AxiosRequestConfig = {
+        // Bytes, not text, so the decompressed size can be measured before decoding.
+        responseType: 'arraybuffer',
+        onDownloadProgress: (event) => {
+          bytesReceived = event.loaded
+        },
         ...this.connectOptions(currentClass),
         ...requestHeaders(
           this.extraHeaders,
@@ -344,12 +368,15 @@ export class HttpClient {
           currentUrl,
           redirectChain.map((entry) => entry.url)
         ),
-      })
+      }
+      // The start URL and every redirect hop pass the SSRF guard (hostPolicy,
+      // isDisallowedHost, DNS check) before this request is made.
+      const resp = await this.axiosInstance.get<unknown>(currentUrl, request) // NOSONAR
 
       if (resp.status >= 300 && resp.status < 400) {
         if (!this.opts.followRedirects) {
           // Caller asked not to follow – return the redirect response as-is.
-          return this.buildResult(startUrl, currentUrl, resp, redirectChain)
+          return HttpClient.buildResult(startUrl, currentUrl, resp, redirectChain, bytesReceived)
         }
 
         const location = (resp.headers as Record<string, string>)['location']
@@ -371,7 +398,7 @@ export class HttpClient {
         continue
       }
 
-      return this.buildResult(startUrl, currentUrl, resp, redirectChain)
+      return HttpClient.buildResult(startUrl, currentUrl, resp, redirectChain, bytesReceived)
     }
 
     throw new FetchError(`Too many redirects (> ${MAX_REDIRECTS}) for ${startUrl}`, startUrl)
@@ -419,24 +446,19 @@ export class HttpClient {
     return undefined
   }
 
-  private buildResult(
+  private static buildResult(
     originalUrl: string,
     finalUrl: string,
-    resp: AxiosResponse<string>,
-    redirectChain: RedirectEntry[]
+    resp: AxiosResponse<unknown>,
+    redirectChain: RedirectEntry[],
+    contentLength: number
   ): FetchResult {
     const headers = responseHeaders(resp)
 
-    const body = typeof resp.data === 'string' ? resp.data : String(resp.data)
-
-    // Prefer the Content-Length header so the value reflects the compressed
-    // transfer size (accurate bandwidth metric for sustainability analysis).
-    // Fall back to body byte-length when the header is absent (chunked transfer).
-    const headerContentLength = headers['content-length']
-    const contentLength =
-      headerContentLength !== undefined
-        ? parseInt(headerContentLength, 10) || body.length
-        : body.length
+    // Decode as axios does for text responses: UTF-8, then drop a leading BOM.
+    const bytes = toBuffer(resp.data)
+    const text = bytes.toString('utf8')
+    const body = text.codePointAt(0) === 0xfeff ? text.slice(1) : text
 
     return {
       url: finalUrl,
@@ -447,6 +469,7 @@ export class HttpClient {
       redirectChain,
       fromCache: false,
       contentLength,
+      bodyByteLength: bytes.length,
       contentEncoding: headers['content-encoding'],
       contentType: headers['content-type'],
     }

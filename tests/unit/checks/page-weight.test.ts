@@ -5,8 +5,11 @@ import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
-/** Build a minimal PageData stub with configurable HTML size and resource count. */
-function makePageData(htmlSize: number, resourceCount = 0): PageData {
+/**
+ * Build a minimal PageData stub with configurable HTML transfer size and resource
+ * count. `bodySize` is the uncompressed size; it equals `htmlSize` unless set.
+ */
+function makePageData(htmlSize: number, resourceCount = 0, bodySize = htmlSize): PageData {
   return {
     url: 'https://example.com',
     fetchResult: {
@@ -14,7 +17,8 @@ function makePageData(htmlSize: number, resourceCount = 0): PageData {
       originalUrl: 'https://example.com',
       statusCode: 200,
       headers: {},
-      body: 'x'.repeat(htmlSize),
+      body: 'x'.repeat(bodySize),
+      bodyByteLength: bodySize,
       redirectChain: [],
       fromCache: false,
       contentLength: htmlSize,
@@ -117,8 +121,14 @@ describe('checkPageWeight (WSG 3.1)', () => {
 
   it('pass message includes the document size and resource count', async () => {
     const result = await checkPageWeight(makePageData(50 * KB, 5))
-    expect(result.message).toContain('KB')
-    expect(result.message).toContain('5')
+    expect(result.message).toContain('50 KB with 5')
+    expect(result.message).not.toContain('uncompressed')
+  })
+
+  it('judges the transferred size and shows the uncompressed size when it differs', async () => {
+    const result = await checkPageWeight(makePageData(18 * KB, 0, 109 * KB))
+    expect(result.status).toBe('pass')
+    expect(result.message).toContain('18 KB transferred (109 KB uncompressed)')
   })
 
   it('passes at exactly the HTML warn threshold boundary (100 KB is not above threshold)', async () => {

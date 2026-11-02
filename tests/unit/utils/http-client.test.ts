@@ -213,13 +213,18 @@ describe('HttpClient', () => {
     expect(result.value.contentType).toBe('text/html; charset=utf-8')
   })
 
-  it('uses content-length header as contentLength when present', async () => {
+  it('reports the bytes received as contentLength, not the header or body length', async () => {
     mockGet.mockResolvedValueOnce(axiosResp(404, ''))
-    mockGet.mockResolvedValueOnce(
-      axiosResp(200, 'body', {
-        'content-length': '42',
-        'content-encoding': 'gzip',
-      })
+    mockGet.mockImplementationOnce(
+      (_url: string, config: { onDownloadProgress?: (e: { loaded: number }) => void }) => {
+        config.onDownloadProgress?.({ loaded: 10 })
+        return Promise.resolve(
+          axiosResp(200, '<html>hello</html>', {
+            'content-length': '42',
+            'content-encoding': 'gzip',
+          })
+        )
+      }
     )
 
     const client = new HttpClient()
@@ -227,39 +232,45 @@ describe('HttpClient', () => {
 
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.value.contentLength).toBe(42)
+    expect(result.value.contentLength).toBe(10)
+    expect(result.value.body).toBe('<html>hello</html>')
+    expect(result.value.bodyByteLength).toBe(Buffer.byteLength('<html>hello</html>'))
   })
 
-  it('falls back to body length for contentLength when header is absent', async () => {
-    const body = '<html>hello</html>'
+  it('reports 0 contentLength when no body bytes were received', async () => {
     mockGet.mockResolvedValueOnce(axiosResp(404, ''))
-    mockGet.mockResolvedValueOnce(axiosResp(200, body))
+    mockGet.mockResolvedValueOnce(axiosResp(200, ''))
 
     const client = new HttpClient()
     const result = await client.fetch('https://example.com/')
 
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.value.contentLength).toBe(body.length)
+    expect(result.value.contentLength).toBe(0)
   })
 
   it('recovers content-encoding from raw response headers when axios has removed it', async () => {
     mockGet.mockResolvedValueOnce(axiosResp(404, ''))
-    mockGet.mockResolvedValueOnce({
-      ...axiosResp(200, '<html/>', { 'content-type': 'text/html', 'content-length': '56' }),
-      request: {
-        res: {
-          rawHeaders: [
-            'Content-Type',
-            'text/html',
-            'Content-Encoding',
-            'gzip',
-            'Content-Length',
-            '56',
-          ],
-        },
-      },
-    })
+    mockGet.mockImplementationOnce(
+      (_url: string, config: { onDownloadProgress?: (e: { loaded: number }) => void }) => {
+        config.onDownloadProgress?.({ loaded: 56 })
+        return Promise.resolve({
+          ...axiosResp(200, '<html/>', { 'content-type': 'text/html', 'content-length': '56' }),
+          request: {
+            res: {
+              rawHeaders: [
+                'Content-Type',
+                'text/html',
+                'Content-Encoding',
+                'gzip',
+                'Content-Length',
+                '56',
+              ],
+            },
+          },
+        })
+      }
+    )
 
     const client = new HttpClient()
     const result = await client.fetch('https://example.com/')

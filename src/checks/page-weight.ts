@@ -1,13 +1,14 @@
 /**
  * WSG 3.1 – Set Performance Budgets
  *
- * Checks the page's HTML document size and total referenced resource count
+ * Checks the page's HTML transfer size and total referenced resource count
  * against sustainability-driven performance budgets.  Reducing page weight
  * directly reduces the energy consumed to transfer and render the page.
  *
  * Static analysis only: external resource sizes are not fetched individually,
- * so `htmlSize` (the HTML response body in bytes) is the primary weight signal
- * and `resourceCount` (total referenced external assets) is a secondary signal.
+ * so `htmlSize` (bytes of the HTML response received over the network, compressed
+ * when the server compressed it) is the primary weight signal and
+ * `resourceCount` (total referenced external assets) is a secondary signal.
  *
  * Thresholds:
  *   htmlSize  > 500 KB → fail   (0)
@@ -42,15 +43,24 @@ export const checkPageWeight: CheckFn = (page) => {
   let score = 100
 
   const htmlKb = Math.round(htmlSize / 1024)
+  // The budget applies to transferred bytes; also show the uncompressed size when
+  // it differs, since that is the size visible in the document itself. It is the
+  // byte count before text decoding, so it is right for any charset.
+  const uncompressed = page.fetchResult.bodyByteLength
+  const uncompressedKb = uncompressed === undefined ? htmlKb : Math.round(uncompressed / 1024)
+  const htmlLabel =
+    uncompressedKb === htmlKb
+      ? `${htmlKb} KB`
+      : `${htmlKb} KB transferred (${uncompressedKb} KB uncompressed)`
 
   if (htmlSize > HTML_FAIL_BYTES) {
     status = 'fail'
     score = 0
-    issues.push(`HTML document is ${htmlKb} KB (budget: ${HTML_FAIL_BYTES / 1024} KB)`)
+    issues.push(`HTML document is ${htmlLabel} (budget: ${HTML_FAIL_BYTES / 1024} KB)`)
   } else if (htmlSize > HTML_WARN_BYTES) {
     status = 'warn'
     score = 50
-    issues.push(`HTML document is ${htmlKb} KB (budget: ${HTML_WARN_BYTES / 1024} KB)`)
+    issues.push(`HTML document is ${htmlLabel} (budget: ${HTML_WARN_BYTES / 1024} KB)`)
   }
 
   if (resourceCount > RESOURCE_FAIL) {
@@ -74,7 +84,7 @@ export const checkPageWeight: CheckFn = (page) => {
       successCriterion: SUCCESS_CRITERION,
       status: 'pass',
       score: 100,
-      message: `HTML is ${htmlKb} KB with ${resourceCount} external resource(s) — within budget.`,
+      message: `HTML is ${htmlLabel} with ${resourceCount} external resource(s) — within budget.`,
       impact: 'medium',
       category: 'web-dev',
       machineTestable: true,

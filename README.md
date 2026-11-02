@@ -45,8 +45,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for environment configuration and develop
 - Checks cover web development, UX, and hosting. The business category has no automated checks.
 - Analysis uses fetched HTML and HTTP metadata; it does not render JavaScript, measure Core Web Vitals, or download every referenced asset.
 - Results describe one page, but most checks read the server or content shared by a site template, so pages on one site usually score alike. Scores differ mainly on page-specific content such as images and inline styles or scripts.
-- CO₂ estimates use HTML bytes and the SWD v4 model, not measured full-page energy consumption. Failed green-hosting lookups fall back to `false`.
-- Report page weight is the HTML document size; resource and third-party counts come from references in the HTML. Referenced assets are not downloaded or measured.
+- CO₂ estimates use the HTML transfer size and the SWD v4 model, not measured full-page energy consumption. Failed green-hosting lookups fall back to `false`.
+- Report page weight is the HTML transfer size: the bytes received over the network, compressed when the server compressed them. Resource and third-party counts come from references in the HTML. Referenced assets are not downloaded or measured.
 - Security headers, form validation, native form features, and image alternative text remain visible as **related checks**, excluded from WSG scores.
 
 ## CLI Usage

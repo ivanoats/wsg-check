@@ -165,22 +165,26 @@ const POOR_HTML = `<html>
  * Set up mockGet to serve robots.txt and the main page HTML for a given URL.
  */
 const setupMocks = (html: string, responseHeaders: Record<string, string> = {}): void => {
-  mockGet.mockImplementation((url: string) => {
-    if (String(url).includes('/robots.txt')) {
-      return Promise.resolve({ status: 200, data: ROBOTS_TXT, headers: {} })
+  mockGet.mockImplementation(
+    (url: string, config?: { onDownloadProgress?: (e: { loaded: number }) => void }) => {
+      if (String(url).includes('/robots.txt')) {
+        return Promise.resolve({ status: 200, data: ROBOTS_TXT, headers: {} })
+      }
+      // Like axios, report the bytes received before the response resolves.
+      config?.onDownloadProgress?.({ loaded: html.length })
+      return Promise.resolve({
+        status: 200,
+        data: html,
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+          'cache-control': 'max-age=3600',
+          'content-encoding': 'gzip',
+          'content-length': String(html.length),
+          ...responseHeaders,
+        },
+      })
     }
-    return Promise.resolve({
-      status: 200,
-      data: html,
-      headers: {
-        'content-type': 'text/html; charset=utf-8',
-        'cache-control': 'max-age=3600',
-        'content-encoding': 'gzip',
-        'content-length': String(html.length),
-        ...responseHeaders,
-      },
-    })
-  })
+  )
 }
 
 /** Build a WsgChecker with all production check functions registered. */
@@ -236,7 +240,7 @@ describe('Full pipeline integration — WsgChecker.check()', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
     const { metadata } = result.value
-    // setupMocks sends Content-Length: GOOD_HTML.length
+    // setupMocks reports GOOD_HTML.length bytes received
     expect(metadata.pageWeight).toBe(GOOD_HTML.length)
     expect(metadata.requestCount).toBeGreaterThan(0)
     expect(metadata.thirdPartyCount).toBe(0)
