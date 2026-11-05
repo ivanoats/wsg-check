@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.0](https://github.com/ivanoats/wsg-check/compare/v0.7.0...v0.8.0) (2026-11-05)
+
+
+### Added
+
+* **cli:** add --header to send request headers to the checked site ([#255](https://github.com/ivanoats/wsg-check/issues/255)) ([e3a9933](https://github.com/ivanoats/wsg-check/commit/e3a993332f77568e69ade34941bdd14f005bbb76))
+
+
+### Fixed
+
+* **checks:** report info instead of warn when the evidence lives in external CSS or JS ([#258](https://github.com/ivanoats/wsg-check/issues/258)) ([a96ebd7](https://github.com/ivanoats/wsg-check/commit/a96ebd7d6857b530091184539d7ed39d211024b1))
+* **http-client:** count received bytes so page weight does not depend on Content-Length ([#256](https://github.com/ivanoats/wsg-check/issues/256)) ([f4da3e7](https://github.com/ivanoats/wsg-check/commit/f4da3e7e5a1551463f301c8cb7a744ccb8bc40c2))
+
 ## [0.7.0](https://github.com/ivanoats/wsg-check/compare/v0.6.3...v0.7.0) (2026-10-29)
 
 
