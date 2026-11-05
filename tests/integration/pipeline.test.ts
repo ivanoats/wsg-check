@@ -16,6 +16,7 @@ import type { RunResult } from '@/core/types'
 // ─── Mock: HTTP transport ─────────────────────────────────────────────────────
 
 const mockGet = vi.fn()
+const axiosCreateConfigs: Array<{ readonly headers?: Readonly<Record<string, string>> }> = []
 
 vi.mock('axios', () => {
   class MockAxiosError extends Error {
@@ -33,7 +34,12 @@ vi.mock('axios', () => {
     }
   }
   return {
-    default: { create: () => ({ get: mockGet }) },
+    default: {
+      create: (config: (typeof axiosCreateConfigs)[number]) => {
+        axiosCreateConfigs.push(config)
+        return { get: mockGet }
+      },
+    },
     AxiosError: MockAxiosError,
   }
 })
@@ -159,22 +165,26 @@ const POOR_HTML = `<html>
  * Set up mockGet to serve robots.txt and the main page HTML for a given URL.
  */
 const setupMocks = (html: string, responseHeaders: Record<string, string> = {}): void => {
-  mockGet.mockImplementation((url: string) => {
-    if (String(url).includes('/robots.txt')) {
-      return Promise.resolve({ status: 200, data: ROBOTS_TXT, headers: {} })
+  mockGet.mockImplementation(
+    (url: string, config?: { onDownloadProgress?: (e: { loaded: number }) => void }) => {
+      if (String(url).includes('/robots.txt')) {
+        return Promise.resolve({ status: 200, data: ROBOTS_TXT, headers: {} })
+      }
+      // Like axios, report the bytes received before the response resolves.
+      config?.onDownloadProgress?.({ loaded: html.length })
+      return Promise.resolve({
+        status: 200,
+        data: html,
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+          'cache-control': 'max-age=3600',
+          'content-encoding': 'gzip',
+          'content-length': String(html.length),
+          ...responseHeaders,
+        },
+      })
     }
-    return Promise.resolve({
-      status: 200,
-      data: html,
-      headers: {
-        'content-type': 'text/html; charset=utf-8',
-        'cache-control': 'max-age=3600',
-        'content-encoding': 'gzip',
-        'content-length': String(html.length),
-        ...responseHeaders,
-      },
-    })
-  })
+  )
 }
 
 /** Build a WsgChecker with all production check functions registered. */
@@ -230,7 +240,7 @@ describe('Full pipeline integration — WsgChecker.check()', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
     const { metadata } = result.value
-    // setupMocks sends Content-Length: GOOD_HTML.length
+    // setupMocks reports GOOD_HTML.length bytes received
     expect(metadata.pageWeight).toBe(GOOD_HTML.length)
     expect(metadata.requestCount).toBeGreaterThan(0)
     expect(metadata.thirdPartyCount).toBe(0)
@@ -269,6 +279,35 @@ describe('Full pipeline integration — WsgChecker.check()', () => {
     mockGet.mockRejectedValue(new Error('connect ECONNREFUSED'))
     const result = await runReport('https://example.com', { checks: selectChecks().checks })
     expect(result.ok).toBe(false)
+  })
+
+  it('forwards config.headers to the page request but not to robots.txt', async () => {
+    setupMocks(GOOD_HTML)
+    const result = await new WsgChecker({ headers: { Cookie: 's=1' } }, []).check(
+      'https://example.com/'
+    )
+
+    expect(result.ok).toBe(true)
+    const calls = mockGet.mock.calls as Array<[string, { headers?: unknown }]>
+    const robotsCall = calls.find(([url]) => url.includes('/robots.txt'))
+    const pageCall = calls.find(([url]) => url === 'https://example.com/')
+    expect(robotsCall?.[1]).not.toHaveProperty('headers')
+    expect(pageCall?.[1].headers).toEqual({ Cookie: 's=1' })
+  })
+
+  it('never passes header values to the logger', async () => {
+    setupMocks(GOOD_HTML)
+    const log = vi.fn()
+    const logger = { debug: log, info: log, warn: log, error: log }
+    const result = await new WsgChecker(
+      { headers: { Cookie: 'SECRET' } },
+      ALL_CHECKS,
+      logger
+    ).check('https://example.com/')
+
+    expect(result.ok).toBe(true)
+    expect(log).toHaveBeenCalled()
+    expect(JSON.stringify(log.mock.calls)).not.toContain('SECRET')
   })
 
   // ── Shape & structure ──────────────────────────────────────────────────────
@@ -519,5 +558,47 @@ describe('Full pipeline integration — WsgChecker.check()', () => {
       'native-form-features',
       'security-headers',
     ])
+  })
+
+  describe('robots.txt handling', () => {
+    const setupDisallowAll = (): void => {
+      mockGet.mockImplementation((url: string) =>
+        Promise.resolve(
+          String(url).includes('/robots.txt')
+            ? { status: 200, data: 'User-agent: *\nDisallow: /', headers: {} }
+            : { status: 200, data: GOOD_HTML, headers: { 'content-type': 'text/html' } }
+        )
+      )
+    }
+
+    it('refuses a page that robots.txt disallows by default', async () => {
+      setupDisallowAll()
+      const result = await new WsgChecker({}, ALL_CHECKS).check('https://example.com/')
+      expect(result.ok).toBe(false)
+      if (result.ok) return
+      expect(result.error.message).toContain('robots.txt')
+    })
+
+    it('checks the page without fetching robots.txt when ignoreRobots is set', async () => {
+      setupDisallowAll()
+      const result = await new WsgChecker({ ignoreRobots: true }, ALL_CHECKS).check(
+        'https://example.com/'
+      )
+      expect(result.ok).toBe(true)
+      const requested = mockGet.mock.calls.map((c: unknown[]) => String(c[0]))
+      expect(requested.some((u) => u.includes('/robots.txt'))).toBe(false)
+    })
+
+    it('marks the User-Agent only when ignoreRobots is set', () => {
+      const userAgentFor = (config: { ignoreRobots?: boolean; userAgent?: string }): string => {
+        expect(() => new WsgChecker(config, ALL_CHECKS)).not.toThrow()
+        return axiosCreateConfigs.at(-1)?.headers?.['User-Agent'] ?? ''
+      }
+      expect(userAgentFor({})).not.toContain('ignore-robots')
+      expect(userAgentFor({ ignoreRobots: true })).toMatch(/wsg-check\/.+ \(ignore-robots\)$/)
+      expect(userAgentFor({ ignoreRobots: true, userAgent: 'my-bot/1.0' })).toBe(
+        'my-bot/1.0 (ignore-robots)'
+      )
+    })
   })
 })

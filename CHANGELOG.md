@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.0](https://github.com/ivanoats/wsg-check/compare/v0.6.3...v0.7.0) (2026-10-29)
+
+
+### Added
+
+* **cli:** add --ignore-robots for checking sites you operate ([#243](https://github.com/ivanoats/wsg-check/issues/243)) ([1ff2b08](https://github.com/ivanoats/wsg-check/commit/1ff2b08f9ebce11802231909c378fd24268d2bf5))
+
+
+### Fixed
+
+* **checks:** accept a robots.txt Sitemap declaration as sitemap evidence ([#242](https://github.com/ivanoats/wsg-check/issues/242)) ([7982618](https://github.com/ivanoats/wsg-check/commit/7982618c1f2978a58fb3b632002780bbf1c09bed))
+* **checks:** stop counting preload hints as external scripts ([#238](https://github.com/ivanoats/wsg-check/issues/238)) ([006bb2e](https://github.com/ivanoats/wsg-check/commit/006bb2e865ffb7e13b8b9cfe2805359d4c7da8e9))
+* **checks:** treat SVG images as vector in the format and srcset checks ([#240](https://github.com/ivanoats/wsg-check/issues/240)) ([0715455](https://github.com/ivanoats/wsg-check/commit/0715455a77a27c097ec9797914ad96a511267bff))
+* **html-parser:** stop doubling the bang in the DOCTYPE string ([#237](https://github.com/ivanoats/wsg-check/issues/237)) ([282fbf4](https://github.com/ivanoats/wsg-check/commit/282fbf41081f0ac7215f60876bfc7f5abd2ca66e))
+* **http-client:** keep Content-Encoding visible after axios decompression ([#239](https://github.com/ivanoats/wsg-check/issues/239)) ([7b8759b](https://github.com/ivanoats/wsg-check/commit/7b8759b146e36e9d98ecee296720578a4c8fd7f1))
+* **http:** follow a redirect back to the host that issued it when no host policy is set ([#244](https://github.com/ivanoats/wsg-check/issues/244)) ([260f17f](https://github.com/ivanoats/wsg-check/commit/260f17fdee31cca79da478e83ff75e0277fd12f9))
+
+
+### Changed
+
+* explain why pages on one site usually score alike ([#245](https://github.com/ivanoats/wsg-check/issues/245)) ([3e1ed04](https://github.com/ivanoats/wsg-check/commit/3e1ed04862b9f6f87f96c7660df4ba27062d131f))
+
 ## [0.6.3](https://github.com/ivanoats/wsg-check/compare/v0.6.2...v0.6.3) (2026-10-14)
 
 

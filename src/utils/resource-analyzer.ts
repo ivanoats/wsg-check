@@ -34,7 +34,7 @@ export interface CompressionInfo {
  * Aggregate page weight and resource breakdown metrics for a single page.
  */
 export interface PageWeightAnalysis {
-  /** Byte size of the HTML response body. */
+  /** HTML transfer size: bytes received over the network, compressed when the server compressed them. */
   htmlSize: number
   /**
    * Total known resource count (HTML + all referenced resources).

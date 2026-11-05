@@ -16,13 +16,18 @@ A configurable, sustainability-aware HTTP client built on [Axios](https://axios-
 
 - **In-memory caching** — duplicate fetches for the same URL within a session are served from cache.
 - **Retry with back-off** — transient network errors are retried up to `maxRetries` times with an exponential delay.
-- **robots.txt support (WSG 4.6)** — fetches and caches the target site's `robots.txt` before making requests; returns an error `Result` containing `FetchError` if the crawler is disallowed.
+- **robots.txt support (WSG 4.6)** — fetches and caches the target site's `robots.txt` before making requests; returns an error `Result` containing `FetchError` if the crawler is disallowed. For sites you operate, the CLI's `--ignore-robots` flag (`ignoreRobots` in config, `WSG_IGNORE_ROBOTS` in the environment) skips both, and `WsgChecker` adds `(ignore-robots)` to the User-Agent so site owners can tell. The web API and MCP `check_url` don't expose it.
 - **Redirect chain tracking (WSG 4.4)** — follows redirects manually so every hop is recorded in `FetchResult.redirectChain`.
+- **Per-request headers** — `headers` go only to the page fetch and redirect hops on the start URL's hostname, not to robots.txt, other hosts, or over plain http after an https hop. The CLI sets them with `-H/--header` or the config file; the web API and MCP server do not expose them.
 
 ```typescript
 import { HttpClient } from '@/utils'
 
-const client = new HttpClient({ timeout: 15_000, userAgent: 'my-bot/1.0' })
+const client = new HttpClient({
+  timeout: 15_000,
+  userAgent: 'my-bot/1.0',
+  headers: { Cookie: 'session=…' },
+})
 const result = await client.fetch('https://example.com')
 if (result.ok) {
   console.log(result.value.redirectChain, result.value.headers)
@@ -252,7 +257,7 @@ Only inline `<style>` blocks and `<link media>` attributes are searched. If none
 
 #### `checkResponsiveDesign` — WSG 3.10
 
-Checks for a `<meta name="viewport">` tag, responsive images (any `<img>` with `srcset`), and at least one CSS media query in inline styles or style blocks.
+Checks for a `<meta name="viewport">` tag, responsive images (any raster `<img>` with `srcset`; SVG images are excluded), and at least one CSS media query in inline styles or style blocks.
 
 Only inline `<style>` blocks are searched for media queries. If none is found and the page links external CSS, that signal is noted as not verifiable rather than reported as an issue; if viewport and srcset raise nothing, the check returns `info` (not scored).
 
@@ -302,13 +307,13 @@ Counts the total number of third-party resources (scripts, stylesheets, images, 
 
 #### `checkExpectedFiles` — WSG 3.13 (Expected)
 
-Checks that the page's HTML `<head>` links to three standard files that browsers and search engines rely on:
+Checks that the page provides three standard files that browsers and search engines rely on:
 
 - **Favicon** — `<link rel="icon">` (or `rel="shortcut icon"`, `rel="apple-touch-icon"`)
 - **Web App Manifest** — `<link rel="manifest">`
-- **Sitemap** — `<link rel="sitemap">`
+- **Sitemap** — a `Sitemap:` line in robots.txt (from the robots.txt already fetched for WSG 4.6) or `<link rel="sitemap">`
 
-Missing all three → `fail`; partially missing → `warn`.
+Missing all three → `fail`; partially missing → `warn`. `Sitemap:` lines count only when the requested URL's own robots.txt returns 200 and the page ends on the same site (`www.` and http/https differences are ignored), never with `ignoreRobots`.
 
 #### `checkBeneficialFiles` — WSG 3.13 (Beneficial)
 
@@ -374,15 +379,15 @@ Both conditions return `warn` (50) with a note that manual review is recommended
 
 Checks that images use modern, efficient formats and include explicit dimensions:
 
-1. **Modern image formats** — at least one image should use WebP or AVIF; none using modern formats → `fail`.
+1. **Modern image formats** — at least one raster image should use WebP or AVIF; SVG images are excluded from this test but still need dimensions; raster images present and none modern → `fail`.
 2. **Explicit `width` / `height` attributes** — prevents Cumulative Layout Shift (CLS) during image load.
 
-| Condition                                    | Status           | Score |
-| -------------------------------------------- | ---------------- | ----- |
-| No images                                    | `not-applicable` | —     |
-| No images use WebP/AVIF                      | `fail`           | 0     |
-| Modern formats used, some lack dimensions    | `warn`           | 50    |
-| All images in modern formats with dimensions | `pass`           | 100   |
+| Condition                                                | Status           | Score |
+| -------------------------------------------------------- | ---------------- | ----- |
+| No images                                                | `not-applicable` | —     |
+| Raster images present, none use WebP/AVIF                | `fail`           | 0     |
+| No format issue (modern or vector), some lack dimensions | `warn`           | 50    |
+| All images in modern or vector formats with dimensions   | `pass`           | 100   |
 
 #### `checkLazyLoading` — WSG 2.9
 

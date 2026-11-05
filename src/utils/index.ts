@@ -29,5 +29,7 @@ export { parseHtml } from './html-parser'
 export type { ResourceInfo, CompressionInfo, PageWeightAnalysis } from './resource-analyzer'
 export { classifyResources, analyzeCompression, analyzePageWeight } from './resource-analyzer'
 
+export { isVectorImage } from './image-format'
+
 export type { CO2Model } from './carbon-estimator'
 export { CO2_MODEL, estimateCO2, checkGreenHosting } from './carbon-estimator'

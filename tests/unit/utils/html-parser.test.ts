@@ -46,7 +46,7 @@ describe('parseHtml – basic fields', () => {
 
   it('detects the DOCTYPE declaration', () => {
     expect(page.doctype).not.toBeNull()
-    expect(page.doctype?.toLowerCase()).toContain('doctype')
+    expect(page.doctype?.toLowerCase()).toBe('<!doctype html>')
   })
 })
 

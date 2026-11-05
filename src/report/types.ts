@@ -89,7 +89,7 @@ export interface Recommendation {
 export interface ReportMetadata {
   /** The URL actually fetched after redirects, when known. */
   readonly finalUrl?: string
-  /** Total size of the HTML document in bytes. */
+  /** HTML transfer size in bytes (compressed when the server compressed it). */
   readonly pageWeight: number
   /** Total number of resource references found on the page. */
   readonly requestCount: number
@@ -256,7 +256,7 @@ const summariseResults = (results: ReadonlyArray<CheckResult>): ReportSummary =>
  * The page metrics default to `runResult.pageMetrics`, which
  * `WsgChecker.check()` fills in, and to 0 when that is absent.
  *
- * @param pageWeight - HTML size in bytes for the metadata.
+ * @param pageWeight - HTML transfer size in bytes for the metadata.
  * @param requestCount - Total resource count for the metadata.
  * @param thirdPartyCount - Third-party resource count for the metadata.
  */

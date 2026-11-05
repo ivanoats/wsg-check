@@ -97,6 +97,22 @@ describe('PageFetcher', () => {
     expect(result.value.pageWeight).toBe(PAGE_WEIGHT)
   })
 
+  it('carries robots.txt sitemap declarations through to PageData', async () => {
+    const withSitemaps = {
+      ...FETCH_RESULT,
+      robotsSitemaps: ['https://example.com/sitemap.xml'],
+    }
+    mockClientFetch.mockResolvedValueOnce({ ok: true, value: withSitemaps })
+    mockParseHtml.mockReturnValueOnce(PARSED_PAGE)
+    mockAnalyzePageWeight.mockReturnValueOnce(PAGE_WEIGHT)
+
+    const result = await new PageFetcher().fetch('https://example.com/')
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.fetchResult.robotsSitemaps).toEqual(['https://example.com/sitemap.xml'])
+  })
+
   it('passes ignoreRobots option to the HTTP client', async () => {
     mockClientFetch.mockResolvedValueOnce({ ok: true, value: FETCH_RESULT })
     mockParseHtml.mockReturnValueOnce(PARSED_PAGE)

@@ -65,6 +65,16 @@ describe('validateCheckPayload', () => {
       expect(result.value.format).toBe('json')
     }
   })
+
+  it('drops unknown keys such as ignoreRobots', () => {
+    const result = validateCheckPayload({ url: 'https://example.com', ignoreRobots: true })
+
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.value).not.toHaveProperty('ignoreRobots')
+      expect(result.value.url).toBe('https://example.com')
+    }
+  })
 })
 
 describe('validateTargetUrl', () => {
@@ -85,6 +95,27 @@ describe('validateTargetUrl', () => {
   it('rejects localhost', async () => {
     const result = await validateTargetUrl('http://localhost:3000')
     expect(result.ok).toBe(false)
+  })
+
+  it('rejects IPv6 private literals by name, before any DNS lookup', async () => {
+    lookupMock.mockReset()
+    for (const url of ['http://[::1]:3000', 'http://[fd00::1]:3000', 'http://localhost.:3000']) {
+      const result = await validateTargetUrl(url)
+      expect(result.ok).toBe(false)
+      if (result.ok) continue
+      expect(result.error.message).toBe('Target URL host is not allowed for security reasons.')
+    }
+    expect(lookupMock).not.toHaveBeenCalled()
+  })
+
+  it('rejects an IPv4-mapped loopback literal by name, before any DNS lookup', async () => {
+    // new URL() rewrites [::ffff:127.0.0.1] to the hex form [::ffff:7f00:1].
+    lookupMock.mockReset()
+    const result = await validateTargetUrl('http://[::ffff:127.0.0.1]/')
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error.message).toBe('Target URL host is not allowed for security reasons.')
+    expect(lookupMock).not.toHaveBeenCalled()
   })
 
   it('rejects private IPv4 hosts', async () => {

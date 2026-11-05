@@ -7,7 +7,7 @@ Check a website against automated heuristics based on the [W3C Web Sustainabilit
 
 ## Release status
 
-The latest release is v0.6.3. <!-- x-release-please-version -->
+The latest release is v0.7.0. <!-- x-release-please-version -->
 
 Source on `main` targets WSG September-2026, the [24 September 2026 Group Note Draft](https://www.w3.org/TR/2026/DNOTE-web-sustainability-guidelines-20260924/); v0.6.1 and earlier target July-2026. It includes an MCP server for AI assistants, with the `check_url`, `list_guidelines`, and `get_guideline` tools, listed in the [MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.ivanoats/wsg-check`. The server first shipped in v0.4.0; v0.3.0 was tagged on GitHub but not published to npm. See the [changelog](CHANGELOG.md) and [spec versioning policy](SPEC_VERSIONING.md).
 
@@ -18,10 +18,10 @@ Scores from different spec versions should not be treated as directly comparable
 Requires Node.js 22 or later. Pin the released CLI for reproducible usage:
 
 ```bash
-npx @sustainablewebsites/wsg-check@0.6.3 https://example.com # x-release-please-version
+npx @sustainablewebsites/wsg-check@0.7.0 https://example.com # x-release-please-version
 
 # Or install globally
-npm install -g @sustainablewebsites/wsg-check@0.6.3 # x-release-please-version
+npm install -g @sustainablewebsites/wsg-check@0.7.0 # x-release-please-version
 wsg-check https://example.com --format json --output report.json
 ```
 
@@ -44,8 +44,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for environment configuration and develop
 
 - Checks cover web development, UX, and hosting. The business category has no automated checks.
 - Analysis uses fetched HTML and HTTP metadata; it does not render JavaScript, measure Core Web Vitals, or download every referenced asset.
-- CO₂ estimates use HTML bytes and the SWD v4 model, not measured full-page energy consumption. Failed green-hosting lookups fall back to `false`.
-- Report page weight is the HTML document size; resource and third-party counts come from references in the HTML. Referenced assets are not downloaded or measured.
+- Results describe one page, but most checks read the server or content shared by a site template, so pages on one site usually score alike. Scores differ mainly on page-specific content such as images and inline styles or scripts.
+- CO₂ estimates use the HTML transfer size and the SWD v4 model, not measured full-page energy consumption. Failed green-hosting lookups fall back to `false`.
+- Report page weight is the HTML transfer size: the bytes received over the network, compressed when the server compressed them. Resource and third-party counts come from references in the HTML. Referenced assets are not downloaded or measured.
 - Security headers, form validation, native form features, and image alternative text remain visible as **related checks**, excluded from WSG scores.
 
 ## CLI Usage
@@ -78,9 +79,13 @@ npx @sustainablewebsites/wsg-check https://example.com --fail-threshold 70
 | `--guidelines <list>`  | `-g`  | Comma-separated guideline slugs to run, e.g. `minify-and-remove-unused-code` (numeric IDs such as `3.3` are deprecated) | all               |
 | `--fail-threshold <n>` |       | Exit code 1 if overall score < _n_ (0–100)                                                                              | `0`               |
 | `--verbose`            | `-v`  | Enable verbose logging                                                                                                  | `false`           |
+| `--ignore-robots`      |       | Skip robots.txt for a site you operate; adds `(ignore-robots)` to the User-Agent                                        | `false`           |
 | `--config <path>`      |       | Path to `wsg-check.config.json` or `.wsgcheckrc.json`                                                                   | _(auto-discover)_ |
+| `--header <header>`    | `-H`  | Send a request header (`Name: value`, repeatable) to the start URL's host only; never to `robots.txt` or other hosts    | _(none)_          |
 | `--version`            |       | Print version and exit                                                                                                  |                   |
 | `--help`               |       | Print help and exit                                                                                                     |                   |
+
+`--header` values land in shell history and CI logs, and a malformed one is echoed in the error. For a secret, set `"headers": {"Cookie": "..."}` in a `wsg-check.config.json` kept out of version control. Header names in the config file are checked when it loads, and an error names the bad header without printing its value. `--header` replaces the config file's `headers` entirely. Headers are not sent over plain `http` after an `https` hop. To change the user agent, use `WSG_USER_AGENT` or the config's `userAgent`. The web API and MCP server do not accept request headers.
 
 ### CI integration
 
