@@ -359,3 +359,13 @@ describe('checkResponsiveDesign (WSG 3.13)', () => {
     })
   })
 })
+
+describe('checkResponsiveDesign – quoted comment delimiters', () => {
+  it('still finds @media after a "/*" inside a CSS string', async () => {
+    const body =
+      '<!DOCTYPE html><html lang="en"><head><style>pre::before { content: "/*"; }' +
+      ' @media (max-width: 600px) { body { margin: 0 } } /* end */</style></head><body></body></html>'
+    const result = await checkResponsiveDesign(makePageData({ metaTags: [VIEWPORT_META], body }))
+    expect(result.status).toBe('pass')
+  })
+})

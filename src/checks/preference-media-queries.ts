@@ -27,6 +27,7 @@
  */
 
 import type { CheckFn, CheckResult } from '../core/types'
+import { extractInlineCss, linksExternalCss } from '../utils/inline-css'
 
 const GUIDELINE_ID = '3.12'
 const GUIDELINE_NAME = 'Preference Media Queries'
@@ -45,29 +46,6 @@ const PREFERENCE_FEATURES = [
 ] as const
 
 type PreferenceFeature = (typeof PREFERENCE_FEATURES)[number]
-
-/** Matches `<style ...> ... </style>` blocks (case-insensitive). */
-const STYLE_BLOCK_PATTERN = /<style\b[^>]*>([\s\S]*?)<\/style>/gi
-
-/** An inline `@import` pulls in external CSS the parser does not list as a resource. */
-const CSS_IMPORT_PATTERN = /@import\b/i
-
-// A commented-out @import or prefers-* query must not count, so comments are
-// dropped before any search. Stripped per block: each <style> is its own stylesheet.
-const CSS_COMMENT_PATTERN = /\/\*[\s\S]*?\*\//g
-
-/**
- * Extract all inline `<style>` block contents from raw HTML.
- */
-function extractStyleBlockContent(body: string): string {
-  const contents: string[] = []
-  const regex = new RegExp(STYLE_BLOCK_PATTERN.source, 'gi')
-  let match: RegExpExecArray | null
-  while ((match = regex.exec(body)) !== null) {
-    contents.push(match[1].replace(CSS_COMMENT_PATTERN, ''))
-  }
-  return contents.join('\n')
-}
 
 const buildRecommendation = (missing: ReadonlyArray<PreferenceFeature>): string => {
   const darkModeNote = missing.includes('prefers-color-scheme')
@@ -101,7 +79,7 @@ const externalCssResult = (missing: ReadonlyArray<PreferenceFeature>): CheckResu
 
 export const checkPreferenceMediaQueries: CheckFn = (page) => {
   const body = page.fetchResult.body
-  const inlineCss = extractStyleBlockContent(body)
+  const inlineCss = extractInlineCss(body)
 
   // Combine link media attributes into one searchable string.
   const linkMediaValues = page.parsedPage.links.map((l) => l.media ?? '').join(' ')
@@ -138,9 +116,7 @@ export const checkPreferenceMediaQueries: CheckFn = (page) => {
   }
 
   // ── None found, but external CSS is linked ────────────────────────────────
-  const hasExternalCss =
-    page.parsedPage.resources.some((r) => r.type === 'stylesheet') ||
-    CSS_IMPORT_PATTERN.test(inlineCss)
+  const hasExternalCss = linksExternalCss(page.parsedPage.resources, inlineCss)
   if (found.length === 0 && hasExternalCss) {
     return externalCssResult(missing)
   }

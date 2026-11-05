@@ -33,6 +33,7 @@
 
 import type { CheckFn } from '../core/types'
 import { isVectorImage } from '../utils/image-format'
+import { extractInlineCss, linksExternalCss } from '../utils/inline-css'
 
 const GUIDELINE_ID = '3.13'
 const GUIDELINE_NAME = 'Responsive Layouts'
@@ -40,33 +41,8 @@ const SUCCESS_CRITERION =
   'Pages must include a viewport meta tag; raster images should use srcset; CSS should use media queries'
 const RESOURCES = ['https://www.w3.org/TR/web-sustainability-guidelines/#responsive-layouts']
 
-/** `<style>` block extractor. */
-const STYLE_BLOCK_PATTERN = /<style\b[^>]*>([\s\S]*?)<\/style>/gi
-
-// A commented-out @import or @media must not count, so comments are dropped
-// before any search. Stripped per block: each <style> is its own stylesheet.
-const CSS_COMMENT_PATTERN = /\/\*[\s\S]*?\*\//g
-
 /** Matches any `@media` rule in CSS text. */
 const MEDIA_QUERY_PATTERN = /@media/i
-
-// An inline `@import` pulls in external CSS the parser does not list as a resource.
-// It deliberately accepts both the bare-string and url(...) forms, quoted or unquoted.
-const QUOTED_STRING = String.raw`"[^"]*"|'[^']*'`
-const URL_FUNCTION = String.raw`url\(\s*(?:${QUOTED_STRING}|[^\s)]+)\s*\)`
-const CSS_IMPORT_PATTERN = new RegExp(
-  String.raw`@import\s*(?:${URL_FUNCTION}|${QUOTED_STRING})`,
-  'i'
-)
-
-/**
- * Join the contents of all inline `<style>` blocks. Searching the raw HTML
- * instead would let a pattern span `</style>…<style>` and match page text.
- */
-const extractInlineCss = (body: string): string =>
-  Array.from(body.matchAll(STYLE_BLOCK_PATTERN), (m) => m[1])
-    .map((css) => css.replace(CSS_COMMENT_PATTERN, ''))
-    .join('\n')
 
 const MEDIA_QUERY_NOT_VERIFIABLE =
   'CSS media queries not verifiable: declared in external CSS, which is not analysed'
@@ -124,9 +100,7 @@ export const checkResponsiveDesign: CheckFn = (page) => {
   // ── 3. CSS media queries in inline styles ─────────────────────────────────
   const inlineCss = extractInlineCss(page.fetchResult.body)
   const hasMediaQuery = MEDIA_QUERY_PATTERN.test(inlineCss)
-  const hasExternalCss =
-    page.parsedPage.resources.some((r) => r.type === 'stylesheet') ||
-    CSS_IMPORT_PATTERN.test(inlineCss)
+  const hasExternalCss = linksExternalCss(page.parsedPage.resources, inlineCss)
   // With linked CSS, a missing inline @media proves nothing.
   const mediaQueryNote = !hasMediaQuery && hasExternalCss ? MEDIA_QUERY_NOT_VERIFIABLE : undefined
   if (!hasMediaQuery && !hasExternalCss) {

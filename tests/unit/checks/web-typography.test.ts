@@ -273,3 +273,16 @@ describe('checkWebTypography (WSG 2.16)', () => {
     })
   })
 })
+
+describe('checkWebTypography – quoted comment delimiters', () => {
+  it('still finds font-display after a "/*" inside a CSS string', async () => {
+    const body =
+      '<!DOCTYPE html><html><head><style>pre::before { content: "/*"; }' +
+      ' @font-face { font-family: F; src: url(/f.woff2); font-display: swap; }' +
+      ' /* end */</style></head><body></body></html>'
+    const result = await checkWebTypography(
+      makePageData({ fonts: [makeFont('https://example.com/f.woff2')], body })
+    )
+    expect(result.status).toBe('pass')
+  })
+})

@@ -228,3 +228,16 @@ describe('checkPreferenceMediaQueries (WSG 3.12)', () => {
     })
   })
 })
+
+describe('checkPreferenceMediaQueries – quoted comment delimiters', () => {
+  it('still finds the queries after a "/*" inside a CSS string', async () => {
+    const body =
+      '<!DOCTYPE html><html lang="en"><head><style>pre::before { content: "/*"; }' +
+      ' @media (prefers-color-scheme: dark) { body { color: #fff } }' +
+      ' @media (prefers-reduced-motion: reduce) { * { animation: none } }' +
+      ' @media (prefers-reduced-data: reduce) { img { display: none } }' +
+      ' /* end */</style></head><body></body></html>'
+    const result = await checkPreferenceMediaQueries(makePageData(body))
+    expect(result.status).toBe('pass')
+  })
+})

@@ -21,6 +21,7 @@
  */
 
 import type { CheckFn, CheckResult } from '../core/types'
+import { extractInlineCss, linksExternalCss } from '../utils/inline-css'
 
 const GUIDELINE_ID = '2.16'
 const GUIDELINE_NAME = 'Ensure Content Is Readable Without Custom Fonts'
@@ -33,21 +34,11 @@ const RESOURCES = [
 /** Maximum recommended number of font files. */
 const MAX_FONT_FILES = 4
 
-/** `<style>` block extractor. */
-const STYLE_BLOCK_PATTERN = /<style\b[^>]*>([\s\S]*?)<\/style>/gi
-
 /** Matches a `font-display` descriptor in CSS. */
 const FONT_DISPLAY_PATTERN = /font-display\s*:/i
 
 /** `font-display` is only valid inside `@font-face`. */
 const FONT_FACE_PATTERN = /@font-face/i
-
-/** An inline `@import` pulls in external CSS the parser does not list as a resource. */
-const CSS_IMPORT_PATTERN = /@import\b/i
-
-// A commented-out @import or font-display must not count, so comments are
-// dropped before any search. Stripped per block: each <style> is its own stylesheet.
-const CSS_COMMENT_PATTERN = /\/\*[\s\S]*?\*\//g
 
 const FONT_DISPLAY_NOT_VERIFIABLE =
   'font-display not verifiable: declared in external CSS, which is not analysed'
@@ -56,16 +47,6 @@ const RECOMMENDATION =
   'Convert font files to WOFF2 format. Add font-display: swap (or optional) to @font-face ' +
   'rules so text is visible immediately while fonts load. Limit font files to ' +
   `${MAX_FONT_FILES} or fewer by choosing a type family with a variable font or fewer variants.`
-
-function extractStyleBlocks(body: string): string {
-  const contents: string[] = []
-  const regex = new RegExp(STYLE_BLOCK_PATTERN.source, 'gi')
-  let match: RegExpExecArray | null
-  while ((match = regex.exec(body)) !== null) {
-    contents.push(match[1].replace(CSS_COMMENT_PATTERN, ''))
-  }
-  return contents.join('\n')
-}
 
 /** A missing descriptor is an issue only when the `@font-face` rules are inline. */
 const fontDisplayVerdict = (
@@ -116,7 +97,7 @@ export const checkWebTypography: CheckFn = (page) => {
     }
   }
 
-  const inlineCss = extractStyleBlocks(page.fetchResult.body)
+  const inlineCss = extractInlineCss(page.fetchResult.body)
   const issues: string[] = []
 
   // ── 1. WOFF2 format ───────────────────────────────────────────────────────
@@ -129,9 +110,7 @@ export const checkWebTypography: CheckFn = (page) => {
   }
 
   // ── 2. font-display ───────────────────────────────────────────────────────
-  const hasExternalCss =
-    page.parsedPage.resources.some((r) => r.type === 'stylesheet') ||
-    CSS_IMPORT_PATTERN.test(inlineCss)
+  const hasExternalCss = linksExternalCss(page.parsedPage.resources, inlineCss)
   const fontDisplay = fontDisplayVerdict(inlineCss, hasExternalCss)
   if (fontDisplay.issue) {
     issues.push(fontDisplay.issue)

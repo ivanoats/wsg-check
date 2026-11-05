@@ -253,7 +253,7 @@ Counts third-party scripts loaded by the page. Each third-party script adds a ne
 
 Checks for `prefers-color-scheme`, `prefers-reduced-motion`, and `prefers-reduced-data` CSS media queries. These signals indicate support for user preferences; this static check does not measure energy savings.
 
-Only inline `<style>` blocks and `<link media>` attributes are searched. If none of the three is found and the page links external CSS, the check returns `info` (not scored).
+Only inline `<style>` blocks and `<link media>` attributes are searched. If none of the three is found and the page links external CSS, the check returns `info` (not scored). Here and in `checkResponsiveDesign` and `checkWebTypography`, "links external CSS" means a `<link rel="stylesheet">` (a `rel="preload"` hint does not count) or an inline `@import`, and CSS comments are ignored; a `/*` inside a quoted string is not a comment.
 
 #### `checkResponsiveDesign` — WSG 3.10
 

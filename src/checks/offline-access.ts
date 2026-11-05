@@ -65,9 +65,11 @@ export const checkOfflineAccess: CheckFn = (page) => {
 
   const hasServiceWorker = SW_REGISTER_RE.test(page.fetchResult.body)
 
-  // Dedupe by URL: a script preloaded and then loaded is one script.
+  // Preload hints share type 'script' but have no src; dedupe by URL.
   const externalScriptCount = new Set(
-    page.parsedPage.resources.filter((r) => r.type === 'script').map((r) => r.url)
+    page.parsedPage.resources
+      .filter((r) => r.type === 'script' && 'src' in r.attributes)
+      .map((r) => r.url)
   ).size
 
   if (hasManifest && hasServiceWorker) {

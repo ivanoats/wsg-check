@@ -205,5 +205,14 @@ describe('checkOfflineAccess (WSG 4.2)', () => {
       expect(result.status).toBe('info')
       expect(result.details).toContain('(1 external script(s) linked')
     })
+
+    it('does not treat a script preload hint alone as an external script', async () => {
+      const html =
+        '<!DOCTYPE html><html lang=en><head><title>t</title><link rel="manifest" href="/manifest.json">' +
+        '<link rel="preload" as="script" href="/app.js"></head><body></body></html>'
+      const parsed = parseHtml(html, 'https://example.com')
+      const result = await checkOfflineAccess(makePageData({ body: html, parsedPage: parsed }))
+      expect(result.status).toBe('warn')
+    })
   })
 })
