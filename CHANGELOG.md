@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.0](https://github.com/ivanoats/wsg-check/compare/v0.7.0...v0.8.0) (2026-11-08)
+
+
+### Added
+
+* **cli:** add --header to send request headers to the checked site ([#255](https://github.com/ivanoats/wsg-check/issues/255)) ([e3a9933](https://github.com/ivanoats/wsg-check/commit/e3a993332f77568e69ade34941bdd14f005bbb76))
+
+
+### Fixed
+
+* **checks:** report info instead of warn when the evidence lives in external CSS or JS ([#258](https://github.com/ivanoats/wsg-check/issues/258)) ([a96ebd7](https://github.com/ivanoats/wsg-check/commit/a96ebd7d6857b530091184539d7ed39d211024b1))
+* **http-client:** count received bytes so page weight does not depend on Content-Length ([#256](https://github.com/ivanoats/wsg-check/issues/256)) ([f4da3e7](https://github.com/ivanoats/wsg-check/commit/f4da3e7e5a1551463f301c8cb7a744ccb8bc40c2))
+
+
+### Dependencies
+
+* **deps-dev:** bump jsdom from 29.1.1 to 30.1.2 ([#231](https://github.com/ivanoats/wsg-check/issues/231)) ([58b33ea](https://github.com/ivanoats/wsg-check/commit/58b33eaeb1b311fefc17b972cae85abed77dc138))
+* **deps-dev:** bump the development-minor-patch group across 1 directory with 17 updates ([#235](https://github.com/ivanoats/wsg-check/issues/235)) ([4451b69](https://github.com/ivanoats/wsg-check/commit/4451b69bcd432fa309c99fb611cc092faa91d40d))
+* **deps-dev:** bump undici from 6.28.1 to 6.29.1 ([#252](https://github.com/ivanoats/wsg-check/issues/252)) ([b10e4a2](https://github.com/ivanoats/wsg-check/commit/b10e4a223ccee65c7c5389eb2801360656fd3ccc))
+* **deps-dev:** bump vite from 8.0.16 to 8.3.5 ([#234](https://github.com/ivanoats/wsg-check/issues/234)) ([40b5675](https://github.com/ivanoats/wsg-check/commit/40b5675d30e09bd7cc73c3f92d729933cf26303e))
+* **deps:** bump @hono/node-server from 2.1.1 to 2.1.5 ([#251](https://github.com/ivanoats/wsg-check/issues/251)) ([0e807ee](https://github.com/ivanoats/wsg-check/commit/0e807ee983c92a85085c22df67faf5cb6e0d95ac))
+* **deps:** bump dotenv from 17.4.2 to 18.0.7 ([#229](https://github.com/ivanoats/wsg-check/issues/229)) ([b0d4298](https://github.com/ivanoats/wsg-check/commit/b0d4298c04a1687422ac062561beff189cc01a67))
+* **deps:** bump follow-redirects from 1.16.0 to 1.16.1 ([#236](https://github.com/ivanoats/wsg-check/issues/236)) ([952ff6e](https://github.com/ivanoats/wsg-check/commit/952ff6ed4b0ee650bd811c59a424028796b6b60e))
+* **deps:** bump hono from 4.13.9 to 4.13.13 ([#233](https://github.com/ivanoats/wsg-check/issues/233)) ([6e1f715](https://github.com/ivanoats/wsg-check/commit/6e1f715f5d99e57c306c3cb677b8e92deacba10a))
+* **deps:** bump qs from 6.16.0 to 6.16.2 ([#250](https://github.com/ivanoats/wsg-check/issues/250)) ([0a4dcb2](https://github.com/ivanoats/wsg-check/commit/0a4dcb272024a324a8ed0fb7159696448debafd7))
+* **deps:** bump the actions-all group across 1 directory with 2 updates ([#227](https://github.com/ivanoats/wsg-check/issues/227)) ([eb5f09c](https://github.com/ivanoats/wsg-check/commit/eb5f09c93095e9f51a1fe3fbe3839f213aebadc9))
+
 ## [0.7.0](https://github.com/ivanoats/wsg-check/compare/v0.6.3...v0.7.0) (2026-10-29)
 
 
