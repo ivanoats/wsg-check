@@ -96,7 +96,7 @@
     "jsdom": "^29.0.2",
     "lint-staged": "^17.5.1",
     "next": "^16.3.8",
-    "pa11y-ci": "^4.1.0",
+    "pa11y-ci": "^5.0.0",
     "prettier": "^3.9.9",
     "rate-limiter-flexible": "^11.2.1",
     "react": "^19.3.0",
