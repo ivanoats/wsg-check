@@ -408,7 +408,8 @@ describe('HttpClient', () => {
       'https://example.com/sitemap.xml',
       'https://example.com/news.xml',
     ])
-    expect(mockGet).toHaveBeenCalledTimes(2)
+    // robots, page and four standard-file probes
+    expect(mockGet).toHaveBeenCalledTimes(6)
   })
 
   it('returns an empty robotsSitemaps when robots.txt is unavailable', async () => {
@@ -432,7 +433,8 @@ describe('HttpClient', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
     expect(result.value.robotsSitemaps).toBeUndefined()
-    expect(mockGet).toHaveBeenCalledTimes(1)
+    // page and four standard-file probes
+    expect(mockGet).toHaveBeenCalledTimes(5)
   })
 
   it('keeps robotsSitemaps on a cached fetch', async () => {
