@@ -129,7 +129,7 @@ Checks accept `PageData` and return a `CheckResult` or a promise. Most inspect s
 Detects signals of unminified HTML in the served response using two heuristics applied to the raw HTML body:
 
 1. **Blank-line ratio**: if more than 10% of lines are whitespace-only, the HTML is likely not minified.
-2. **HTML comment count**: more than 2 non-conditional HTML comments suggest developer source (conditional `<!--[if …]>` comments are excluded).
+2. **HTML comment count**: more than 2 author HTML comments suggest developer source. Three kinds of comment are excluded: conditional `<!--[if …]>` comments, whitespace-only comments such as `<!-- -->`, and the markers React server rendering emits for hydration (`<!--$-->`, `<!--/$-->`, `<!--$?-->`, `<!--$!-->`, `<!--&-->`, `<!--/&-->`, `<!--F!-->`, `<!--F-->`, `<!--html-->`, `<!--head-->`, `<!--body-->`). Markers match only exactly as React writes them, with no spaces, so an author comment such as `<!-- head -->` still counts.
 
 > **Note:** External CSS and JS file content is not fetched during static analysis, so minification of those assets cannot be verified in this phase.
 

@@ -7,7 +7,8 @@
  *
  * Heuristics applied to the raw HTML response body:
  *   1. Blank-line ratio > 10%  → likely unminified HTML
- *   2. More than 2 non-conditional HTML comments  → likely unminified HTML
+ *   2. More than 2 author HTML comments  → likely unminified HTML
+ *      (conditional, whitespace-only and React marker comments don't count)
  *
  * Limitations: the content of external CSS and JS files is not fetched in
  * this pipeline phase, so this check is limited to what is observable from
@@ -18,8 +19,22 @@
 
 import type { CheckFn } from '../core/types'
 
-// Matches HTML comments that are NOT conditional IE comments (<!--[if ...]).
-const NON_CONDITIONAL_COMMENT = /<!--(?!\[if\s)[\s\S]*?-->/g
+// Matches HTML comments that are NOT conditional IE comments (<!--[if ...]),
+// capturing the comment text.
+const NON_CONDITIONAL_COMMENT = /<!--(?!\[if\s)([\s\S]*?)-->/g
+
+/**
+ * Comment texts React 19 server rendering emits (react-dom-server: Suspense
+ * `$` `/$` `$?` `$!`, Activity `&` `/&`, form state `F!` `F`, preamble
+ * `html` `head` `body`). Hydration needs them, so a minifier cannot remove
+ * them. The text separator `<!-- -->` is covered by the whitespace rule.
+ * Matched exactly, so an author's `<!-- head -->` still counts.
+ */
+const REACT_MARKERS = new Set(['$', '/$', '$?', '$!', '&', '/&', 'F!', 'F', 'html', 'head', 'body'])
+
+function isAuthorComment(text: string): boolean {
+  return text.trim() !== '' && !REACT_MARKERS.has(text)
+}
 
 /** Fraction of blank lines above which the HTML is treated as unminified. */
 const BLANK_LINE_THRESHOLD = 0.1
@@ -44,8 +59,9 @@ export const checkMinification: CheckFn = (page) => {
   const blankRatio = totalLines > 0 ? blankLineCount / totalLines : 0
 
   // ── HTML comment count ────────────────────────────────────────────────────
-  const commentMatches = [...body.matchAll(NON_CONDITIONAL_COMMENT)]
-  const commentCount = commentMatches.length
+  const commentCount = [...body.matchAll(NON_CONDITIONAL_COMMENT)].filter((m) =>
+    isAuthorComment(m[1])
+  ).length
 
   // ── Assess ───────────────────────────────────────────────────────────────
   const issues: string[] = []
@@ -58,7 +74,7 @@ export const checkMinification: CheckFn = (page) => {
 
   if (commentCount > COMMENT_COUNT_THRESHOLD) {
     issues.push(
-      `${commentCount} HTML comments found in page source (excluding conditional comments)`
+      `${commentCount} HTML comments found in page source (excluding conditional comments, whitespace-only comments and React markers)`
     )
   }
 
