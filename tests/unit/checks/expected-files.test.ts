@@ -448,18 +448,15 @@ describe('checkBeneficialFiles against a real server', () => {
     expect(result.message).toBe('1 beneficial file(s) not provided: humans.txt.')
   })
 
-  it.each([404, 403, 500])(
-    'does not count a text/plain answer with status %i',
-    async (status) => {
-      const base = await serve(
-        allServedExcept('/humans.txt', { status, type: 'text/plain', body: 'Not Found' })
-      )
+  it.each([404, 403, 500])('does not count a text/plain answer with status %i', async (status) => {
+    const base = await serve(
+      allServedExcept('/humans.txt', { status, type: 'text/plain', body: 'Not Found' })
+    )
 
-      const result = await checkSite(`${base}/`)
+    const result = await checkSite(`${base}/`)
 
-      expect(result.message).toBe('1 beneficial file(s) not provided: humans.txt.')
-    }
-  )
+    expect(result.message).toBe('1 beneficial file(s) not provided: humans.txt.')
+  })
 
   it('counts carbon.txt when the page response sends a CarbonTxt-Location header', async () => {
     const base = await serve({
