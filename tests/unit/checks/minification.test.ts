@@ -202,7 +202,8 @@ describe('checkMinification (WSG 3.3)', () => {
     })
 
     it('still counts an author comment that only resembles a marker', async () => {
-      const body = `<!DOCTYPE html><html><head><!-- head --><!-- $ --><!-- F --><title>T</title></head><body></body></html>`
+      const body =
+        '<!DOCTYPE html><html><head><!-- head --><!-- $ --><!-- F --><title>T</title></head><body></body></html>'
       const result = await checkMinification(makePageData(body))
       expect(result.status).toBe('warn')
       expect(result.details).toMatch(/\b3 HTML comments/)
