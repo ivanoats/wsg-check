@@ -26,9 +26,11 @@
  *     - `humans.txt`   — credits the people behind the site
  *     - `carbon.txt`   — declares the site's sustainable hosting details
  *
- *   These are detected via `<link>` elements pointing to their conventional
- *   paths.  The check always returns at most a `warn` (they are nice-to-have,
- *   not required).
+ *   A file counts as provided when the fetcher found it at its standard path
+ *   (`page.fetchResult.standardFiles`), when the page sends a
+ *   `CarbonTxt-Location` header (carbon.txt only), or when a `<link>` or
+ *   `<meta>` names it.  The check always returns at most a `warn` (they are
+ *   nice-to-have, not required).
  *
  * @see https://www.w3.org/TR/web-sustainability-guidelines/#provide-information-about-file-provenance
  */
@@ -116,14 +118,11 @@ const BF_RESOURCES = [
   'https://www.w3.org/TR/web-sustainability-guidelines/#provide-information-about-file-provenance',
 ]
 
-/** Path substrings that identify beneficial file `<link>` references. */
-const BENEFICIAL_FILE_PATHS: { path: string; label: string }[] = [
-  { path: 'security.txt', label: 'security.txt' },
-  { path: 'humans.txt', label: 'humans.txt' },
-  { path: 'carbon.txt', label: 'carbon.txt' },
-]
+/** Beneficial file names, also matched as substrings of `<link>` and `<meta>` references. */
+const BENEFICIAL_FILES = ['security.txt', 'humans.txt', 'carbon.txt']
 
 export const checkBeneficialFiles: CheckFn = (page) => {
+  const { standardFiles = [], headers } = page.fetchResult
   const allHrefs = page.parsedPage.links
     .map((l) => (l.href ?? '').toLowerCase())
     .concat(
@@ -131,14 +130,15 @@ export const checkBeneficialFiles: CheckFn = (page) => {
         .map((m) => (m.content ?? '').toLowerCase())
         .filter((c) => c.includes('.txt'))
     )
+  const hasCarbonTxtHeader = (headers['carbontxt-location'] ?? '').trim() !== ''
 
-  const found = BENEFICIAL_FILE_PATHS.filter(({ path }) =>
-    allHrefs.some((href) => href.includes(path))
-  ).map((f) => f.label)
+  const isProvided = (name: string): boolean =>
+    standardFiles.includes(name) ||
+    (name === 'carbon.txt' && hasCarbonTxtHeader) ||
+    allHrefs.some((href) => href.includes(name))
 
-  const missing = BENEFICIAL_FILE_PATHS.filter(
-    ({ path }) => !allHrefs.some((href) => href.includes(path))
-  ).map((f) => f.label)
+  const found = BENEFICIAL_FILES.filter(isProvided)
+  const missing = BENEFICIAL_FILES.filter((name) => !isProvided(name))
 
   if (missing.length === 0) {
     return {
@@ -147,7 +147,7 @@ export const checkBeneficialFiles: CheckFn = (page) => {
       successCriterion: BF_SUCCESS_CRITERION,
       status: 'pass',
       score: 100,
-      message: `All beneficial files referenced (${found.join(', ')}).`,
+      message: `All beneficial files provided (${found.join(', ')}).`,
       impact: 'low',
       category: 'web-dev',
       machineTestable: true,
@@ -160,14 +160,13 @@ export const checkBeneficialFiles: CheckFn = (page) => {
     successCriterion: BF_SUCCESS_CRITERION,
     status: 'warn',
     score: 50,
-    message: `${missing.length} beneficial file(s) not referenced: ${missing.join(', ')}.`,
-    details: `Not referenced: ${missing.join(', ')}`,
+    message: `${missing.length} beneficial file(s) not provided: ${missing.join(', ')}.`,
+    details: `Not found at a standard path or in a page link: ${missing.join(', ')}`,
     recommendation:
       'Consider adding: ' +
-      '/.well-known/security.txt to declare a vulnerability disclosure contact (RFC 9116); ' +
+      '/.well-known/security.txt, served as text/plain, to declare a vulnerability disclosure contact (RFC 9116); ' +
       '/humans.txt to credit the people who built the site; ' +
-      '/carbon.txt to disclose your sustainable hosting details for automated carbon reporting. ' +
-      'Link to them from the document <head> so automated tools can discover them.',
+      '/carbon.txt or /.well-known/carbon.txt to disclose your sustainable hosting details for automated carbon reporting.',
     resources: BF_RESOURCES,
     impact: 'low',
     category: 'web-dev',

@@ -1,5 +1,10 @@
-import { describe, it, expect } from 'vitest'
+// @vitest-environment node
+// The real-server tests below need axios's node http adapter, not jsdom's XHR.
+import { describe, it, expect, afterEach } from 'vitest'
+import http from 'node:http'
+import type { AddressInfo } from 'node:net'
 import { checkExpectedFiles, checkBeneficialFiles } from '@/checks/expected-files'
+import { PageFetcher } from '@/core/fetcher'
 import type { PageData } from '@/core/types'
 import type { LinkRef } from '@/utils/html-parser'
 import { expectRecommendationAndResources } from './helpers'
@@ -10,6 +15,8 @@ function makePageData(
   opts: {
     links?: LinkRef[]
     robotsSitemaps?: string[]
+    standardFiles?: string[]
+    headers?: Record<string, string>
     originalUrl?: string
     finalUrl?: string
   } = {}
@@ -17,6 +24,8 @@ function makePageData(
   const {
     links = [],
     robotsSitemaps,
+    standardFiles,
+    headers = {},
     originalUrl = 'https://example.com',
     finalUrl = originalUrl,
   } = opts
@@ -27,12 +36,13 @@ function makePageData(
       url: finalUrl,
       originalUrl,
       statusCode: 200,
-      headers: {},
+      headers,
       body,
       redirectChain: [],
       fromCache: false,
       contentLength: body.length,
       robotsSitemaps,
+      ...(standardFiles ? { standardFiles } : {}),
     },
     parsedPage: {
       title: 'Test',
@@ -267,5 +277,219 @@ describe('checkBeneficialFiles (WSG 3.17)', () => {
     expect(result.status).toBe('warn')
     expect(result.details).not.toContain('humans.txt')
     expect(result.details).toContain('security.txt')
+  })
+
+  it('counts files found at their standard paths without any link', async () => {
+    const result = await checkBeneficialFiles(
+      makePageData({ standardFiles: ['security.txt', 'carbon.txt'] })
+    )
+    expect(result.status).toBe('warn')
+    expect(result.message).toBe('1 beneficial file(s) not provided: humans.txt.')
+    expect(result.details).not.toContain('security.txt')
+    expect(result.details).not.toContain('carbon.txt')
+  })
+
+  it('passes when all three files are found at their standard paths', async () => {
+    const result = await checkBeneficialFiles(
+      makePageData({ standardFiles: ['security.txt', 'humans.txt', 'carbon.txt'] })
+    )
+    expect(result.status).toBe('pass')
+    expect(result.message).toBe(
+      'All beneficial files provided (security.txt, humans.txt, carbon.txt).'
+    )
+  })
+
+  it('counts carbon.txt as provided when the page sends a CarbonTxt-Location header', async () => {
+    const result = await checkBeneficialFiles(
+      makePageData({ headers: { 'carbontxt-location': 'https://example.org/carbon.txt' } })
+    )
+    expect(result.details).toContain('security.txt')
+    expect(result.details).not.toContain('carbon.txt')
+  })
+
+  it('does not ask for a <link> in the recommendation', async () => {
+    const result = await checkBeneficialFiles(makePageData({ links: [] }))
+    expect(result.recommendation).not.toContain('<head>')
+    expect(result.recommendation).toContain('/.well-known/carbon.txt')
+  })
+})
+
+// ─── checkBeneficialFiles against a real server ──────────────────────────────
+
+/**
+ * Runs the real fetcher (un-mocked HttpClient and axios) against local servers,
+ * so the standard-path requests, their content types and status codes all
+ * cross the network as they would on a deployed site.
+ */
+describe('checkBeneficialFiles against a real server', () => {
+  type Route = {
+    status?: number
+    type?: string
+    headers?: Record<string, string>
+    body?: string
+    hang?: boolean
+  }
+  const PAGE: Route = { type: 'text/html; charset=utf-8', body: '<!DOCTYPE html><html></html>' }
+  const TEXT: Route = { type: 'text/plain; charset=utf-8', body: 'Contact: mailto:a@example.com\n' }
+  const servers: http.Server[] = []
+
+  /** Starts a server for `routes`; any other path gets `fallback` (404 by default). */
+  async function serve(
+    routes: Record<string, Route>,
+    fallback: Route = { status: 404, body: '' }
+  ): Promise<string> {
+    const server = http.createServer((req, res) => {
+      const route = routes[req.url ?? ''] ?? fallback
+      if (route.hang) return
+      res.writeHead(route.status ?? 200, {
+        ...(route.type ? { 'Content-Type': route.type } : {}),
+        ...route.headers,
+      })
+      res.end(route.body ?? '')
+    })
+    servers.push(server)
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
+    return `http://127.0.0.1:${(server.address() as AddressInfo).port}`
+  }
+
+  async function checkSite(url: string, timeout?: number) {
+    const fetcher = new PageFetcher({
+      maxRetries: 0,
+      timeout,
+      hostPolicy: { allowLoopback: true, allowPrivateNetwork: false },
+    })
+    const page = await fetcher.fetch(url)
+    expect(page.ok).toBe(true)
+    if (!page.ok) throw page.error
+    return checkBeneficialFiles(page.value)
+  }
+
+  afterEach(async () => {
+    await Promise.all(
+      servers.splice(0).map(
+        (server) =>
+          new Promise<void>((resolve) => {
+            server.closeAllConnections()
+            server.close(() => resolve())
+          })
+      )
+    )
+  })
+
+  it('counts security.txt and carbon.txt under /.well-known/ and reports only humans.txt', async () => {
+    const base = await serve({
+      '/': PAGE,
+      '/.well-known/security.txt': TEXT,
+      '/.well-known/carbon.txt': TEXT,
+    })
+
+    const result = await checkSite(`${base}/`)
+
+    expect(result.status).toBe('warn')
+    expect(result.message).toBe('1 beneficial file(s) not provided: humans.txt.')
+  })
+
+  it('passes when all three are served at the site root and /.well-known/', async () => {
+    const base = await serve({
+      '/': PAGE,
+      '/.well-known/security.txt': TEXT,
+      '/humans.txt': TEXT,
+      '/carbon.txt': TEXT,
+    })
+
+    const result = await checkSite(`${base}/`)
+
+    expect(result.status).toBe('pass')
+  })
+
+  /** Every file is served as plain text except the one at `path`, which gets `route`. */
+  function allServedExcept(path: string, route: Route): Record<string, Route> {
+    return {
+      '/': PAGE,
+      '/.well-known/security.txt': TEXT,
+      '/humans.txt': TEXT,
+      '/carbon.txt': TEXT,
+      [path]: route,
+    }
+  }
+
+  it('does not count an HTML catch-all page as a file', async () => {
+    // A single-page app answers every path with its HTML shell.
+    const base = await serve({ '/': PAGE }, PAGE)
+
+    const result = await checkSite(`${base}/`)
+
+    expect(result.message).toBe(
+      '3 beneficial file(s) not provided: security.txt, humans.txt, carbon.txt.'
+    )
+  })
+
+  it('does not count a security.txt that is not text/plain', async () => {
+    const base = await serve(
+      allServedExcept('/.well-known/security.txt', {
+        type: 'application/octet-stream',
+        body: 'Contact: x',
+      })
+    )
+
+    const result = await checkSite(`${base}/`)
+
+    expect(result.message).toBe('1 beneficial file(s) not provided: security.txt.')
+  })
+
+  it('does not follow a redirect from a standard path', async () => {
+    const base = await serve({
+      ...allServedExcept('/humans.txt', { status: 301, headers: { Location: '/team.txt' } }),
+      '/team.txt': TEXT,
+    })
+
+    const result = await checkSite(`${base}/`)
+
+    expect(result.message).toBe('1 beneficial file(s) not provided: humans.txt.')
+  })
+
+  it.each([404, 403, 500])('does not count a text/plain answer with status %i', async (status) => {
+    const base = await serve(
+      allServedExcept('/humans.txt', { status, type: 'text/plain', body: 'Not Found' })
+    )
+
+    const result = await checkSite(`${base}/`)
+
+    expect(result.message).toBe('1 beneficial file(s) not provided: humans.txt.')
+  })
+
+  it('counts carbon.txt when the page response sends a CarbonTxt-Location header', async () => {
+    const base = await serve({
+      '/': { ...PAGE, headers: { 'CarbonTxt-Location': 'https://example.org/carbon.txt' } },
+    })
+
+    const result = await checkSite(`${base}/`)
+
+    expect(result.details).not.toContain('carbon.txt')
+    expect(result.details).toContain('security.txt')
+  })
+
+  it('probes the origin the page redirected to, not the one requested', async () => {
+    const destination = await serve({ '/': PAGE, '/.well-known/security.txt': TEXT })
+    const start = await serve({
+      '/': { status: 301, headers: { Location: `${destination}/` } },
+      '/humans.txt': TEXT,
+    })
+
+    const result = await checkSite(`${start}/`)
+
+    expect(result.message).toBe('2 beneficial file(s) not provided: humans.txt, carbon.txt.')
+  })
+
+  it('treats a file that does not answer within the timeout as absent', async () => {
+    const base = await serve({
+      '/': PAGE,
+      '/.well-known/security.txt': TEXT,
+      '/humans.txt': { hang: true },
+    })
+
+    const result = await checkSite(`${base}/`, 500)
+
+    expect(result.message).toBe('2 beneficial file(s) not provided: humans.txt, carbon.txt.')
   })
 })

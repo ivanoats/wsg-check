@@ -66,6 +66,12 @@ export interface FetchResult {
    * A cached result keeps the value from the fetch that filled the cache.
    */
   robotsSitemaps?: ReadonlyArray<string>
+  /**
+   * Beneficial files (`security.txt`, `humans.txt`, `carbon.txt`) that answered
+   * 200 with a non-HTML content type at a standard path on the final URL's
+   * origin. Absent when not probed.
+   */
+  standardFiles?: ReadonlyArray<string>
 }
 
 export interface HttpClientOptions {
@@ -168,6 +174,27 @@ export const requestHeaders = (
   const downgraded = current.protocol === 'http:' && [startUrl, ...priorHops].some(isHttps)
   return sameHost && !downgraded ? { headers } : {}
 }
+/** A fetched page plus the address class its final hop was approved for. */
+interface FetchedPage {
+  page: FetchResult
+  finalClass: AddressClass | undefined
+}
+
+/**
+ * Where each beneficial file is published. RFC 9116 defines only the
+ * /.well-known/ path for security.txt and requires text/plain; carbontxt.org
+ * accepts the site root or /.well-known/.
+ */
+const STANDARD_FILE_PATHS: ReadonlyArray<{ name: string; path: string; plainTextOnly?: true }> = [
+  { name: 'security.txt', path: '/.well-known/security.txt', plainTextOnly: true },
+  { name: 'humans.txt', path: '/humans.txt' },
+  { name: 'carbon.txt', path: '/carbon.txt' },
+  { name: 'carbon.txt', path: '/.well-known/carbon.txt' },
+]
+const PROBE_TIMEOUT_MS = 5_000
+const PROBE_MAX_BYTES = 64 * 1024
+/** Content types a single-page app's catch-all route answers unknown paths with. */
+const HTML_TYPES = new Set(['text/html', 'application/xhtml+xml'])
 
 // ─── HttpClient ───────────────────────────────────────────────────────────────
 
@@ -306,15 +333,95 @@ export class HttpClient {
     }
 
     try {
-      const fetched = await this.fetchWithRetry(url, startClass)
+      const { page, finalClass } = await this.fetchWithRetry(url, startClass)
+      const standardFiles = await this.findStandardFiles(
+        page.url,
+        finalClass,
+        options?.ignoreRobots === true
+      )
+      if (this.signal?.aborted) throw new FetchError(`Request aborted: ${url}`, url)
       const robotsSitemaps = options?.ignoreRobots ? undefined : this.robotsSitemapsFor(url)
+      const withFiles = { ...page, standardFiles }
       // An empty array is kept: it records that robots.txt was consulted.
-      const result = robotsSitemaps ? { ...fetched, robotsSitemaps } : fetched
+      const result = robotsSitemaps ? { ...withFiles, robotsSitemaps } : withFiles
       this.cache.set(url, result)
       return ok(result)
     } catch (e) {
       return err(e instanceof FetchError ? e : new FetchError(String(e), url, e))
     }
+  }
+
+  // ── Standard file paths ─────────────────────────────────────────────────────
+
+  /**
+   * Requests the beneficial files' standard paths on the origin of the page
+   * that was actually fetched, so a redirect to another site is judged by that
+   * site's files.
+   *
+   * @param addressClass - The class the redirect guard approved for the page's
+   *                       host. Reused rather than re-resolved, so a host that
+   *                       rebinds after the page fetch can't move the requests
+   *                       onto a range the redirect rules refused.
+   */
+  private async findStandardFiles(
+    pageUrl: string,
+    addressClass: AddressClass | undefined,
+    ignoreRobots: boolean
+  ): Promise<string[]> {
+    const origin = new URL(pageUrl).origin
+    // Load the final origin's rules once before starting parallel probes.
+    const robots = ignoreRobots ? undefined : await this.fetchRobotsTxtRules(origin, addressClass)
+    const found = await Promise.all(
+      STANDARD_FILE_PATHS.map(async ({ name, path, plainTextOnly }) => {
+        const url = `${origin}${path}`
+        if (robots?.isAllowed(url, this.opts.userAgent) === false) return undefined
+        return (await this.servesTextFile(url, plainTextOnly === true, addressClass))
+          ? name
+          : undefined
+      })
+    )
+    return [...new Set(found.filter((name): name is string => name !== undefined))]
+  }
+
+  /**
+   * `true` when `url` answers 200 with a non-HTML content type (`text/plain`
+   * when `plainTextOnly`). Redirects are not followed and any error counts as
+   * absent.
+   */
+  private async servesTextFile(
+    url: string,
+    plainTextOnly: boolean,
+    addressClass: AddressClass | undefined
+  ): Promise<boolean> {
+    try {
+      const resp = await this.axiosInstance.get<string>(url, {
+        responseType: 'text',
+        timeout: this.probeTimeout(),
+        maxContentLength: PROBE_MAX_BYTES,
+        ...this.connectOptions(addressClass),
+      })
+      if (resp.status !== 200) return false
+      const header = (resp.headers as Record<string, unknown>)['content-type']
+      const type = String(header ?? '')
+        .split(';')[0]
+        .trim()
+        .toLowerCase()
+      return plainTextOnly ? type === 'text/plain' : type !== '' && !HTML_TYPES.has(type)
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Never longer than the client timeout. A timeout of 0 means "unlimited" to
+   * axios (and WSG_TIMEOUT=0 or a non-number can produce one), but the probes
+   * are optional evidence and must always stay bounded.
+   */
+  private probeTimeout(): number {
+    const { timeout } = this.opts
+    return Number.isFinite(timeout) && timeout > 0
+      ? Math.min(PROBE_TIMEOUT_MS, timeout)
+      : PROBE_TIMEOUT_MS
   }
 
   // ── Internals ───────────────────────────────────────────────────────────────
@@ -323,7 +430,7 @@ export class HttpClient {
     url: string,
     startClass: AddressClass | undefined,
     attempt = 0
-  ): Promise<FetchResult> {
+  ): Promise<FetchedPage> {
     try {
       return await this.fetchFollowingRedirects(url, startClass)
     } catch (err) {
@@ -345,7 +452,7 @@ export class HttpClient {
   private async fetchFollowingRedirects(
     startUrl: string,
     startClass: AddressClass | undefined
-  ): Promise<FetchResult> {
+  ): Promise<FetchedPage> {
     const redirectChain: RedirectEntry[] = []
     let currentUrl = startUrl
     let currentClass = startClass
@@ -376,7 +483,10 @@ export class HttpClient {
       if (resp.status >= 300 && resp.status < 400) {
         if (!this.opts.followRedirects) {
           // Caller asked not to follow – return the redirect response as-is.
-          return HttpClient.buildResult(startUrl, currentUrl, resp, redirectChain, bytesReceived)
+          return {
+            page: HttpClient.buildResult(startUrl, currentUrl, resp, redirectChain, bytesReceived),
+            finalClass: currentClass,
+          }
         }
 
         const location = (resp.headers as Record<string, string>)['location']
@@ -398,7 +508,10 @@ export class HttpClient {
         continue
       }
 
-      return HttpClient.buildResult(startUrl, currentUrl, resp, redirectChain, bytesReceived)
+      return {
+        page: HttpClient.buildResult(startUrl, currentUrl, resp, redirectChain, bytesReceived),
+        finalClass: currentClass,
+      }
     }
 
     throw new FetchError(`Too many redirects (> ${MAX_REDIRECTS}) for ${startUrl}`, startUrl)
