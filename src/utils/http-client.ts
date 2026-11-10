@@ -335,6 +335,7 @@ export class HttpClient {
     try {
       const { page, finalClass } = await this.fetchWithRetry(url, startClass)
       const standardFiles = await this.findStandardFiles(page.url, finalClass)
+      if (this.signal?.aborted) throw new FetchError(`Request aborted: ${url}`, url)
       const robotsSitemaps = options?.ignoreRobots ? undefined : this.robotsSitemapsFor(url)
       const withFiles = { ...page, standardFiles }
       // An empty array is kept: it records that robots.txt was consulted.
