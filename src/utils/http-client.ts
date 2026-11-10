@@ -334,7 +334,11 @@ export class HttpClient {
 
     try {
       const { page, finalClass } = await this.fetchWithRetry(url, startClass)
-      const standardFiles = await this.findStandardFiles(page.url, finalClass)
+      const standardFiles = await this.findStandardFiles(
+        page.url,
+        finalClass,
+        options?.ignoreRobots === true
+      )
       if (this.signal?.aborted) throw new FetchError(`Request aborted: ${url}`, url)
       const robotsSitemaps = options?.ignoreRobots ? undefined : this.robotsSitemapsFor(url)
       const withFiles = { ...page, standardFiles }
@@ -361,15 +365,20 @@ export class HttpClient {
    */
   private async findStandardFiles(
     pageUrl: string,
-    addressClass: AddressClass | undefined
+    addressClass: AddressClass | undefined,
+    ignoreRobots: boolean
   ): Promise<string[]> {
     const origin = new URL(pageUrl).origin
+    // Load the final origin's rules once before starting parallel probes.
+    const robots = ignoreRobots ? undefined : await this.fetchRobotsTxtRules(origin, addressClass)
     const found = await Promise.all(
-      STANDARD_FILE_PATHS.map(async ({ name, path, plainTextOnly }) =>
-        (await this.servesTextFile(`${origin}${path}`, plainTextOnly === true, addressClass))
+      STANDARD_FILE_PATHS.map(async ({ name, path, plainTextOnly }) => {
+        const url = `${origin}${path}`
+        if (robots?.isAllowed(url, this.opts.userAgent) === false) return undefined
+        return (await this.servesTextFile(url, plainTextOnly === true, addressClass))
           ? name
           : undefined
-      )
+      })
     )
     return [...new Set(found.filter((name): name is string => name !== undefined))]
   }
