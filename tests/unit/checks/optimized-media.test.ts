@@ -178,3 +178,21 @@ describe('checkOptimizedMedia (WSG 2.7)', () => {
     })
   })
 })
+
+describe('checkOptimizedMedia (WSG 2.7): <picture> with modern sources', () => {
+  it('counts a JPEG fallback as modern when its <picture> offers AVIF', async () => {
+    const hero: ResourceReference = {
+      ...makeImage('https://example.com/hero.jpg', { width: '1752', height: '452' }),
+      modernAlternative: 'avif',
+    }
+    const result = await checkOptimizedMedia(makePageData([hero]))
+    expect(result.status).toBe('pass')
+  })
+
+  it('still fails a JPEG with no modern alternative', async () => {
+    const result = await checkOptimizedMedia(
+      makePageData([makeImage('https://example.com/hero.jpg', { width: '10', height: '10' })])
+    )
+    expect(result.status).toBe('fail')
+  })
+})

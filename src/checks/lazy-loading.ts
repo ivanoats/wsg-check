@@ -53,9 +53,29 @@ export const checkLazyLoading: CheckFn = (page) => {
     }
   }
 
+  // fetchpriority="high" or loading="eager" marks an image the author wants
+  // loaded immediately (usually the hero), so it is not expected to be lazy.
+  const isIntentionallyEager = (attrs: Record<string, string>): boolean =>
+    attrs.fetchpriority?.toLowerCase() === 'high' || attrs.loading?.toLowerCase() === 'eager'
+  const candidates = imageResources.filter((r) => !isIntentionallyEager(r.attributes))
+
+  if (candidates.length === 0) {
+    return {
+      guidelineId: GUIDELINE_ID,
+      guidelineName: GUIDELINE_NAME,
+      successCriterion: SUCCESS_CRITERION,
+      status: 'pass',
+      score: 100,
+      message: 'Every image is marked for eager loading (fetchpriority="high" or loading="eager").',
+      impact: 'medium',
+      category: 'ux',
+      machineTestable: true,
+    }
+  }
+
   // With a single image it is most likely the LCP/hero image — eager loading
   // is correct here.
-  if (imageResources.length === 1) {
+  if (candidates.length === 1) {
     return {
       guidelineId: GUIDELINE_ID,
       guidelineName: GUIDELINE_NAME,
@@ -69,9 +89,9 @@ export const checkLazyLoading: CheckFn = (page) => {
     }
   }
 
-  const lazyImages = imageResources.filter((r) => r.attributes.loading === 'lazy')
+  const lazyImages = candidates.filter((r) => r.attributes.loading === 'lazy')
   const lazyCount = lazyImages.length
-  const total = imageResources.length
+  const total = candidates.length
 
   // None lazy-loaded at all → fail
   if (lazyCount === 0) {
@@ -96,7 +116,7 @@ export const checkLazyLoading: CheckFn = (page) => {
 
   // At least the non-first images should be lazy.  Allow the first image to be
   // eager (LCP) and expect the rest to be lazy.
-  const nonFirstImages = imageResources.slice(1)
+  const nonFirstImages = candidates.slice(1)
   const allNonFirstAreLazy = nonFirstImages.every((r) => r.attributes.loading === 'lazy')
 
   if (allNonFirstAreLazy) {
