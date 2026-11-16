@@ -83,7 +83,11 @@ export const checkOptimizedMedia: CheckFn = (page) => {
   // ── 1. Modern image formats ───────────────────────────────────────────────
   // SVG has no WebP/AVIF equivalent, so only raster images count here.
   const rasterImages = imageResources.filter((r) => !isVectorImage(r.url))
-  const modernFormatImages = rasterImages.filter((r) => isModernFormat(r.url))
+  // An <img> fallback inside <picture> with an AVIF/WebP <source> counts as modern:
+  // supporting browsers download the source, not the fallback.
+  const modernFormatImages = rasterImages.filter(
+    (r) => isModernFormat(r.url) || r.modernAlternative !== undefined
+  )
   const hasFormatIssue = rasterImages.length > 0 && modernFormatImages.length === 0
   if (hasFormatIssue) {
     issues.push(

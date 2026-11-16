@@ -127,3 +127,60 @@ describe('checkDataRefresh (WSG 4.7)', () => {
     expect(firstResource).toContain('w3.org')
   })
 })
+
+describe('checkDataRefresh (WSG 4.7): HTML that revalidates', () => {
+  const html = { 'content-type': 'text/html; charset=UTF-8' }
+
+  it('passes for max-age=0, must-revalidate with an ETag', async () => {
+    const result = await checkDataRefresh(
+      makePageData({ ...html, 'cache-control': 'public,max-age=0,must-revalidate', etag: '"abc"' })
+    )
+    expect(result.status).toBe('pass')
+    expect(result.score).toBe(100)
+    expect(result.message).toContain('ETag')
+  })
+
+  it('passes for no-cache with Last-Modified', async () => {
+    const result = await checkDataRefresh(
+      makePageData({
+        ...html,
+        'cache-control': 'no-cache',
+        'last-modified': 'Mon, 16 Nov 2026 19:00:00 GMT',
+      })
+    )
+    expect(result.status).toBe('pass')
+    expect(result.message).toContain('Last-Modified')
+  })
+
+  it('still fails max-age=0, must-revalidate without a validator', async () => {
+    const result = await checkDataRefresh(
+      makePageData({ ...html, 'cache-control': 'max-age=0, must-revalidate' })
+    )
+    expect(result.status).toBe('fail')
+  })
+
+  it('still fails max-age=0 with an ETag but no must-revalidate', async () => {
+    const result = await checkDataRefresh(
+      makePageData({ ...html, 'cache-control': 'max-age=0', etag: '"abc"' })
+    )
+    expect(result.status).toBe('fail')
+  })
+
+  it('does not apply to non-HTML responses', async () => {
+    const result = await checkDataRefresh(
+      makePageData({
+        'content-type': 'application/json',
+        'cache-control': 'max-age=0, must-revalidate',
+        etag: '"abc"',
+      })
+    )
+    expect(result.status).toBe('fail')
+  })
+
+  it('still fails no-store even with an ETag', async () => {
+    const result = await checkDataRefresh(
+      makePageData({ ...html, 'cache-control': 'no-store, no-cache', etag: '"abc"' })
+    )
+    expect(result.status).toBe('fail')
+  })
+})

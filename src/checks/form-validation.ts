@@ -23,6 +23,7 @@
  */
 
 import type { CheckFn } from '../core/types'
+import { autocompleteCandidates } from './form-input-types'
 
 const GUIDELINE_ID = '3.10'
 const GUIDELINE_NAME = 'Validate Forms'
@@ -47,7 +48,9 @@ export const checkFormValidation: CheckFn = (page) => {
   }
 
   const unlabelledInputs = formInputs.filter((i) => !i.hasLabel)
-  const inputsWithAutocomplete = formInputs.filter((i) => i.hasAutocomplete)
+  // Only controls where autocomplete has an effect (not radio, checkbox, file, buttons).
+  const autocompleteInputs = autocompleteCandidates(formInputs)
+  const inputsWithAutocomplete = autocompleteInputs.filter((i) => i.hasAutocomplete)
   const issues: string[] = []
 
   if (unlabelledInputs.length > 0) {
@@ -56,8 +59,10 @@ export const checkFormValidation: CheckFn = (page) => {
     )
   }
 
-  if (inputsWithAutocomplete.length === 0) {
-    issues.push(`None of the ${formInputs.length} input(s) use the autocomplete attribute`)
+  if (autocompleteInputs.length > 0 && inputsWithAutocomplete.length === 0) {
+    issues.push(
+      `None of the ${autocompleteInputs.length} text-entry input(s) use the autocomplete attribute`
+    )
   }
 
   if (issues.length === 0) {
@@ -67,7 +72,10 @@ export const checkFormValidation: CheckFn = (page) => {
       successCriterion: SUCCESS_CRITERION,
       status: 'pass',
       score: 100,
-      message: `All ${formInputs.length} input(s) are labelled and use autocomplete.`,
+      message:
+        autocompleteInputs.length > 0
+          ? `All ${formInputs.length} input(s) are labelled and use autocomplete.`
+          : `All ${formInputs.length} input(s) are labelled; none are text-entry fields that take autocomplete.`,
       impact: 'medium',
       category: 'web-dev',
       machineTestable: true,
