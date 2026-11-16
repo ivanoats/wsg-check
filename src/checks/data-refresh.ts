@@ -85,6 +85,35 @@ export const checkDataRefresh: CheckFn = (page) => {
 
   const maxAge = extractMaxAge(cacheControl)
 
+  // HTML that revalidates on every visit (no-cache, or max-age=0 with must-revalidate)
+  // is the recommended pattern when CSS and JS carry content hashes. With a validator,
+  // a repeat visit is a conditional request answered by a 304 with no body: the page
+  // is never stale and costs almost nothing to recheck.
+  const headers = page.fetchResult.headers
+  const isHtml = (headers['content-type'] ?? '').toLowerCase().includes('text/html')
+  const revalidates =
+    cacheControl.includes('no-cache') || (maxAge === 0 && cacheControl.includes('must-revalidate'))
+  const validator =
+    headers['etag'] !== undefined
+      ? 'ETag'
+      : headers['last-modified'] !== undefined
+        ? 'Last-Modified'
+        : undefined
+  if (isHtml && revalidates && validator !== undefined) {
+    return {
+      guidelineId: GUIDELINE_ID,
+      guidelineName: GUIDELINE_NAME,
+      successCriterion: SUCCESS_CRITERION,
+      status: 'pass',
+      score: 100,
+      message: `HTML revalidates on each visit using ${validator}, so unchanged pages return a 304 with no body.`,
+      details: `Cache-Control: ${headers['cache-control']}; ${validator} present`,
+      impact: 'medium',
+      category: 'hosting',
+      machineTestable: true,
+    }
+  }
+
   if (maxAge === null) {
     return {
       guidelineId: GUIDELINE_ID,

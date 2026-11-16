@@ -341,3 +341,21 @@ describe('parseHtml – form inputs', () => {
     expect(ta?.hasLabel).toBe(true)
   })
 })
+
+describe('parseHtml – form input types', () => {
+  it('reports a bare <input> as type "text"', () => {
+    const page = parseHtml(
+      '<form><label>Name <input name="n"></label></form>',
+      'https://example.com'
+    )
+    expect(page.formInputs[0].type).toBe('text')
+  })
+
+  it('reports select and textarea by tag name and lower-cases input types', () => {
+    const page = parseHtml(
+      '<form><select></select><textarea></textarea><input type="RADIO"></form>',
+      'https://example.com'
+    )
+    expect(page.formInputs.map((i) => i.type)).toEqual(['select', 'textarea', 'radio'])
+  })
+})

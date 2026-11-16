@@ -355,7 +355,8 @@ export function parseHtml(html: string, baseUrl?: string): ParsedPage {
   $('input:not([type="hidden"]), select, textarea').each((_, el) => {
     const attrs = attrsOf(el as DomElement)
     const tagName = (el as DomElement).name
-    const type = attrs.type ?? (tagName === 'select' ? 'select' : 'textarea')
+    // A bare <input> is a text input; <select> and <textarea> report their tag name.
+    const type = (attrs.type ?? (tagName === 'input' ? 'text' : tagName)).toLowerCase()
     const id = attrs.id
 
     // An input is labelled when:

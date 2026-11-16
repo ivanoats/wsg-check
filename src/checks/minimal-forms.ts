@@ -25,6 +25,7 @@
  */
 
 import type { CheckFn } from '../core/types'
+import { autocompleteCandidates, inputmodeCandidates } from './form-input-types'
 
 const GUIDELINE_ID = '2.19'
 const GUIDELINE_NAME = 'Support Native User Interface Features'
@@ -79,27 +80,31 @@ export const checkMinimalForms: CheckFn = (page) => {
   }
 
   // ── 2. autocomplete ───────────────────────────────────────────────────────
-  const withAutocomplete = formInputs.filter((i) => i.hasAutocomplete).length
-  if (withAutocomplete === 0) {
+  // Only controls where autocomplete has an effect (not radio, checkbox, file, buttons).
+  const autocompleteInputs = autocompleteCandidates(formInputs)
+  const withAutocomplete = autocompleteInputs.filter((i) => i.hasAutocomplete).length
+  if (autocompleteInputs.length > 0 && withAutocomplete === 0) {
     if (status !== 'fail') {
       status = 'fail'
       score = 0
     }
     issues.push(
-      `None of the ${formInputs.length} input(s) use the autocomplete attribute — ` +
+      `None of the ${autocompleteInputs.length} text-entry input(s) use the autocomplete attribute — ` +
         'autocomplete reduces user effort and submission errors'
     )
   }
 
   // ── 3. inputmode ──────────────────────────────────────────────────────────
-  const withInputmode = formInputs.filter((i) => i.hasInputmode).length
-  if (withInputmode === 0) {
+  // Only free-text controls; email, tel, url, and number already pick a keyboard.
+  const inputmodeInputs = inputmodeCandidates(formInputs)
+  const withInputmode = inputmodeInputs.filter((i) => i.hasInputmode).length
+  if (inputmodeInputs.length > 0 && withInputmode === 0) {
     if (status === 'pass') {
       status = 'warn'
       score = 50
     }
     issues.push(
-      `None of the ${formInputs.length} input(s) use the inputmode attribute — ` +
+      `None of the ${inputmodeInputs.length} free-text input(s) use the inputmode attribute — ` +
         'inputmode hints the browser to show the most appropriate virtual keyboard on mobile'
     )
   }
@@ -111,7 +116,7 @@ export const checkMinimalForms: CheckFn = (page) => {
       successCriterion: SUCCESS_CRITERION,
       status: 'pass',
       score: 100,
-      message: `Form looks well-optimised: ${formInputs.length} field(s) with autocomplete and inputmode.`,
+      message: `Form looks well-optimised: ${formInputs.length} field(s), with autocomplete and inputmode where they apply.`,
       impact: 'low',
       category: 'ux',
       machineTestable: true,
