@@ -38,7 +38,10 @@ export const POST = async (request: NextRequest): Promise<Response> => {
       validatedPayload.value.categories,
       validatedPayload.value.guidelines
     )
-    const result = await runReport(validatedUrl.value.toString(), { checks })
+    const result = await runReport(validatedUrl.value.toString(), {
+      checks,
+      config: { hostPolicy: { allowLoopback: false, allowPrivateNetwork: false } },
+    })
 
     if (!result.ok) {
       return errorJson(400, 'BAD_REQUEST', result.error.message)

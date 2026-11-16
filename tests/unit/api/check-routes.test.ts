@@ -54,6 +54,10 @@ describe('check routes', () => {
     const response = await POST(request)
     const body = await response.json()
 
+    expect(runReportMock).toHaveBeenCalledWith('https://example.com/', {
+      checks: [{ guidelineId: '2.8' }],
+      config: { hostPolicy: { allowLoopback: false, allowPrivateNetwork: false } },
+    })
     expect(response.status).toBe(200)
     expect(body.status).toBe('completed')
     expect(typeof body.id).toBe('string')
