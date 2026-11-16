@@ -46,7 +46,7 @@ describe('parseHtml – basic fields', () => {
 
   it('detects the DOCTYPE declaration', () => {
     expect(page.doctype).not.toBeNull()
-    expect(page.doctype?.toLowerCase()).toContain('doctype')
+    expect(page.doctype?.toLowerCase()).toBe('<!doctype html>')
   })
 })
 
@@ -339,5 +339,46 @@ describe('parseHtml – form inputs', () => {
     const ta = page.formInputs.find((i) => i.type === 'textarea')
     expect(ta).toBeDefined()
     expect(ta?.hasLabel).toBe(true)
+  })
+})
+
+describe('parseHtml – form input types', () => {
+  it('reports a bare <input> as type "text"', () => {
+    const page = parseHtml(
+      '<form><label>Name <input name="n"></label></form>',
+      'https://example.com'
+    )
+    expect(page.formInputs[0].type).toBe('text')
+  })
+
+  it('reports select and textarea by tag name and lower-cases input types', () => {
+    const page = parseHtml(
+      '<form><select></select><textarea></textarea><input type="RADIO"></form>',
+      'https://example.com'
+    )
+    expect(page.formInputs.map((i) => i.type)).toEqual(['select', 'textarea', 'radio'])
+  })
+})
+
+describe('parseHtml – <picture> sources', () => {
+  it('records AVIF offered by a typed <source>', () => {
+    const page = parseHtml(
+      '<picture><source type="image/avif" srcset="/a.avif"><source type="image/webp" srcset="/a.webp"><img src="/a.jpg" alt=""></picture>',
+      'https://example.com'
+    )
+    expect(page.resources.find((r) => r.url.endsWith('/a.jpg'))?.modernAlternative).toBe('avif')
+  })
+
+  it('detects WebP by srcset extension when <source> has no type', () => {
+    const page = parseHtml(
+      '<picture><source srcset="/b.webp 1x"><img src="/b.png" alt=""></picture>',
+      'https://example.com'
+    )
+    expect(page.resources.find((r) => r.url.endsWith('/b.png'))?.modernAlternative).toBe('webp')
+  })
+
+  it('leaves an <img> outside <picture> unmarked', () => {
+    const page = parseHtml('<img src="/c.jpg" alt="">', 'https://example.com')
+    expect(page.resources.find((r) => r.url.endsWith('/c.jpg'))?.modernAlternative).toBeUndefined()
   })
 })

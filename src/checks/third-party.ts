@@ -47,7 +47,10 @@ function getEffectiveDomain(url: string): string {
 export const checkThirdParty: CheckFn = (page) => {
   const pageDomain = getEffectiveDomain(page.url)
 
-  const scripts = page.parsedPage.resources.filter((r) => r.type === 'script')
+  // Preload hints share type 'script' but have no src.
+  const scripts = page.parsedPage.resources.filter(
+    (r) => r.type === 'script' && 'src' in r.attributes
+  )
   const allResources = page.parsedPage.resources
 
   const thirdPartyScripts = scripts.filter((r) => getEffectiveDomain(r.url) !== pageDomain)

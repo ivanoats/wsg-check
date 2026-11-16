@@ -31,7 +31,10 @@ const RESOURCES = [
 ]
 
 export const checkRenderBlocking: CheckFn = (page) => {
-  const scripts = page.parsedPage.resources.filter((r) => r.type === 'script')
+  // Preload hints share type 'script' but have no src.
+  const scripts = page.parsedPage.resources.filter(
+    (r) => r.type === 'script' && 'src' in r.attributes
+  )
   const images = page.parsedPage.resources.filter((r) => r.type === 'image')
 
   if (scripts.length === 0 && images.length === 0) {

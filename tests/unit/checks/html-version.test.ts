@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { checkHtmlVersion } from '@/checks/html-version'
 import type { PageData } from '@/core/types'
+import { parseHtml } from '@/utils/html-parser'
 import { expectRecommendationAndResources } from './helpers'
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
@@ -100,25 +101,38 @@ describe('checkHtmlVersion (WSG 3.19)', () => {
     expect(result.details).toContain('Non-HTML5')
   })
 
-  it('warns when a deprecated <font> element is found in the body', async () => {
-    const body = '<!DOCTYPE html><html lang="en"><body><font color="red">text</font></body></html>'
-    const result = await checkHtmlVersion(makePageData({ body }))
-    expect(result.status).toBe('warn')
-    expect(result.details).toContain('<font>')
+  // These run the real parser; the tests above hand-build `doctype`.
+  it('passes for a real parsed HTML5 document (round-trip through parseHtml)', async () => {
+    const html =
+      '<!DOCTYPE html><html lang="en"><head><title>t</title></head><body><main></main></body></html>'
+    const page = makePageData({ body: html })
+    const result = await checkHtmlVersion({ ...page, parsedPage: parseHtml(html) })
+    expect(result.status).toBe('pass')
+    expect(result.score).toBe(100)
   })
 
-  it('warns when a deprecated <center> element is found', async () => {
-    const body = '<!DOCTYPE html><html lang="en"><body><center>centered</center></body></html>'
-    const result = await checkHtmlVersion(makePageData({ body }))
+  it('warns for a real parsed legacy HTML 4.01 document and quotes the doctype once', async () => {
+    const html =
+      '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"><html lang="en"><head><title>t</title></head><body></body></html>'
+    const page = makePageData({ body: html })
+    const result = await checkHtmlVersion({ ...page, parsedPage: parseHtml(html) })
     expect(result.status).toBe('warn')
-    expect(result.details).toContain('<center>')
+    // parse5 normalizes the root element name to lower case.
+    expect(result.details).toContain(
+      '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"'
+    )
+    expect(result.details).not.toContain('<!!')
   })
 
-  it('warns when deprecated <marquee> is found', async () => {
-    const body = '<!DOCTYPE html><html lang="en"><body><marquee>scroll</marquee></body></html>'
+  it.each([
+    ['<font>', '<font color="red">text</font>'],
+    ['<center>', '<center>centered</center>'],
+    ['<marquee>', '<marquee>scroll</marquee>'],
+  ])('warns when a deprecated %s element is found in the body', async (tag, markup) => {
+    const body = `<!DOCTYPE html><html lang="en"><body>${markup}</body></html>`
     const result = await checkHtmlVersion(makePageData({ body }))
     expect(result.status).toBe('warn')
-    expect(result.details).toContain('<marquee>')
+    expect(result.details).toContain(tag)
   })
 
   it('includes a recommendation and resources link on warn', async () => {

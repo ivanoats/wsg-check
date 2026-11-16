@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.0](https://github.com/ivanoats/wsg-check/compare/v0.7.0...v0.8.0) (2026-11-16)
+
+
+### Added
+
+* **cli:** add --header to send request headers to the checked site ([#255](https://github.com/ivanoats/wsg-check/issues/255)) ([e3a9933](https://github.com/ivanoats/wsg-check/commit/e3a993332f77568e69ade34941bdd14f005bbb76))
+
+
+### Fixed
+
+* **checks:** four false positives (revalidating HTML, radio inputs, &lt;picture&gt; sources, eager hero) ([#269](https://github.com/ivanoats/wsg-check/issues/269)) ([d0321d6](https://github.com/ivanoats/wsg-check/commit/d0321d67b8f8cf772af46cfdf819968104c5391b))
+* **checks:** report info instead of warn when the evidence lives in external CSS or JS ([#258](https://github.com/ivanoats/wsg-check/issues/258)) ([a96ebd7](https://github.com/ivanoats/wsg-check/commit/a96ebd7d6857b530091184539d7ed39d211024b1))
+* **http-client:** count received bytes so page weight does not depend on Content-Length ([#256](https://github.com/ivanoats/wsg-check/issues/256)) ([f4da3e7](https://github.com/ivanoats/wsg-check/commit/f4da3e7e5a1551463f301c8cb7a744ccb8bc40c2))
+
+
+### Dependencies
+
+* **deps-dev:** bump jsdom from 29.1.1 to 30.1.2 ([#231](https://github.com/ivanoats/wsg-check/issues/231)) ([58b33ea](https://github.com/ivanoats/wsg-check/commit/58b33eaeb1b311fefc17b972cae85abed77dc138))
+* **deps-dev:** bump the development-minor-patch group across 1 directory with 17 updates ([#235](https://github.com/ivanoats/wsg-check/issues/235)) ([4451b69](https://github.com/ivanoats/wsg-check/commit/4451b69bcd432fa309c99fb611cc092faa91d40d))
+* **deps-dev:** bump undici from 6.28.1 to 6.29.1 ([#252](https://github.com/ivanoats/wsg-check/issues/252)) ([b10e4a2](https://github.com/ivanoats/wsg-check/commit/b10e4a223ccee65c7c5389eb2801360656fd3ccc))
+* **deps-dev:** bump vite from 8.0.16 to 8.3.5 ([#234](https://github.com/ivanoats/wsg-check/issues/234)) ([40b5675](https://github.com/ivanoats/wsg-check/commit/40b5675d30e09bd7cc73c3f92d729933cf26303e))
+* **deps:** bump @hono/node-server from 2.1.1 to 2.1.5 ([#251](https://github.com/ivanoats/wsg-check/issues/251)) ([0e807ee](https://github.com/ivanoats/wsg-check/commit/0e807ee983c92a85085c22df67faf5cb6e0d95ac))
+* **deps:** bump dotenv from 17.4.2 to 18.0.7 ([#229](https://github.com/ivanoats/wsg-check/issues/229)) ([b0d4298](https://github.com/ivanoats/wsg-check/commit/b0d4298c04a1687422ac062561beff189cc01a67))
+* **deps:** bump follow-redirects from 1.16.0 to 1.16.1 ([#236](https://github.com/ivanoats/wsg-check/issues/236)) ([952ff6e](https://github.com/ivanoats/wsg-check/commit/952ff6ed4b0ee650bd811c59a424028796b6b60e))
+* **deps:** bump hono from 4.13.9 to 4.13.13 ([#233](https://github.com/ivanoats/wsg-check/issues/233)) ([6e1f715](https://github.com/ivanoats/wsg-check/commit/6e1f715f5d99e57c306c3cb677b8e92deacba10a))
+* **deps:** bump qs from 6.16.0 to 6.16.2 ([#250](https://github.com/ivanoats/wsg-check/issues/250)) ([0a4dcb2](https://github.com/ivanoats/wsg-check/commit/0a4dcb272024a324a8ed0fb7159696448debafd7))
+* **deps:** bump the actions-all group across 1 directory with 2 updates ([#227](https://github.com/ivanoats/wsg-check/issues/227)) ([eb5f09c](https://github.com/ivanoats/wsg-check/commit/eb5f09c93095e9f51a1fe3fbe3839f213aebadc9))
+
+## [0.7.0](https://github.com/ivanoats/wsg-check/compare/v0.6.3...v0.7.0) (2026-10-29)
+
+
+### Added
+
+* **cli:** add --ignore-robots for checking sites you operate ([#243](https://github.com/ivanoats/wsg-check/issues/243)) ([1ff2b08](https://github.com/ivanoats/wsg-check/commit/1ff2b08f9ebce11802231909c378fd24268d2bf5))
+
+
+### Fixed
+
+* **checks:** accept a robots.txt Sitemap declaration as sitemap evidence ([#242](https://github.com/ivanoats/wsg-check/issues/242)) ([7982618](https://github.com/ivanoats/wsg-check/commit/7982618c1f2978a58fb3b632002780bbf1c09bed))
+* **checks:** stop counting preload hints as external scripts ([#238](https://github.com/ivanoats/wsg-check/issues/238)) ([006bb2e](https://github.com/ivanoats/wsg-check/commit/006bb2e865ffb7e13b8b9cfe2805359d4c7da8e9))
+* **checks:** treat SVG images as vector in the format and srcset checks ([#240](https://github.com/ivanoats/wsg-check/issues/240)) ([0715455](https://github.com/ivanoats/wsg-check/commit/0715455a77a27c097ec9797914ad96a511267bff))
+* **html-parser:** stop doubling the bang in the DOCTYPE string ([#237](https://github.com/ivanoats/wsg-check/issues/237)) ([282fbf4](https://github.com/ivanoats/wsg-check/commit/282fbf41081f0ac7215f60876bfc7f5abd2ca66e))
+* **http-client:** keep Content-Encoding visible after axios decompression ([#239](https://github.com/ivanoats/wsg-check/issues/239)) ([7b8759b](https://github.com/ivanoats/wsg-check/commit/7b8759b146e36e9d98ecee296720578a4c8fd7f1))
+* **http:** follow a redirect back to the host that issued it when no host policy is set ([#244](https://github.com/ivanoats/wsg-check/issues/244)) ([260f17f](https://github.com/ivanoats/wsg-check/commit/260f17fdee31cca79da478e83ff75e0277fd12f9))
+
+
+### Changed
+
+* explain why pages on one site usually score alike ([#245](https://github.com/ivanoats/wsg-check/issues/245)) ([3e1ed04](https://github.com/ivanoats/wsg-check/commit/3e1ed04862b9f6f87f96c7660df4ba27062d131f))
+
 ## [0.6.3](https://github.com/ivanoats/wsg-check/compare/v0.6.2...v0.6.3) (2026-10-14)
 
 

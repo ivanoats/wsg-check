@@ -26,6 +26,10 @@ describe('DEFAULT_CONFIG', () => {
     expect(DEFAULT_CONFIG.followRedirects).toBe(true)
   })
 
+  it('does not ignore robots.txt by default', () => {
+    expect(DEFAULT_CONFIG.ignoreRobots).toBe(false)
+  })
+
   it('defaults to terminal format', () => {
     expect(DEFAULT_CONFIG.format).toBe('terminal')
   })
@@ -40,5 +44,9 @@ describe('DEFAULT_CONFIG', () => {
 
   it('has no outputPath by default', () => {
     expect(DEFAULT_CONFIG.outputPath).toBeUndefined()
+  })
+
+  it('has no request headers by default', () => {
+    expect(DEFAULT_CONFIG.headers).toEqual({})
   })
 })

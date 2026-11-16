@@ -111,7 +111,7 @@ export const classifyAddress = (address: string): AddressClass => {
 const unbracket = (hostname: string): string => hostname.replace(/^\[(.*)\]$/u, '$1')
 
 /** Lowercases, unbrackets IPv6 literals, and drops a trailing DNS root dot (`localhost.`). */
-const normalizeHost = (hostname: string): string =>
+export const normalizeHost = (hostname: string): string =>
   unbracket(hostname.toLowerCase()).replace(/\.$/u, '')
 
 const RESTRICTIVENESS: Record<AddressClass, number> = {

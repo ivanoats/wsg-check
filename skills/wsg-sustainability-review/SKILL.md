@@ -19,7 +19,7 @@ Use the first option that is available:
    npx -y @sustainablewebsites/wsg-check <url> --format json --output wsg-report.json
    ```
 
-   Progress and log messages go to stderr. If the command exits with anything other than 0, the page couldn't be checked: report the error it printed and don't read `wsg-report.json`. Removing the file first means a failed run can't leave you reading an old report. Otherwise, read `wsg-report.json`. The CLI refuses redirects that stay on `localhost`, so for a local dev server pass the URL the page finally lands on, such as `http://localhost:3000/en` instead of `http://localhost:3000/`.
+   Progress and log messages go to stderr. If the command exits with anything other than 0, the page couldn't be checked: report the error it printed and don't read `wsg-report.json`. Removing the file first means a failed run can't leave you reading an old report. Otherwise, read `wsg-report.json`.
 
 To add the MCP server instead, see the [wsg-check README](https://github.com/ivanoats/wsg-check#use-with-ai-assistants-mcp).
 

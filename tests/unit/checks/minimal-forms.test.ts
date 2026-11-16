@@ -130,3 +130,35 @@ describe('checkMinimalForms (WSG 2.19)', () => {
     expect(firstResource).toContain('w3.org')
   })
 })
+
+describe('checkMinimalForms (WSG 2.19): controls autocomplete and inputmode do not apply to', () => {
+  const radio = (): FormInputInfo =>
+    makeInput({ type: 'radio', hasAutocomplete: false, hasInputmode: false })
+
+  it('passes a theme switcher built from radio buttons', async () => {
+    const result = await checkMinimalForms(makePageData([radio(), radio(), radio()]))
+    expect(result.status).toBe('pass')
+  })
+
+  it('does not ask for inputmode on an email field', async () => {
+    const result = await checkMinimalForms(
+      makePageData([makeInput({ type: 'email', hasAutocomplete: true, hasInputmode: false })])
+    )
+    expect(result.status).toBe('pass')
+  })
+
+  it('still fails a text field without autocomplete next to radio buttons', async () => {
+    const result = await checkMinimalForms(
+      makePageData([radio(), makeInput({ type: 'text', hasAutocomplete: false })])
+    )
+    expect(result.status).toBe('fail')
+    expect(result.details).toContain('1 text-entry input(s)')
+  })
+
+  it('still warns when a free-text field lacks inputmode', async () => {
+    const result = await checkMinimalForms(
+      makePageData([makeInput({ type: 'search', hasAutocomplete: true, hasInputmode: false })])
+    )
+    expect(result.status).toBe('warn')
+  })
+})

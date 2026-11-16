@@ -124,3 +124,42 @@ describe('checkLazyLoading (WSG 2.11)', () => {
     expect(firstResource).toContain('w3.org')
   })
 })
+
+describe('checkLazyLoading (WSG 2.11): intentionally eager images', () => {
+  const eager = (url: string, attrs: Record<string, string>): ResourceReference => ({
+    type: 'image',
+    url,
+    attributes: { src: url, ...attrs },
+  })
+
+  it('passes a logo plus a hero marked fetchpriority="high"', async () => {
+    const result = await checkLazyLoading(
+      makePageData([
+        makeImage('https://example.com/logo.png'),
+        eager('https://example.com/hero.jpg', { fetchpriority: 'high' }),
+      ])
+    )
+    expect(result.status).toBe('pass')
+  })
+
+  it('passes when every image is loading="eager"', async () => {
+    const result = await checkLazyLoading(
+      makePageData([
+        eager('https://example.com/a.jpg', { loading: 'eager' }),
+        eager('https://example.com/b.jpg', { loading: 'eager' }),
+      ])
+    )
+    expect(result.status).toBe('pass')
+  })
+
+  it('still fails several unmarked images that are not lazy', async () => {
+    const result = await checkLazyLoading(
+      makePageData([
+        eager('https://example.com/hero.jpg', { fetchpriority: 'high' }),
+        makeImage('https://example.com/a.jpg'),
+        makeImage('https://example.com/b.jpg'),
+      ])
+    )
+    expect(result.status).toBe('fail')
+  })
+})

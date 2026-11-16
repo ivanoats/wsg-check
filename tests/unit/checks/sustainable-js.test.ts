@@ -10,6 +10,13 @@ function makeScript(url: string): ResourceReference {
   return { type: 'script', url, attributes: { src: url } }
 }
 
+/** A `<link rel="preload" as="script">` hint. */
+const makePreloadScript = (url: string): ResourceReference => ({
+  type: 'script',
+  url,
+  attributes: { rel: 'preload', as: 'script', href: url },
+})
+
 function makePageData(
   resources: ResourceReference[],
   body = '<!DOCTYPE html><html><body></body></html>'
@@ -163,5 +170,21 @@ describe('checkSustainableJs (WSG 3.14)', () => {
     const result = await checkSustainableJs(makePageData([], DOCUMENT_WRITE_BODY))
     const firstResource = expectRecommendationAndResources(result)
     expect(firstResource).toContain('w3.org')
+  })
+
+  it('does not count a preload hint as an external script', async () => {
+    const resources = [
+      makePreloadScript('https://example.com/a.js'),
+      makeScript('https://example.com/a.js'),
+    ]
+    const result = await checkSustainableJs(makePageData(resources))
+    expect(result.message).toContain('1 external script')
+  })
+
+  it('returns not-applicable when the only script resource is a preload hint', async () => {
+    const result = await checkSustainableJs(
+      makePageData([makePreloadScript('https://example.com/a.js')])
+    )
+    expect(result.status).toBe('not-applicable')
   })
 })

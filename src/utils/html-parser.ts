@@ -38,6 +38,12 @@ export interface ResourceReference {
   url: string
   /** All HTML attributes on the element, for deeper analysis by checks. */
   attributes: Record<string, string>
+  /**
+   * For an `<img>` inside `<picture>`: the modern format a sibling `<source>` offers
+   * (by `type`, or by the extension of its first `srcset` URL). Browsers that support
+   * it download that source instead of the `<img>` fallback.
+   */
+  modernAlternative?: 'avif' | 'webp'
 }
 
 export interface HeadingNode {
@@ -180,7 +186,7 @@ export function parseHtml(html: string, baseUrl?: string): ParsedPage {
         node.type === 'directive' &&
         (node as { data?: string }).data?.toLowerCase().startsWith('!doctype')
       ) {
-        doctype = `<!${(node as { data?: string }).data ?? ''}>`
+        doctype = `<${(node as { data?: string }).data ?? ''}>`
       }
     })
 
@@ -240,11 +246,17 @@ export function parseHtml(html: string, baseUrl?: string): ParsedPage {
   $('img').each((_, el) => {
     const attrs = attrsOf(el as DomElement)
     const imageUrls = new Set<string>()
+    const modernAlternative = pictureModernFormat($, el as DomElement)
 
     const url = resolveUrl(attrs.src, baseUrl)
     if (url) {
       imageUrls.add(url)
-      resources.push({ type: 'image', url, attributes: attrs })
+      resources.push({
+        type: 'image',
+        url,
+        attributes: attrs,
+        ...(modernAlternative ? { modernAlternative } : {}),
+      })
     }
     // Also handle srcset; skip any URL already added via src
     if (attrs.srcset) {
@@ -355,7 +367,34 @@ export function parseHtml(html: string, baseUrl?: string): ParsedPage {
   $('input:not([type="hidden"]), select, textarea').each((_, el) => {
     const attrs = attrsOf(el as DomElement)
     const tagName = (el as DomElement).name
-    const type = attrs.type ?? (tagName === 'select' ? 'select' : 'textarea')
+    // A bare <input> is a text input; <select> and <textarea> report their tag name.
+    const inputType = (attrs.type ?? 'text').toLowerCase()
+    const knownInputTypes = [
+      'hidden',
+      'text',
+      'search',
+      'tel',
+      'url',
+      'email',
+      'password',
+      'date',
+      'month',
+      'week',
+      'time',
+      'datetime-local',
+      'number',
+      'range',
+      'color',
+      'checkbox',
+      'radio',
+      'file',
+      'submit',
+      'image',
+      'reset',
+      'button',
+    ]
+    const type =
+      tagName !== 'input' ? tagName : knownInputTypes.includes(inputType) ? inputType : 'text'
     const id = attrs.id
 
     // An input is labelled when:
@@ -386,4 +425,27 @@ export function parseHtml(html: string, baseUrl?: string): ParsedPage {
     doctype,
     formInputs,
   }
+}
+
+/**
+ * The modern format offered by a `<source>` in the `<picture>` that wraps `img`,
+ * preferring AVIF, or `undefined` when there is none.
+ */
+function pictureModernFormat($: cheerio.CheerioAPI, img: DomElement): 'avif' | 'webp' | undefined {
+  const picture = $(img).parent('picture')
+  if (picture.length === 0) return undefined
+  const formats = new Set<string>()
+  picture.children('source').each((_, source) => {
+    const attrs = attrsOf(source as DomElement)
+    const type = attrs.type?.toLowerCase().trim()
+    if (type === 'image/avif') formats.add('avif')
+    if (type === 'image/webp') formats.add('webp')
+    const first = attrs.srcset?.split(',')[0]?.trim().split(/\s+/)[0]?.toLowerCase() ?? ''
+    const path = first.split(/[?#]/, 1)[0]
+    if (path.endsWith('.avif')) formats.add('avif')
+    if (path.endsWith('.webp')) formats.add('webp')
+  })
+  if (formats.has('avif')) return 'avif'
+  if (formats.has('webp')) return 'webp'
+  return undefined
 }

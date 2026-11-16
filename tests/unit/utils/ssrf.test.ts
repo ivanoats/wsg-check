@@ -101,6 +101,14 @@ describe('isPrivateIpv6', () => {
     expect(isPrivateIpv6('::ffff:8.8.8.8')).toBe(false)
   })
 
+  it('recognises hex-form mapped addresses as URL.hostname and dns.lookup report them', () => {
+    // new URL('http://[::ffff:127.0.0.1]/').hostname is '[::ffff:7f00:1]'.
+    expect(isPrivateIpv6('::ffff:7f00:1')).toBe(true)
+    expect(isPrivateIpv6('::ffff:a00:1')).toBe(true)
+    expect(isPrivateIpv6('0:0:0:0:0:ffff:7f00:1')).toBe(true)
+    expect(isPrivateIpv6('::ffff:808:808')).toBe(false)
+  })
+
   it('returns true for fe80::/10 link-local addresses', () => {
     expect(isPrivateIpv6('fe80::1')).toBe(true)
     expect(isPrivateIpv6('fe80::abcd:ef01')).toBe(true)
@@ -168,6 +176,16 @@ describe('isDisallowedHost', () => {
 
   it('returns false for public IPv6 addresses', () => {
     expect(isDisallowedHost('2001:db8::1')).toBe(false)
+  })
+
+  // Bracketed literals are how URL.hostname reports IPv6 hosts.
+  it.each([
+    ['[::1]', true],
+    ['[fd00::1]', true],
+    ['[2001:db8::1]', false],
+    ['localhost.', true],
+  ])('isDisallowedHost(%s) is %s', (host, expected) => {
+    expect(isDisallowedHost(host)).toBe(expected)
   })
 
   it('returns false for regular public domain names', () => {

@@ -145,3 +145,27 @@ describe('checkFormValidation (WSG 3.10)', () => {
     expect(result.message).toContain('2')
   })
 })
+
+describe('checkFormValidation (WSG 3.12): controls autocomplete does not apply to', () => {
+  it('passes labelled checkboxes and radio buttons without autocomplete', async () => {
+    const result = await checkFormValidation(
+      makePageData([
+        makeInput({ type: 'radio', hasAutocomplete: false }),
+        makeInput({ type: 'checkbox', hasAutocomplete: false }),
+      ])
+    )
+    expect(result.status).toBe('pass')
+    expect(result.message).toContain('none are text-entry fields')
+  })
+
+  it('still flags a text field without autocomplete', async () => {
+    const result = await checkFormValidation(
+      makePageData([
+        makeInput({ type: 'radio', hasAutocomplete: false }),
+        makeInput({ type: 'text', hasAutocomplete: false }),
+      ])
+    )
+    expect(result.status).not.toBe('pass')
+    expect(result.details).toContain('1 text-entry input(s)')
+  })
+})
