@@ -91,8 +91,11 @@ export const checkDataRefresh: CheckFn = (page) => {
   // is never stale and costs almost nothing to recheck.
   const headers = page.fetchResult.headers
   const isHtml = (headers['content-type'] ?? '').toLowerCase().includes('text/html')
+  const browserMaxAgeMatch = MAX_AGE_RE.exec(cacheControl)
+  const browserMaxAge = browserMaxAgeMatch ? parseInt(browserMaxAgeMatch[1], 10) : null
   const revalidates =
-    cacheControl.includes('no-cache') || (maxAge === 0 && cacheControl.includes('must-revalidate'))
+    cacheControl.includes('no-cache') ||
+    (browserMaxAge === 0 && cacheControl.includes('must-revalidate'))
   const validator =
     headers['etag'] !== undefined
       ? 'ETag'

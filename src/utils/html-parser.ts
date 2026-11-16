@@ -368,7 +368,33 @@ export function parseHtml(html: string, baseUrl?: string): ParsedPage {
     const attrs = attrsOf(el as DomElement)
     const tagName = (el as DomElement).name
     // A bare <input> is a text input; <select> and <textarea> report their tag name.
-    const type = (attrs.type ?? (tagName === 'input' ? 'text' : tagName)).toLowerCase()
+    const inputType = (attrs.type ?? 'text').toLowerCase()
+    const knownInputTypes = [
+      'hidden',
+      'text',
+      'search',
+      'tel',
+      'url',
+      'email',
+      'password',
+      'date',
+      'month',
+      'week',
+      'time',
+      'datetime-local',
+      'number',
+      'range',
+      'color',
+      'checkbox',
+      'radio',
+      'file',
+      'submit',
+      'image',
+      'reset',
+      'button',
+    ]
+    const type =
+      tagName !== 'input' ? tagName : knownInputTypes.includes(inputType) ? inputType : 'text'
     const id = attrs.id
 
     // An input is labelled when:
