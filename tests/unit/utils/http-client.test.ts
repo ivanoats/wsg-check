@@ -106,10 +106,12 @@ describe('HttpClient', () => {
   })
 
   it('skips disallowed standard files while still returning the page', async () => {
-    mockGet.mockImplementation(async (url: string) =>
-      url.endsWith('/robots.txt')
-        ? axiosResp(200, 'User-agent: *\nDisallow: /humans.txt')
-        : axiosResp(200, 'content', { 'content-type': 'text/plain' })
+    mockGet.mockImplementation((url: string) =>
+      Promise.resolve(
+        url.endsWith('/robots.txt')
+          ? axiosResp(200, 'User-agent: *\nDisallow: /humans.txt')
+          : axiosResp(200, 'content', { 'content-type': 'text/plain' })
+      )
     )
     const result = await new HttpClient().fetch('https://example.com/')
     expect(result.ok).toBe(true)
@@ -119,13 +121,13 @@ describe('HttpClient', () => {
   })
 
   it('uses the final origin robots rules with a pinned lookup after a redirect', async () => {
-    mockGet.mockImplementation(async (url: string) => {
+    mockGet.mockImplementation((url: string) => {
       if (url === 'https://example.com/')
-        return axiosResp(302, '', { location: 'https://other.example/' })
+        return Promise.resolve(axiosResp(302, '', { location: 'https://other.example/' }))
       if (url === 'https://other.example/robots.txt')
-        return axiosResp(200, 'User-agent: *\nDisallow: /humans.txt')
-      if (url.endsWith('/robots.txt')) return axiosResp(404, '')
-      return axiosResp(200, 'content', { 'content-type': 'text/plain' })
+        return Promise.resolve(axiosResp(200, 'User-agent: *\nDisallow: /humans.txt'))
+      if (url.endsWith('/robots.txt')) return Promise.resolve(axiosResp(404, ''))
+      return Promise.resolve(axiosResp(200, 'content', { 'content-type': 'text/plain' }))
     })
     const result = await new HttpClient({
       hostPolicy: { allowLoopback: false, allowPrivateNetwork: false },
@@ -190,9 +192,9 @@ describe('HttpClient', () => {
     const controller = new AbortController()
     mockGet.mockResolvedValueOnce(axiosResp(404, ''))
     mockGet.mockResolvedValueOnce(axiosResp(200, '<html/>'))
-    mockGet.mockImplementation(async () => {
+    mockGet.mockImplementation(() => {
       controller.abort()
-      throw new Error('cancelled')
+      return Promise.reject(new Error('cancelled'))
     })
     const client = new HttpClient({ signal: controller.signal })
     const result = await client.fetch('https://example.com/')
