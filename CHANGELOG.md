@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.1](https://github.com/ivanoats/wsg-check/compare/v0.8.0...v0.8.1) (2026-11-17)
+
+
+### Fixed
+
+* **checks:** count beneficial files served at their standard paths ([#266](https://github.com/ivanoats/wsg-check/issues/266)) ([65c729e](https://github.com/ivanoats/wsg-check/commit/65c729ee71b64475b9aa11d99d40afa0d0c46da9))
+
+
+### Dependencies
+
+* **deps-dev:** bump next from 16.4.3 to 16.4.5 ([#271](https://github.com/ivanoats/wsg-check/issues/271)) ([37bfe79](https://github.com/ivanoats/wsg-check/commit/37bfe79c31738220ce244c930cd70f1466dedff6))
+* **deps-dev:** bump undici from 8.11.2 to 8.12.4 ([#264](https://github.com/ivanoats/wsg-check/issues/264)) ([ef5af1f](https://github.com/ivanoats/wsg-check/commit/ef5af1f3361a122f25a13e71ce2a5824337f109a))
+* **deps:** bump minimatch, eslint, @ts-morph/common and typescript-eslint ([#273](https://github.com/ivanoats/wsg-check/issues/273)) ([8d63714](https://github.com/ivanoats/wsg-check/commit/8d637147d69eaf7655af6a4d89f71f10b804e8b7))
+* **deps:** combine six compatible dependency bumps ([#272](https://github.com/ivanoats/wsg-check/issues/272)) ([1e7e104](https://github.com/ivanoats/wsg-check/commit/1e7e104a6aa2d9a30d95f7c527ee4e27e6e34304))
+
 ## [0.8.0](https://github.com/ivanoats/wsg-check/compare/v0.7.0...v0.8.0) (2026-11-16)
 
 
